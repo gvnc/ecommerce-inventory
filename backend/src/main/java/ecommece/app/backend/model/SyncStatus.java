@@ -1,6 +1,6 @@
 package ecommece.app.backend.model;
 
-import ecommece.app.backend.SyncConstants;
+import ecommece.app.backend.sync.SyncConstants;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,6 +1,6 @@
 package ecommece.app.backend.model;
 
-import ecommece.app.backend.Utils;
+import ecommece.app.backend.util.Utils;
 import lombok.Getter;
 import lombok.Setter;
 

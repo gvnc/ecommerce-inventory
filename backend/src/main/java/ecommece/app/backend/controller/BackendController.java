@@ -1,10 +1,12 @@
-package ecommece.app.backend;
+package ecommece.app.backend.controller;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import ecommece.app.backend.StoreBean;
 import ecommece.app.backend.bigcommerce.BigCommerceAPIService;
 import ecommece.app.backend.bigcommerce.BigCommerceFSAPIService;
 import ecommece.app.backend.bigcommerce.products.BigCommerceProduct;
 import ecommece.app.backend.model.*;
+import ecommece.app.backend.sync.SyncProductsService;
 import ecommece.app.backend.vendhq.VendHQAPIService;
 import ecommece.app.backend.vendhq.products.VendHQInventory;
 import org.springframework.beans.factory.annotation.Autowired;

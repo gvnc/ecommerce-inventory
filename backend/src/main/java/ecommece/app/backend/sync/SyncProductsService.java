@@ -1,5 +1,7 @@
-package ecommece.app.backend;
+package ecommece.app.backend.sync;
 
+import ecommece.app.backend.StoreBean;
+import ecommece.app.backend.util.Utils;
 import ecommece.app.backend.bigcommerce.BigCommerceAPIService;
 import ecommece.app.backend.bigcommerce.BigCommerceFSAPIService;
 import ecommece.app.backend.bigcommerce.products.BigCommerceProduct;

@@ -1,10 +1,10 @@
-package ecommece.app.backend;
+package ecommece.app.backend.inventory;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class TestProducts {
-    public static Set set = new HashSet();
+    public static Set<String> set = new HashSet();
 
     static {
         set.add("dummmmyyyyy"); // update nothing for now

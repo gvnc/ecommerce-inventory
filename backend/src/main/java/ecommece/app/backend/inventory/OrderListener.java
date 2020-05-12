@@ -1,6 +1,5 @@
 package ecommece.app.backend.inventory;
 
-import ecommece.app.backend.InventoryChange;
 import ecommece.app.backend.StoreBean;
 import ecommece.app.backend.bigcommerce.BigCommerceAPIService;
 import ecommece.app.backend.bigcommerce.BigCommerceFSAPIService;

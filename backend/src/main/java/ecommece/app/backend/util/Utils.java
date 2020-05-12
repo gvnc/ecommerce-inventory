@@ -1,4 +1,4 @@
-package ecommece.app.backend;
+package ecommece.app.backend.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

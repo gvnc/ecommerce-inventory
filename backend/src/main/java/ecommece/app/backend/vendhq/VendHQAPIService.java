@@ -2,8 +2,8 @@ package ecommece.app.backend.vendhq;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import ecommece.app.backend.StoreBean;;
-import ecommece.app.backend.TestProducts;
+import ecommece.app.backend.StoreBean;
+import ecommece.app.backend.inventory.TestProducts;
 import ecommece.app.backend.model.DetailedProduct;
 import ecommece.app.backend.vendhq.products.*;
 import ecommece.app.backend.vendhq.sales.VendHQSale;
@@ -102,8 +102,12 @@ public class VendHQAPIService {
                 return false;
             }
 
-            vendHQProduct.setPrice(Float.parseFloat(price));
-            vendHQProduct.setSupplyPrice(Float.parseFloat(supplyPrice));
+            if(price != null)
+                vendHQProduct.setPrice(Float.parseFloat(price));
+
+            if(supplyPrice != null)
+                vendHQProduct.setSupplyPrice(Float.parseFloat(supplyPrice));
+
             log.info("Price change successful for vendhq. [product:"+productSku+",costPrice:"+supplyPrice+",price:"+price+"]");
             return true;
         } catch (Exception e){
@@ -147,7 +151,7 @@ public class VendHQAPIService {
 
             VendHQProducts data = dataResponse.getBody();
 
-            if(data.getProducts() != null && data.getProducts().length > 0)
+            if(data!= null && data.getProducts() != null && data.getProducts().length > 0)
                 return data.getProducts()[0];
         } catch (Exception e){
             log.error("Failed to get product by id " + productId , e);
@@ -209,21 +213,17 @@ public class VendHQAPIService {
             VendHQInventory vendHQInventory = getProductInventoryById(product.getId());
             product.setInventory(vendHQInventory);
 
-            if(product != null) {
-                int newQuantity = amount;
-                if(overwrite == false) {
-                    int currentQuantity = vendHQInventory.getInventoryLevel();
-                    newQuantity = currentQuantity + amount;
-                    if (newQuantity < 0) {
-                        log.warn("There is no enough inventory in the vendhq store for sku " + sku + ". [currentQuantity:" + currentQuantity + ", demanded:" + amount + "]");
-                        log.warn("Set inventory to 0 for sku " + sku);
-                        newQuantity = 0;
-                    }
+            int newQuantity = amount;
+            if(overwrite == false) {
+                int currentQuantity = vendHQInventory.getInventoryLevel();
+                newQuantity = currentQuantity + amount;
+                if (newQuantity < 0) {
+                    log.warn("There is no enough inventory in the vendhq store for sku " + sku + ". [currentQuantity:" + currentQuantity + ", demanded:" + amount + "]");
+                    log.warn("Set inventory to 0 for sku " + sku);
+                    newQuantity = 0;
                 }
-                return updateInventory(product, newQuantity);
-            }else {
-                log.warn("No product found in vendhq with sku " + sku);
             }
+            return updateInventory(product, newQuantity);
         }
         return true;
     }

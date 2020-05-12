@@ -2,6 +2,7 @@ package ecommece.app.backend;
 
 import ecommece.app.backend.bigcommerce.BigCommerceAPIService;
 import ecommece.app.backend.inventory.OrderListener;
+import ecommece.app.backend.sync.SyncProductsService;
 import ecommece.app.backend.vendhq.VendHQAPIService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

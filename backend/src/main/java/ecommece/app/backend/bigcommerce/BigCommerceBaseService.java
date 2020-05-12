@@ -2,7 +2,7 @@ package ecommece.app.backend.bigcommerce;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import ecommece.app.backend.TestProducts;
+import ecommece.app.backend.inventory.TestProducts;
 import ecommece.app.backend.bigcommerce.order.BCOrder;
 import ecommece.app.backend.bigcommerce.order.BCOrderProduct;
 import ecommece.app.backend.bigcommerce.products.BigCommerceData;

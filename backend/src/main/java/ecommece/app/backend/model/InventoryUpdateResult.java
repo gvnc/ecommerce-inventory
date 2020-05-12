@@ -1,6 +1,6 @@
 package ecommece.app.backend.model;
 
-import ecommece.app.backend.OperationConstants;
+import ecommece.app.backend.controller.OperationConstants;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,28 +1,18 @@
 package ecommece.app.backend.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class BaseProduct {
 
+    @Getter @Setter
     private String sku;
+
+    @Getter @Setter
     private String name;
 
     public BaseProduct(String sku, String name) {
         this.sku = sku;
-        this.name = name;
-    }
-
-    public String getSku() {
-        return sku;
-    }
-
-    public void setSku(String sku) {
-        this.sku = sku;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
         this.name = name;
     }
 }
