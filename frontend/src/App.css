@@ -1,0 +1,10 @@
+@import url(https://unpkg.com/bootstrap@4.1.0/dist/css/bootstrap.min.css);
+
+.productProperty {
+    color : #696969;
+    font-weight : 600;
+}
+
+.contentsMarginRight {
+    margin-right: 20px !important;
+}

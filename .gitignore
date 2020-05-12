@@ -1,0 +1,8 @@
+**/target
+**/node_modules
+**/build
+**/*.iml
+.idea
+
+configuration.properties
+orderListener.data
