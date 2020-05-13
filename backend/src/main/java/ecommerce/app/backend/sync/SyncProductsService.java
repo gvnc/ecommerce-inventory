@@ -230,8 +230,8 @@ public class SyncProductsService {
             this.resetStore();
 
             syncBigCommerce();
-         //   syncBigCommerceFS();
-         //   syncVendHQ();
+     //       syncBigCommerceFS();
+       //     syncVendHQ();
             syncAmazonUS();
             syncAmazonCA();
         }

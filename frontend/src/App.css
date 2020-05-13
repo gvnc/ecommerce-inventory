@@ -5,6 +5,11 @@
     font-weight : 600;
 }
 
+.labelText {
+    color : #696969;
+    font-weight : 600;
+}
+
 .contentsMarginRight {
     margin-right: 20px !important;
 }

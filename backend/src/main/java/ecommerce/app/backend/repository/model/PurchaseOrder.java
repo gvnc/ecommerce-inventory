@@ -17,20 +17,26 @@ public class PurchaseOrder {
     private Integer id;
 
     @Getter @Setter
-    private Date submitDate;
+    private String status;
+
+    @Getter @Setter
+    private String createdBy;
+
+    @Getter @Setter
+    private Date createDate;
 
     @Getter @Setter
     private String supplier;
 
     @Getter @Setter
-    private Float discount;
+    private Float discount = 0F;
 
     @Getter @Setter
-    private Float shipping;
+    private Float shipping = 0F;
 
     @Getter @Setter
-    private Float salesTax;
+    private Float salesTax = 0F;
 
     @Getter @Setter
-    private Float totalPrice;
+    private Float orderTotal = 0F;
 }

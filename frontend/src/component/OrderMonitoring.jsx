@@ -4,7 +4,7 @@ import { getOrders} from "../store/actions/syncActions"
 import {DataTable} from "primereact/datatable";
 import {Column} from "primereact/column";
 
-class MarketPlaceSyncStatus extends Component {
+class OrderMonitoring extends Component {
 
     componentDidMount() {
         this.props.getOrders();
@@ -46,4 +46,4 @@ const mapDispatchToProps = dispatch => {
     };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(MarketPlaceSyncStatus);
+export default connect(mapStateToProps, mapDispatchToProps)(OrderMonitoring);

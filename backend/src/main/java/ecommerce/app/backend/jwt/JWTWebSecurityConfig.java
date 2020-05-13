@@ -74,26 +74,22 @@ public class JWTWebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity webSecurity) throws Exception {
         webSecurity
-            .ignoring()
-            .antMatchers(
-                HttpMethod.POST,
-                authenticationPath
-            )
-            .antMatchers(HttpMethod.OPTIONS, "/**")
-            .and()
-            .ignoring()
-            .antMatchers(
-                HttpMethod.GET,
-                "/" //Other Stuff You want to Ignore
-            )
-            .and()
-            .ignoring()
-            .antMatchers("/isAppRunning") // check for app monitoring
-            .and()
-            .ignoring()
-            .antMatchers(
-                    "/**/*.html","/**/*.css","/**/*.js","/**/*.png","/**/*.jpg","/**/*.gif",
-                    "/**/*.svg","/**/*.ico","/**/*.ttf","/**/*.woff","/**/*.woff2","/**/*.otf","/**/*.eot","/**/*.json"
-            );
+                .ignoring().antMatchers(
+                    HttpMethod.POST,
+                    authenticationPath
+                )
+                .antMatchers(HttpMethod.OPTIONS, "/**/**")
+                .and().ignoring()
+                .antMatchers(
+                    HttpMethod.GET,
+                    "/" //Other Stuff You want to Ignore
+                )
+                .and().ignoring()
+                .antMatchers("/isAppRunning") // check for app monitoring
+                .and().ignoring()
+                .antMatchers(
+                        "/**/*.html","/**/*.css","/**/*.js","/**/*.png","/**/*.jpg","/**/*.gif",
+                        "/**/*.svg","/**/*.ico","/**/*.ttf","/**/*.woff","/**/*.woff2","/**/*.otf","/**/*.eot","/**/*.json"
+                );
     }
 }

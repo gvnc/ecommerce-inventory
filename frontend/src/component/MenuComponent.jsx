@@ -10,11 +10,15 @@ class MenuComponent extends Component {
             <header>
                 <nav className="navbar navbar-expand-md navbar-dark bg-dark">
                     <div className="navbar-brand">market place manager</div>
-                    <ul className="navbar-nav">
-                        {isUserLoggedIn && <li><Link className="nav-link" to="/status">Status</Link></li>}
-                        {isUserLoggedIn && <li><Link className="nav-link" to="/products">Products</Link></li>}
-                        {isUserLoggedIn && <li><Link className="nav-link" to="/orderMonitoring">Order Monitoring</Link></li>}
-                    </ul>
+                    {
+                        isUserLoggedIn &&
+                        <ul className="navbar-nav">
+                            <li><Link className="nav-link" to="/status">Status</Link></li>
+                            <li><Link className="nav-link" to="/products">Products</Link></li>
+                            <li><Link className="nav-link" to="/purchaseOrders">Purchase Orders</Link></li>
+                            <li><Link className="nav-link" to="/orderMonitoring">Order Monitoring</Link></li>
+                        </ul>
+                    }
                     <ul className="navbar-nav navbar-collapse justify-content-end">
                         {isUserLoggedIn && <li><Link className="nav-link" to="/logout" onClick={AuthenticationService.logout}>Logout</Link></li>}
                     </ul>
