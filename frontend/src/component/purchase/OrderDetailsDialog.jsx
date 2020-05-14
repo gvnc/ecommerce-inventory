@@ -62,7 +62,7 @@ class OrderDetailsDialog extends Component {
         let columnCss = {whiteSpace: 'nowrap', textAlign:'center'};
 
         let productsDialogHeader = <div className="p-grid p-fluid">
-            <div className="p-col-4">
+            <div className="p-col-2">
                 <Button label="Add Product" onClick={() => this.setState({displayProductSelect: true})}/>
             </div>
             <div className="p-col-8"></div>
@@ -90,16 +90,16 @@ class OrderDetailsDialog extends Component {
                                     </Fieldset>
                                 </div>
                                 <div className="p-col-12">
-                                    <div className="p-grid p-fluid">
-                                        <div className="p-col-8">
-                                            <DataTable value={this.props.orderProducts} paginator={false} header={productsDialogHeader}
-                                                       selectionMode="single">
-                                                <Column bodyStyle={columnCss} field="sku" header="SKU"/>
-                                                <Column bodyStyle={columnCss} field="name" header="Name"/>
-                                                <Column bodyStyle={columnCss} field="costPrice" header="Cost Price"/>
-                                                <Column bodyStyle={columnCss} field="orderedQuantity" header="Ordered Quantity"/>
-                                            </DataTable>
-                                        </div>
+                                    <DataTable value={this.props.orderProducts} paginator={false} header={productsDialogHeader}
+                                               selectionMode="single">
+                                        <Column bodyStyle={columnCss} field="sku" header="SKU" style={{width:'170px'}}/>
+                                        <Column bodyStyle={columnCss} field="name" header="Name"/>
+                                        <Column bodyStyle={columnCss} field="costPrice" header="Cost Price" style={{width:'200px'}}/>
+                                        <Column bodyStyle={columnCss} field="orderedQuantity" header="Ordered Quantity" style={{width:'200px'}}/>
+                                    </DataTable>
+                                </div>
+                                <div className="p-col-12">
+                                    <div className="p-grid p-justify-end">
                                         <div className="p-col-4">
                                             <Card>
                                                 <div className="p-grid p-fluid">

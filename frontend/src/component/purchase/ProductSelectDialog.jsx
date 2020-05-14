@@ -5,6 +5,8 @@ import {Button} from "primereact/button";
 import {DataTable} from "primereact/datatable";
 import {Column} from "primereact/column";
 import {getProductList} from "../../store/actions/productActions";
+import {addSelectedPurchaseProducts} from "../../store/actions/purchaseActions"
+import ProductService from "../../service/ProductService";
 
 class ProductSelectDialog extends Component {
 
@@ -14,6 +16,11 @@ class ProductSelectDialog extends Component {
         this.onProductSelect = this.onProductSelect.bind(this);
         this.resetInputs = this.resetInputs.bind(this);
         this.addButtonBody = this.addButtonBody.bind(this);
+        this.addSingleProduct = this.addSingleProduct.bind(this);
+        this.addSelectedProducts = this.addSelectedProducts.bind(this);
+        this.convertProduct = this.convertProduct.bind(this);
+        this.getProductDetailsAndAdd = this.getProductDetailsAndAdd.bind(this);
+        this.getSelectedProductDetailsAndAdd = this.getSelectedProductDetailsAndAdd.bind(this);
 
         this.state = {
             selectedProducts: []
@@ -41,16 +48,70 @@ class ProductSelectDialog extends Component {
         this.resetInputs();
     }
 
+    convertProduct(inventoryProduct){
+        // modify inventory product to purchase product model
+        let costPrice = 0;
+        if(inventoryProduct.bigCommerceProduct !== null)
+            costPrice = inventoryProduct.bigCommerceProduct.cost_price;
+        else if(inventoryProduct.bigCommerceFSProduct !== null)
+            costPrice = inventoryProduct.bigCommerceFSProduct.cost_price;
+        else if(inventoryProduct.vendHQProduct !== null)
+            costPrice = inventoryProduct.vendHQProduct.supply_price;
+
+        return {
+            sku: inventoryProduct.sku,
+            name: inventoryProduct.name,
+            costPrice: costPrice,
+            orderedQuantity: 0,
+            receivedQuantity: 0
+        }
+    }
+
+    getProductDetailsAndAdd(product){
+        ProductService.getProductBySku(product.sku, this.addSingleProduct);
+    }
+
+    addSingleProduct(product){
+        if( product !== undefined && product !== null) {
+            let productsArray = [];
+            let poProduct = this.convertProduct(product);
+            productsArray.push(poProduct);
+
+            this.props.addSelectedPurchaseProducts(productsArray);
+        }
+    }
+
+    getSelectedProductDetailsAndAdd(product){
+        if(this.state.selectedProducts.length > 0){
+            let skuList = "";
+            this.state.selectedProducts.forEach((p) => skuList = skuList + "," + p.sku );
+            ProductService.getProductsBySkuList(skuList.substring(1), this.addSelectedProducts);
+        }
+    }
+
+    addSelectedProducts(productList){
+        if(productList !== undefined && productList !== null) {
+            let productsArray = [];
+            let convertProduct = this.convertProduct;
+            productList.forEach(function (product) {
+                let poProduct = convertProduct(product);
+                productsArray.push(poProduct);
+            })
+            if (productsArray.length > 0) {
+                this.props.addSelectedPurchaseProducts(productsArray);
+            }
+        }
+    }
+
     addButtonBody(rowData) {
         return (
-            <Button type="button" icon="pi pi-plus" className="p-button-secondary" onClick={() => console.log(rowData.sku)}></Button>
+            <Button type="button" icon="pi pi-plus" className="p-button-secondary" onClick={() => this.getProductDetailsAndAdd(rowData)}></Button>
         );
     }
 
     render() {
-        console.log("off render:" + this.props.productList.length);
         let dialogFooter =  <div className="ui-dialog-buttonpane p-clearfix">
-                                <Button label="Add Selected Products" onClick={this.hideDialog}/>
+                                <Button label="Add Selected Products" onClick={this.getSelectedProductDetailsAndAdd}/>
                             </div>;
 
         return (
@@ -76,13 +137,15 @@ class ProductSelectDialog extends Component {
 const mapStateToProps = state => {
     return {
         productsRequested: state.product.productsRequested,
-        productList: state.product.productList
+        productList: state.product.productList,
+        selectedOrderProducts: state.purchase.selectedOrderProducts
     };
 };
 
 const mapDispatchToProps = dispatch => {
     return {
-        getProductList: () => dispatch(getProductList())
+        getProductList: () => dispatch(getProductList()),
+        addSelectedPurchaseProducts: (productsArray) => dispatch(addSelectedPurchaseProducts(productsArray))
     };
 };
 

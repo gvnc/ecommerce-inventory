@@ -1,8 +1,7 @@
-import { GET_PURCHASE_ORDERS, CREATE_PURCHASE_ORDER} from '../actionTypes';
+import {GET_PURCHASE_ORDERS, CREATE_PURCHASE_ORDER, ADD_SELECTED_PURCHASE_PRODUCTS} from '../actionTypes';
 
 import {API_URL} from '../../apiConfig';
 import axios from 'axios'
-import {completeCommitPriceChange} from "./productActions";
 
 export const getPurchaseOrders = () => {
 
@@ -54,5 +53,12 @@ export const createPurchaseOrderCompleted = (value) => {
     return {
         type: CREATE_PURCHASE_ORDER,
         order: value
+    };
+};
+
+export const addSelectedPurchaseProducts = (productsArray) => {
+    return {
+        type: ADD_SELECTED_PURCHASE_PRODUCTS,
+        productsToAdd: productsArray
     };
 };

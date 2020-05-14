@@ -1,5 +1,7 @@
 package ecommerce.app.backend.util;
 
+import lombok.Getter;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -8,6 +10,8 @@ import java.util.TimeZone;
 public class Utils {
 
     private final static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm", Locale.CANADA);
+
+    @Getter
     private final static TimeZone timezone = TimeZone.getTimeZone("GMT-4");
 
     public static String getNowAsString(){

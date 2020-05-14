@@ -12,7 +12,9 @@ import ecommerce.app.backend.vendhq.products.VendHQInventory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 @CrossOrigin(origins = { "http://localhost:3000", "http://localhost:4200" })
 @RestController
@@ -86,6 +88,19 @@ public class BackendController {
         }
 
         return detailedProduct;
+    }
+
+    @GetMapping("/products/skuList")
+    public List<DetailedProduct> getDetailedProductsBySkuList(@RequestParam String skuList) {
+        List<DetailedProduct> productList = new ArrayList();
+        StringTokenizer tokenizer = new StringTokenizer(skuList, ",");
+        while (tokenizer.hasMoreTokens()){
+            String sku = tokenizer.nextToken();
+            DetailedProduct detailedProduct = getDetailedProduct(sku);
+            if(detailedProduct != null)
+                productList.add(detailedProduct);
+        }
+        return productList;
     }
 
     @PostMapping("/products/{productSku}/changePrice")

@@ -19,7 +19,7 @@ public class PurchaseOrderProduct {
     private String sku;
 
     @Getter @Setter
-    private Float price;
+    private Float costPrice;
 
     @Getter @Setter
     private Integer orderedQuantity;

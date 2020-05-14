@@ -1,5 +1,7 @@
 package ecommerce.app.backend.repository.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import ecommerce.app.backend.util.Utils;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,6 +24,7 @@ public class PurchaseOrder {
     @Getter @Setter
     private String createdBy;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     @Getter @Setter
     private Date createDate;
 

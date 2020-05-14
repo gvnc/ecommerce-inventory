@@ -1,4 +1,4 @@
-import { GET_PURCHASE_ORDERS, CREATE_PURCHASE_ORDER } from '../actionTypes';
+import { GET_PURCHASE_ORDERS, CREATE_PURCHASE_ORDER, ADD_SELECTED_PURCHASE_PRODUCTS } from '../actionTypes';
 
 const initialState = {
     orders: [],
@@ -22,6 +22,21 @@ const reducer = (state = initialState, action) => {
                 ...state,
                 orders: orders,
                 selectedOrder: order
+            };
+        case ADD_SELECTED_PURCHASE_PRODUCTS:
+            let productsToAdd = action.productsToAdd;
+            let selectedOrderProducts = state.selectedOrderProducts;
+            let newProducts = Array.from(selectedOrderProducts);
+
+            productsToAdd.forEach(function (product) {
+                let productExistAlready = newProducts.some(arrayItem => product.sku == arrayItem.sku);
+                if(productExistAlready === false){
+                    newProducts.push(product);
+                }
+            })
+            return {
+                ...state,
+                selectedOrderProducts: newProducts
             };
         default:
             return state;

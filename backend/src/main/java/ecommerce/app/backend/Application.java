@@ -1,6 +1,8 @@
 package ecommerce.app.backend;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ecommerce.app.backend.sync.SyncProductsService;
+import ecommerce.app.backend.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -24,6 +26,11 @@ public class Application implements CommandLineRunner {
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
+	}
+
+	@Autowired
+	public void configureJackson(ObjectMapper objectMapper) {
+		objectMapper.setTimeZone(Utils.getTimezone());
 	}
 
 	@Override
