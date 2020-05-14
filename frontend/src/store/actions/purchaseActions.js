@@ -1,4 +1,10 @@
-import {GET_PURCHASE_ORDERS, CREATE_PURCHASE_ORDER, ADD_SELECTED_PURCHASE_PRODUCTS} from '../actionTypes';
+import {
+    GET_PURCHASE_ORDERS,
+    CREATE_PURCHASE_ORDER,
+    ADD_SELECTED_PURCHASE_PRODUCTS,
+    UPDATE_SELECTED_PURCHASE_ORDER,
+    UPDATE_SELECTED_PO_PRODUCT
+} from '../actionTypes';
 
 import {API_URL} from '../../apiConfig';
 import axios from 'axios'
@@ -60,5 +66,23 @@ export const addSelectedPurchaseProducts = (productsArray) => {
     return {
         type: ADD_SELECTED_PURCHASE_PRODUCTS,
         productsToAdd: productsArray
+    };
+};
+
+export const updateSelectedPurchaseOrder = (id, propertyName, propertyValue) => {
+    return {
+        type: UPDATE_SELECTED_PURCHASE_ORDER,
+        id: id,
+        propertyName: propertyName,
+        propertyValue: propertyValue
+    };
+};
+
+export const updateSelectedPOProduct = (sku, propertyName, propertyValue) => {
+    return {
+        type: UPDATE_SELECTED_PO_PRODUCT,
+        sku: sku,
+        propertyName: propertyName,
+        propertyValue: propertyValue
     };
 };

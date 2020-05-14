@@ -1,4 +1,10 @@
-import { GET_PURCHASE_ORDERS, CREATE_PURCHASE_ORDER, ADD_SELECTED_PURCHASE_PRODUCTS } from '../actionTypes';
+import {
+    GET_PURCHASE_ORDERS,
+    CREATE_PURCHASE_ORDER,
+    ADD_SELECTED_PURCHASE_PRODUCTS,
+    UPDATE_SELECTED_PURCHASE_ORDER,
+    UPDATE_SELECTED_PO_PRODUCT
+} from '../actionTypes';
 
 const initialState = {
     orders: [],
@@ -25,9 +31,11 @@ const reducer = (state = initialState, action) => {
             };
         case ADD_SELECTED_PURCHASE_PRODUCTS:
             let productsToAdd = action.productsToAdd;
-            let selectedOrderProducts = state.selectedOrderProducts;
-            let newProducts = Array.from(selectedOrderProducts);
 
+            // create a new array to mutate the state
+            let newProducts = Array.from(state.selectedOrderProducts);
+
+            // only add products if it not already added
             productsToAdd.forEach(function (product) {
                 let productExistAlready = newProducts.some(arrayItem => product.sku == arrayItem.sku);
                 if(productExistAlready === false){
@@ -37,6 +45,48 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 selectedOrderProducts: newProducts
+            };
+        case UPDATE_SELECTED_PURCHASE_ORDER:
+            let id = action.id;
+            let propertyName = action.propertyName;
+            let propertyValue = action.propertyValue;
+
+            order = null;
+            orders = state.orders.map((item, index) =>{
+               if(item.id === id){
+                   order = {
+                       ...item,
+                       [propertyName]: propertyValue
+                   }
+                   return order;
+               }
+               return item;
+            });
+            return {
+                ...state,
+                orders: orders,
+                selectedOrder: order
+            };
+        case UPDATE_SELECTED_PO_PRODUCT:
+            let sku = action.sku;
+            propertyName = action.propertyName;
+            propertyValue = action.propertyValue;
+
+            let product = null;
+            let products = state.selectedOrderProducts.map((item, index) =>{
+                if(item.sku === sku){
+                    product = {
+                        ...item,
+                        [propertyName]: propertyValue
+                    }
+                    return product;
+                }
+                return item;
+            });
+
+            return {
+                ...state,
+                selectedOrderProducts: products
             };
         default:
             return state;
