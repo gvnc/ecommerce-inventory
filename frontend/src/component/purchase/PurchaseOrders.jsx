@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from "react-redux";
-import { getPurchaseOrders, getPurchaseOrderById } from "../../store/actions/purchaseActions"
+import { getPurchaseOrders, getPurchaseOrderById} from "../../store/actions/purchaseActions"
 import {DataTable} from "primereact/datatable";
 import {Column} from "primereact/column";
 import {Growl} from "primereact/growl";

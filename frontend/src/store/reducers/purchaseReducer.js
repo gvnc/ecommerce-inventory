@@ -39,7 +39,7 @@ const reducer = (state = initialState, action) => {
 
             // only add products if it not already added
             productsToAdd.forEach(function (product) {
-                let productExistAlready = newProducts.some(arrayItem => product.sku == arrayItem.sku);
+                let productExistAlready = newProducts.some(arrayItem => product.sku === arrayItem.sku);
                 if(productExistAlready === false){
                     newProducts.push(product);
                 }

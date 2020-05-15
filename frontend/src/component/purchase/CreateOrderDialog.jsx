@@ -3,8 +3,7 @@ import {connect} from "react-redux";
 import {Dialog} from "primereact/dialog";
 import {InputText} from "primereact/inputtext";
 import {Button} from "primereact/button";
-import {createPurchaseOrder} from "../../store/actions/purchaseActions"
-import {getDetailedProduct} from "../../store/actions/productActions";
+import {createPurchaseOrder} from "../../store/actions/purchaseActions";
 
 class CreateOrderDialog extends Component {
 

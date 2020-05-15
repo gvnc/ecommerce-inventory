@@ -105,9 +105,8 @@ export const savePurchaseOrder = (purchaseOrder, productList, successHandler, er
             })
             .then(response => {
                 if(response) {
-                    if(response.data === "success")
-                        successHandler("Purchase order saved.");
-                    else errorHandler("Failed to save purchase order.");
+                    dispatch(setPurchaseOrder(response.data));
+                    successHandler("Purchase order saved.");
                 } else{
                     errorHandler("Failed to save purchase order.");
                 }
@@ -149,3 +148,48 @@ export const deleteSelectedProduct = (sku) => {
         sku: sku
     };
 };
+
+export const deletePurchaseOrderProduct = (orderId, product, successHandler, errorHandler) => {
+
+    return (dispatch) => {
+        let requestUrl = API_URL + "/purchase/orders/" + orderId + "/products/" + product.id;
+        axios.delete(requestUrl)
+            .catch(err => {
+                console.log("error:" + err);
+            })
+            .then(response => {
+                if(response && response.data === "success"){
+                    dispatch(deleteSelectedProduct(product.sku));
+                    successHandler("Product deleted.");
+                } else {
+                    errorHandler("Failed to delete product.");
+                }
+            })
+    };
+}
+
+
+export const submitPurchaseOrder = (purchaseOrder, productList, successHandler, errorHandler) => {
+
+    return (dispatch) => {
+        let orderId = purchaseOrder.id;
+        let requestBody = {
+            purchaseOrder: purchaseOrder,
+            productList: productList
+        }
+
+        let requestUrl = API_URL + "/purchase/orders/" + orderId + "/submit";
+        axios.post(requestUrl, requestBody)
+            .catch(err => {
+                console.log("error:" + err);
+            })
+            .then(response => {
+                if(response) {
+                    dispatch(setPurchaseOrder(response.data));
+                    successHandler("Purchase order submitted.");
+                } else{
+                    errorHandler("Failed to submit purchase order.");
+                }
+            })
+    };
+}

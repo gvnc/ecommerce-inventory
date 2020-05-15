@@ -1,5 +1,7 @@
 package ecommerce.app.backend.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import ecommerce.app.backend.model.PurchaseOrderRequest;
 import ecommerce.app.backend.repository.PurchaseOrderProductRepository;
 import ecommerce.app.backend.repository.PurchaseOrderRepository;
@@ -62,7 +64,7 @@ public class PurchaseOrderController {
     }
 
     @PostMapping("/orders/{orderId}/save")
-    public String savePurchaseOrder(@PathVariable Integer orderId, @RequestBody PurchaseOrderRequest purchaseOrderRequest) {
+    public PurchaseOrderRequest savePurchaseOrder(@PathVariable Integer orderId, @RequestBody PurchaseOrderRequest purchaseOrderRequest) {
         try{
             PurchaseOrder purchaseOrder = purchaseOrderRequest.getPurchaseOrder();
             if(purchaseOrder != null){
@@ -70,10 +72,10 @@ public class PurchaseOrderController {
             }
             purchaseOrderRequest.getProductList().stream().forEach(purchaseOrderProduct -> purchaseOrderProduct.setPurchaseOrder(purchaseOrder));
             purchaseOrderProductRepository.saveAll(purchaseOrderRequest.getProductList());
-            return OperationConstants.SUCCESS;
+            return purchaseOrderRequest;
         } catch (Exception e){
             log.error("Failed to update purchase order by id " + orderId, e);
-            return OperationConstants.FAIL;
+            return null;
         }
     }
 
@@ -91,6 +93,31 @@ public class PurchaseOrderController {
             return po;
         } catch (Exception e){
             log.error("Failed to get purchase order by id " + orderId, e);
+        }
+        return null;
+    }
+
+    @DeleteMapping("/orders/{orderId}/products/{productId}")
+    public String deletePurchaseOrderProduct(@PathVariable Integer orderId, @PathVariable Integer productId) {
+        try{
+            purchaseOrderProductRepository.deleteById(productId);
+            return OperationConstants.SUCCESS;
+        } catch (Exception e){
+            log.error("Failed to delete purchase order product by order id " + orderId + " and product id " + productId, e);
+            return OperationConstants.FAIL;
+        }
+    }
+
+    @PostMapping("/orders/{orderId}/submit")
+    public PurchaseOrderRequest submitPurchaseOrderStatus(@PathVariable Integer orderId, @RequestBody PurchaseOrderRequest purchaseOrderRequest) {
+        try{
+            PurchaseOrder purchaseOrder = purchaseOrderRequest.getPurchaseOrder();
+            if(purchaseOrder != null){
+                purchaseOrder.setStatus(PurchaseOrderConstants.SUBMITTED);
+                return savePurchaseOrder(orderId, purchaseOrderRequest);
+            }
+        } catch (Exception e){
+            log.error("Failed to submit purchase order by id " + orderId, e);
         }
         return null;
     }
