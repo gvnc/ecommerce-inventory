@@ -1,5 +1,6 @@
 package ecommerce.app.backend.controller;
 
+import ecommerce.app.backend.model.PurchaseOrderRequest;
 import ecommerce.app.backend.repository.PurchaseOrderProductRepository;
 import ecommerce.app.backend.repository.PurchaseOrderRepository;
 import ecommerce.app.backend.repository.model.PurchaseOrder;
@@ -49,7 +50,7 @@ public class PurchaseOrderController {
     }
 
     @PostMapping("/orders/create")
-    public PurchaseOrder savePurchaseOrder(@RequestBody PurchaseOrder purchaseOrder) {
+    public PurchaseOrder createPurchaseOrder(@RequestBody PurchaseOrder purchaseOrder) {
         try{
             purchaseOrder.setStatus(PurchaseOrderConstants.DRAFT);
             purchaseOrder.setCreateDate(new Date());
@@ -58,5 +59,39 @@ public class PurchaseOrderController {
             log.error("Failed to save purchase order.", e);
             return null;
         }
+    }
+
+    @PostMapping("/orders/{orderId}/save")
+    public String savePurchaseOrder(@PathVariable Integer orderId, @RequestBody PurchaseOrderRequest purchaseOrderRequest) {
+        try{
+            PurchaseOrder purchaseOrder = purchaseOrderRequest.getPurchaseOrder();
+            if(purchaseOrder != null){
+                purchaseOrderRepository.save(purchaseOrder);
+            }
+            purchaseOrderRequest.getProductList().stream().forEach(purchaseOrderProduct -> purchaseOrderProduct.setPurchaseOrder(purchaseOrder));
+            purchaseOrderProductRepository.saveAll(purchaseOrderRequest.getProductList());
+            return OperationConstants.SUCCESS;
+        } catch (Exception e){
+            log.error("Failed to update purchase order by id " + orderId, e);
+            return OperationConstants.FAIL;
+        }
+    }
+
+    @GetMapping("/orders/{orderId}")
+    public PurchaseOrderRequest getPurchaseOrder(@PathVariable Integer orderId) {
+        try{
+            PurchaseOrderRequest po = new PurchaseOrderRequest();
+
+            PurchaseOrder order = purchaseOrderRepository.findById(orderId).orElse(null);
+            po.setPurchaseOrder(order);
+
+            List<PurchaseOrderProduct> productList = purchaseOrderProductRepository.findAllByPurchaseOrder_Id(orderId);
+            po.setProductList(productList);
+
+            return po;
+        } catch (Exception e){
+            log.error("Failed to get purchase order by id " + orderId, e);
+        }
+        return null;
     }
 }

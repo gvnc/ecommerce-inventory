@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import {connect} from "react-redux";
 import {Dialog} from "primereact/dialog";
 import {Button} from "primereact/button";
-import {updateSelectedPurchaseOrder, updateSelectedPOProduct} from "../../store/actions/purchaseActions";
+import {updateSelectedPurchaseOrder, updateSelectedPOProduct, savePurchaseOrder, setPurchaseOrder, deleteSelectedProduct} from "../../store/actions/purchaseActions";
 import {Fieldset} from "primereact/fieldset";
 import {Card} from "primereact/card";
 import {Column} from "primereact/column";
@@ -15,16 +15,15 @@ class OrderDetailsDialog extends Component {
     constructor() {
         super();
         this.hideDialog = this.hideDialog.bind(this);
-        this.onSave = this.onSave.bind(this);
+        this.savePurchaseOrder = this.savePurchaseOrder.bind(this);
         this.resetInputs = this.resetInputs.bind(this);
         this.successHandler = this.successHandler.bind(this);
         this.errorHandler = this.errorHandler.bind(this);
 
-
-
         this.onEditorValueChange = this.onEditorValueChange.bind(this);
         this.inputTextEditor = this.inputTextEditor.bind(this);
         this.landedCostEditor = this.landedCostEditor.bind(this);
+        this.deleteButtonBody = this.deleteButtonBody.bind(this);
 
         this.state = {
             displayProductSelect: false
@@ -37,28 +36,23 @@ class OrderDetailsDialog extends Component {
         });
     }
 
-    onSave(){
-        let purchaseOrder = {
-            createdBy: "garner"
-        }
-        //this.props.createPurchaseOrder(purchaseOrder, this.successHandler, this.errorHandler);
+    savePurchaseOrder(){
+        this.props.savePurchaseOrder(this.props.order, this.props.orderProducts, this.successHandler, this.errorHandler);
     }
 
-    errorHandler(){
-        console.log("error handler ");
+    errorHandler(message){
+        this.props.growl.show({severity: 'error', summary: 'Error', detail: message});
     }
 
-    successHandler(){
-        this.resetInputs();
-        //this.props.createOrderSuccessful();
+    successHandler(message){
+        this.props.growl.show({severity: 'success', summary: 'Success', detail: message});
     }
 
     hideDialog(){
         this.props.onHideEvent();
-        this.resetInputs();
+        this.props.setPurchaseOrder(null);
     }
 
-    /* Cell Editing */
     onEditorValueChange(props, value) {
         this.props.updateSelectedPOProduct(props.rowData.sku, props.field, value);
     }
@@ -73,6 +67,12 @@ class OrderDetailsDialog extends Component {
     landedCostEditor(rowData, expensePerProduct) {
         let landedPrice = Number(rowData.costPrice) + Number(expensePerProduct);
         return <span>{landedPrice}</span>;
+    }
+
+    deleteButtonBody(rowData) {
+        return (
+            <Button type="button" icon="pi pi-minus" className="p-button-secondary" onClick={() => this.props.deleteSelectedProduct(rowData.sku)}></Button>
+        );
     }
 
     render() {
@@ -98,9 +98,11 @@ class OrderDetailsDialog extends Component {
 
         let orderTotal = totalProductCost + totalExpenses;
 
-        let dialogFooter = <div className="ui-dialog-buttonpane p-clearfix">
-            <Button label="Close" icon="pi pi-times" onClick={this.hideDialog}/>
-        </div>;
+        let dialogFooter =  <div className="ui-dialog-buttonpane p-clearfix">
+                                <Button label="Submit" icon="pi pi-check" onClick={this.hideDialog}/>
+                                <Button label="Save" icon="pi pi-pencil" onClick={this.savePurchaseOrder}/>
+                                <Button label="Close" icon="pi pi-times" onClick={this.hideDialog}/>
+                            </div>;
 
         let columnCss = {whiteSpace: 'nowrap', textAlign:'center'};
 
@@ -143,6 +145,7 @@ class OrderDetailsDialog extends Component {
                                         <Column bodyStyle={columnCss} field="costPrice" header="Cost Price" style={{width:'100px'}} editor={(props) => this.inputTextEditor(props, 'costPrice')} />
                                         <Column bodyStyle={columnCss} header="Landed Price" style={{width:'100px'}} body={(rowData) => this.landedCostEditor(rowData, expensePerProduct)} />
                                         <Column bodyStyle={columnCss} field="orderedQuantity" header="Ordered Quantity" style={{width:'100px'}} editor={(props) => this.inputTextEditor(props, 'orderedQuantity')} />
+                                        <Column body={this.deleteButtonBody} headerStyle={{width: '4em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}}   />
                                     </DataTable>
                                 </div>
                                 <div className="p-col-12">
@@ -198,7 +201,10 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
     return {
         updateSelectedPurchaseOrder: (id, propertyName, propertyValue) => dispatch(updateSelectedPurchaseOrder(id, propertyName, propertyValue)),
-        updateSelectedPOProduct: (sku, propertyName, propertyValue) => dispatch(updateSelectedPOProduct(sku, propertyName, propertyValue))
+        updateSelectedPOProduct: (sku, propertyName, propertyValue) => dispatch(updateSelectedPOProduct(sku, propertyName, propertyValue)),
+        savePurchaseOrder: (purchaseOrder, productList, successHandler, errorHandler) => dispatch(savePurchaseOrder(purchaseOrder, productList, successHandler, errorHandler)),
+        setPurchaseOrder: (data) => dispatch(setPurchaseOrder(data)),
+        deleteSelectedProduct: (sku) => dispatch(deleteSelectedProduct(sku))
     };
 };
 

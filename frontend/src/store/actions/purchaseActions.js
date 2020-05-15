@@ -3,7 +3,9 @@ import {
     CREATE_PURCHASE_ORDER,
     ADD_SELECTED_PURCHASE_PRODUCTS,
     UPDATE_SELECTED_PURCHASE_ORDER,
-    UPDATE_SELECTED_PO_PRODUCT
+    UPDATE_SELECTED_PO_PRODUCT,
+    GET_PURCHASE_ORDER_COMPLETED,
+    DELETE_SELECTED_PRODUCT
 } from '../actionTypes';
 
 import {API_URL} from '../../apiConfig';
@@ -84,5 +86,66 @@ export const updateSelectedPOProduct = (sku, propertyName, propertyValue) => {
         sku: sku,
         propertyName: propertyName,
         propertyValue: propertyValue
+    };
+};
+
+export const savePurchaseOrder = (purchaseOrder, productList, successHandler, errorHandler) => {
+
+    return (dispatch) => {
+        let orderId = purchaseOrder.id;
+        let requestBody = {
+            purchaseOrder: purchaseOrder,
+            productList: productList
+        }
+
+        let requestUrl = API_URL + "/purchase/orders/" + orderId + "/save";
+        axios.post(requestUrl, requestBody)
+            .catch(err => {
+                console.log("error:" + err);
+            })
+            .then(response => {
+                if(response) {
+                    if(response.data === "success")
+                        successHandler("Purchase order saved.");
+                    else errorHandler("Failed to save purchase order.");
+                } else{
+                    errorHandler("Failed to save purchase order.");
+                }
+            })
+    };
+}
+
+export const getPurchaseOrderById = (orderId) => {
+
+    return (dispatch) => {
+
+        let requestUrl = API_URL + "/purchase/orders/" + orderId;
+        axios.get(requestUrl)
+            .catch(err => {
+                console.log("error:" + err);
+            })
+            .then(response => {
+                if(response) {
+                    dispatch(setPurchaseOrder(response.data));
+                }
+            })
+    };
+}
+
+export const setPurchaseOrder = (data) => {
+
+    return {
+        type: GET_PURCHASE_ORDER_COMPLETED,
+        order: data !== null ? data.purchaseOrder : null,
+        orderProducts: data !== null ? data.productList : []
+    };
+};
+
+
+export const deleteSelectedProduct = (sku) => {
+
+    return {
+        type: DELETE_SELECTED_PRODUCT,
+        sku: sku
     };
 };

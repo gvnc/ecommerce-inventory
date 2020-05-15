@@ -127,7 +127,7 @@ class ProductSelectDialog extends Component {
                     <Column selectionMode="multiple" style={{width:'3em'}}/>
                     <Column field="sku" header="Product SKU" filter={true} filterPlaceholder="search sku" filterMatchMode="contains" style={{width:'170px'}} />
                     <Column field="name" header="Product Name" filter={true} filterPlaceholder="search product" filterMatchMode="contains" />
-                    <Column body={this.addButtonBody} headerStyle={{width: '4em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}}   />
+                    <Column body={this.addButtonBody} headerStyle={{width: '4em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}} />
                 </DataTable>
             </Dialog>
         )

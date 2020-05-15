@@ -3,7 +3,9 @@ import {
     CREATE_PURCHASE_ORDER,
     ADD_SELECTED_PURCHASE_PRODUCTS,
     UPDATE_SELECTED_PURCHASE_ORDER,
-    UPDATE_SELECTED_PO_PRODUCT
+    UPDATE_SELECTED_PO_PRODUCT,
+    GET_PURCHASE_ORDER_COMPLETED,
+    DELETE_SELECTED_PRODUCT
 } from '../actionTypes';
 
 const initialState = {
@@ -84,6 +86,19 @@ const reducer = (state = initialState, action) => {
                 return item;
             });
 
+            return {
+                ...state,
+                selectedOrderProducts: products
+            };
+        case GET_PURCHASE_ORDER_COMPLETED:
+            return {
+                ...state,
+                selectedOrder: action.order,
+                selectedOrderProducts: action.orderProducts
+            };
+        case DELETE_SELECTED_PRODUCT:
+            sku = action.sku;
+            products = state.selectedOrderProducts.filter( p => p.sku !== sku);
             return {
                 ...state,
                 selectedOrderProducts: products

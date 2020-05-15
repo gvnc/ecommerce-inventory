@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from "react-redux";
-import { getPurchaseOrders} from "../../store/actions/purchaseActions"
+import { getPurchaseOrders, getPurchaseOrderById } from "../../store/actions/purchaseActions"
 import {DataTable} from "primereact/datatable";
 import {Column} from "primereact/column";
 import {Growl} from "primereact/growl";
@@ -16,6 +16,7 @@ class PurchaseOrders extends Component {
         this.setGrowlMessage = this.setGrowlMessage.bind(this);
         this.createOrderSuccessful = this.createOrderSuccessful.bind(this);
         this.openOrderDetails = this.openOrderDetails.bind(this);
+        this.editButtonBody = this.editButtonBody.bind(this);
     }
 
     componentDidMount() {
@@ -30,7 +31,10 @@ class PurchaseOrders extends Component {
     }
 
     // opens new dialog to add and delete products and modify other details
-    openOrderDetails(){
+    openOrderDetails(orderId){
+        if(orderId){
+            this.props.getPurchaseOrderById(orderId);
+        }
         this.setState({
             displayDetailsDialog:true
         });
@@ -46,6 +50,12 @@ class PurchaseOrders extends Component {
             displayCreateDialog:false
         });
         this.openOrderDetails();
+    }
+
+    editButtonBody(rowData) {
+        return (
+            <Button type="button" icon="pi pi-cog" className="p-button-secondary" onClick={() => this.openOrderDetails(rowData.id)}></Button>
+        );
     }
 
     render() {
@@ -66,7 +76,6 @@ class PurchaseOrders extends Component {
                     this.props.orders &&
                     <div className="content-section implementation">
                         <DataTable value={this.props.orders} paginator={true} rows={10} header={header}
-                                   selectionMode="single"
                                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
                                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
                             <Column bodyStyle={columnCss} field="id" header="Id"/>
@@ -74,10 +83,11 @@ class PurchaseOrders extends Component {
                             <Column bodyStyle={columnCss} field="orderTotal" header="Total Price"/>
                             <Column bodyStyle={columnCss} field="createDate" header="Create Date"/>
                             <Column bodyStyle={columnCss} field="status" header="Status"/>
+                            <Column body={this.editButtonBody} headerStyle={{width: '4em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}}   />
                         </DataTable>
                         <CreateOrderDialog visibleProperty={this.state.displayCreateDialog} createOrderSuccessful={this.createOrderSuccessful}
                             onHideEvent={() => this.setState({displayCreateDialog: false})} />
-                        <OrderDetailsDialog visibleProperty={this.state.displayDetailsDialog}
+                        <OrderDetailsDialog visibleProperty={this.state.displayDetailsDialog} growl={this.growl}
                                            onHideEvent={() => this.setState({displayDetailsDialog: false})} />
 
                     </div>
@@ -95,7 +105,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        getPurchaseOrders: () => dispatch(getPurchaseOrders())
+        getPurchaseOrders: () => dispatch(getPurchaseOrders()),
+        getPurchaseOrderById: (id) => dispatch(getPurchaseOrderById(id))
     };
 };
 
