@@ -11,6 +11,7 @@ import ecommerce.app.backend.repository.model.PurchaseOrder;
 import ecommerce.app.backend.repository.model.PurchaseOrderProduct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -177,11 +178,13 @@ public class PurchaseOrderController {
         return null;
     }
 
+    @Transactional
     @DeleteMapping("/orders/{orderId}")
     public String deletePurchaseOrder(@PathVariable Integer orderId) {
         try{
             purchaseOrderProductRepository.deleteByPurchaseOrder_Id(orderId);
             purchaseOrderRepository.deleteById(orderId);
+            return OperationConstants.SUCCESS;
         } catch (Exception e){
             log.error("Failed to delete purchase order by id " + orderId, e);
         }

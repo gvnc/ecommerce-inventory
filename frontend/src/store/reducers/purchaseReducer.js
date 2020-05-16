@@ -5,7 +5,8 @@ import {
     UPDATE_SELECTED_PURCHASE_ORDER,
     UPDATE_SELECTED_PO_PRODUCT,
     GET_PURCHASE_ORDER_COMPLETED,
-    DELETE_SELECTED_PRODUCT
+    DELETE_SELECTED_PRODUCT,
+    DELETE_PURCHASE_ORDER
 } from '../actionTypes';
 
 const initialState = {
@@ -113,6 +114,14 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 selectedOrderProducts: products
+            };
+        case DELETE_PURCHASE_ORDER:
+            let orderId = action.orderId;
+            orders = state.orders.filter(item => item.id !== orderId);
+
+            return {
+                ...state,
+                orders: orders
             };
         default:
             return state;

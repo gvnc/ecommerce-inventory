@@ -52,7 +52,9 @@ class OrderDetailsDialog extends Component {
         this.setState({
             displayProductSelect: false,
             checked: false,
-            receiveList: []
+            receiveList: [],
+            displayPODeleteConfirmation: false,
+            displayPOCancelConfirmation: false
         });
     }
 
@@ -76,7 +78,16 @@ class OrderDetailsDialog extends Component {
     }
 
     submitPurchaseOrder(){
-        this.props.submitPurchaseOrder(this.props.order, this.props.orderProducts, this.successHandler, this.errorHandler);
+        if(this.props.orderProducts && this.props.orderProducts.length > 0){
+            // check all products have quantity greater than 0
+            console.log(JSON.stringify(this.props.orderProducts));
+            let quantityIndex = this.props.orderProducts.findIndex(item => item.orderedQuantity === "" || item.orderedQuantity === "0" || item.orderedQuantity === 0);
+            console.log("quantiyIndex " + quantityIndex);
+            if(quantityIndex === -1){
+                this.props.submitPurchaseOrder(this.props.order, this.props.orderProducts, this.successHandler, this.errorHandler);
+            }
+        }
+
     }
 
 
@@ -234,10 +245,20 @@ class OrderDetailsDialog extends Component {
         if(orderStatus !== 'DRAFT'){
             draftOpts['readOnly'] = 'readOnly';
         }
+
+        let submitButtonOpts = { disabled: 'disabled'};
+        if(this.props.orderProducts && this.props.orderProducts.length > 0){
+            let quantityIndex = this.props.orderProducts.findIndex(item => item.orderedQuantity === ""
+                || item.orderedQuantity === "0" || item.orderedQuantity === 0);
+            if(quantityIndex === -1){
+                submitButtonOpts = { };
+            }
+        }
+
         let dialogFooter =  <div className="ui-dialog-buttonpane p-clearfix">
                         {
                             orderStatus === 'DRAFT' &&
-                            <Button label="Submit" icon="pi pi-check" onClick={this.submitPurchaseOrder}/>
+                            <Button label="Submit" icon="pi pi-check" {...submitButtonOpts} onClick={this.submitPurchaseOrder}/>
                         }
                         {
                             orderStatus === 'DRAFT' &&
