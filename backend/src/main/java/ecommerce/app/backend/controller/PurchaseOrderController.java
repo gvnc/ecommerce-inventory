@@ -1,6 +1,8 @@
 package ecommerce.app.backend.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import ecommerce.app.backend.model.PurchaseOrderRequest;
 import ecommerce.app.backend.repository.PurchaseOrderProductRepository;
@@ -63,11 +65,42 @@ public class PurchaseOrderController {
         }
     }
 
+    private Float calculateOrderTotal(PurchaseOrder purchaseOrder, List<PurchaseOrderProduct> productList){
+        Float orderTotal = 0F;
+        if(purchaseOrder != null){
+            if(purchaseOrder.getBrokerage() == null)
+                purchaseOrder.setBrokerage(0F);
+
+            if(purchaseOrder.getDuties() == null)
+                purchaseOrder.setDuties(0F);
+
+            if(purchaseOrder.getSalesTax() == null)
+                purchaseOrder.setSalesTax(0F);
+
+            if(purchaseOrder.getShipping() == null)
+                purchaseOrder.setShipping(0F);
+
+            if(purchaseOrder.getDiscount() == null)
+                purchaseOrder.setDiscount(0F);
+
+            orderTotal = purchaseOrder.getBrokerage() + purchaseOrder.getDuties() +
+                    purchaseOrder.getSalesTax() + purchaseOrder.getShipping() - purchaseOrder.getDiscount();
+        }
+        if(productList != null){
+            for (PurchaseOrderProduct product: productList){
+                orderTotal = orderTotal + product.getOrderedQuantity() * product.getCostPrice();
+            }
+        }
+        return orderTotal;
+    }
+
     @PostMapping("/orders/{orderId}/save")
     public PurchaseOrderRequest savePurchaseOrder(@PathVariable Integer orderId, @RequestBody PurchaseOrderRequest purchaseOrderRequest) {
         try{
             PurchaseOrder purchaseOrder = purchaseOrderRequest.getPurchaseOrder();
             if(purchaseOrder != null){
+                Float orderTotal = calculateOrderTotal(purchaseOrder, purchaseOrderRequest.getProductList());
+                purchaseOrder.setOrderTotal(orderTotal);
                 purchaseOrderRepository.save(purchaseOrder);
             }
             purchaseOrderRequest.getProductList().stream().forEach(purchaseOrderProduct -> purchaseOrderProduct.setPurchaseOrder(purchaseOrder));
@@ -101,6 +134,11 @@ public class PurchaseOrderController {
     public String deletePurchaseOrderProduct(@PathVariable Integer orderId, @PathVariable Integer productId) {
         try{
             purchaseOrderProductRepository.deleteById(productId);
+
+            List<PurchaseOrderProduct> productList = purchaseOrderProductRepository.findAllByPurchaseOrder_Id(orderId);
+            PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(orderId).orElse(null);
+            Float orderTotal = calculateOrderTotal(purchaseOrder, productList);
+            purchaseOrder.setOrderTotal(orderTotal);
             return OperationConstants.SUCCESS;
         } catch (Exception e){
             log.error("Failed to delete purchase order product by order id " + orderId + " and product id " + productId, e);
@@ -118,6 +156,50 @@ public class PurchaseOrderController {
             }
         } catch (Exception e){
             log.error("Failed to submit purchase order by id " + orderId, e);
+        }
+        return null;
+    }
+
+    @PostMapping("/orders/{orderId}/receive")
+    public PurchaseOrderRequest receivePurchaseProducts(@PathVariable Integer orderId, @RequestBody ObjectNode requestBody) {
+        try{
+            // get products first
+            List<PurchaseOrderProduct> productList = purchaseOrderProductRepository.findAllByPurchaseOrder_Id(orderId);
+
+            // set received products
+            ArrayNode receiveArrayNode = requestBody.withArray("receiveList");
+            for(JsonNode receiveNode:receiveArrayNode){
+                String sku = receiveNode.get("sku").textValue();
+                Integer receivedQuantity = receiveNode.get("receivedQuantity").asInt();
+                PurchaseOrderProduct purchaseOrderProduct = productList.stream().filter( p -> p.getSku().equals(sku)).findFirst().orElse(null);
+                if(purchaseOrderProduct != null && receivedQuantity > 0) {
+                    purchaseOrderProduct.setReceivedQuantity(purchaseOrderProduct.getReceivedQuantity() + receivedQuantity);
+                    purchaseOrderProduct.setRemainingQuantity(purchaseOrderProduct.getOrderedQuantity() - purchaseOrderProduct.getReceivedQuantity());
+                }
+            }
+
+            // set purchase order status
+            PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(orderId).orElse(null);
+            if(purchaseOrder != null){
+                if(productList != null) {
+                    boolean remainingFound = productList.stream().anyMatch(purchaseOrderProduct -> purchaseOrderProduct.getRemainingQuantity() > 0);
+                    boolean receivedFound = productList.stream().anyMatch(purchaseOrderProduct -> purchaseOrderProduct.getReceivedQuantity() > 0);
+
+                    if (remainingFound == false) {
+                        purchaseOrder.setStatus(PurchaseOrderConstants.COMPLETED);
+                    } else if (receivedFound == true) {
+                        purchaseOrder.setStatus(PurchaseOrderConstants.PARTIAL_RECEIVED);
+                    }
+                }
+            }
+
+            // save changes
+            PurchaseOrderRequest purchaseOrderRequest = new PurchaseOrderRequest();
+            purchaseOrderRequest.setPurchaseOrder(purchaseOrder);
+            purchaseOrderRequest.setProductList(productList);
+            return savePurchaseOrder(orderId, purchaseOrderRequest);
+        } catch (Exception e){
+            log.error("Failed to receive products by order id " + orderId, e);
         }
         return null;
     }

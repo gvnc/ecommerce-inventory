@@ -4,7 +4,7 @@ import {Dialog} from "primereact/dialog";
 import {Button} from "primereact/button";
 import {updateSelectedPurchaseOrder, updateSelectedPOProduct, savePurchaseOrder,
     setPurchaseOrder, deleteSelectedProduct, deletePurchaseOrderProduct,
-    submitPurchaseOrder } from "../../store/actions/purchaseActions";
+    submitPurchaseOrder, receivePurchaseProducts } from "../../store/actions/purchaseActions";
 import {Fieldset} from "primereact/fieldset";
 import {Card} from "primereact/card";
 import {Column} from "primereact/column";
@@ -12,6 +12,7 @@ import {DataTable} from "primereact/datatable";
 import ProductSelectDialog from "./ProductSelectDialog";
 import {InputText} from "primereact/inputtext";
 import {Checkbox} from 'primereact/checkbox';
+import ConfirmationDialog from "../ConfirmationDialog";
 
 class OrderDetailsDialog extends Component {
 
@@ -29,16 +30,25 @@ class OrderDetailsDialog extends Component {
         this.deleteButtonBody = this.deleteButtonBody.bind(this);
         this.deleteProductFromList = this.deleteProductFromList.bind(this);
         this.submitPurchaseOrder = this.submitPurchaseOrder.bind(this);
-        this.submitInputTextEditor = this.submitInputTextEditor.bind(this);
+        this.receiveInputText = this.receiveInputText.bind(this);
+        this.receiveAllCheckEvent = this.receiveAllCheckEvent.bind(this);
+        this.setReceiveValue = this.setReceiveValue.bind(this);
+        this.receiveProducts = this.receiveProducts.bind(this);
 
         this.state = {
-            displayProductSelect: false
+            displayProductSelect: false,
+            checked: false,
+            receiveList: [],
+            displayPODeleteConfirmation: false,
+            displayPOCancelConfirmation: false
         }
     }
 
     resetInputs(){
         this.setState({
-            displayProductSelect: false
+            displayProductSelect: false,
+            checked: false,
+            receiveList: []
         });
     }
 
@@ -46,9 +56,26 @@ class OrderDetailsDialog extends Component {
         this.props.savePurchaseOrder(this.props.order, this.props.orderProducts, this.successHandler, this.errorHandler);
     }
 
+    receiveProducts(){
+        this.props.receivePurchaseProducts(this.props.order.id, this.state.receiveList, this.successHandler, this.errorHandler);
+        let receiveList = [];
+        this.props.orderProducts.forEach(function(p){
+            receiveList.push({
+                sku: p.sku,
+                receivedQuantity: "0"
+            });
+        });
+        this.setState({
+            receiveList: receiveList,
+            checked: false
+        });
+    }
+
+
     submitPurchaseOrder(){
         this.props.submitPurchaseOrder(this.props.order, this.props.orderProducts, this.successHandler, this.errorHandler);
     }
+
 
     errorHandler(message){
         this.props.growl.show({severity: 'error', summary: 'Error', detail: message});
@@ -60,10 +87,21 @@ class OrderDetailsDialog extends Component {
 
     hideDialog(){
         this.props.onHideEvent();
+        this.resetInputs();
         this.props.setPurchaseOrder(null);
     }
 
     onEditorValueChange(props, value) {
+        if(props.field === "receivedQuantity"){
+            if(Number(value) > Number(props.rowData.remainingQuantity))
+                return;
+            let remainingQuantity = Number(props.rowData.remainingQuantity) - Number(value);
+            this.props.updateSelectedPOProduct(props.rowData.sku, "remainingQuantity", remainingQuantity);
+        }
+
+        if(props.field === "orderedQuantity")
+            this.props.updateSelectedPOProduct(props.rowData.sku, "remainingQuantity", value);
+
         this.props.updateSelectedPOProduct(props.rowData.sku, props.field, value);
     }
 
@@ -79,10 +117,38 @@ class OrderDetailsDialog extends Component {
             return <InputText type="text" value={props.rowData[field]} onChange={(e) => this.onEditorValueChange(props, e.target.value)} keyfilter = "int" />;
     }
 
-    submitInputTextEditor(props, field) {
-        return <InputText type="text" value={props.rowData[field]} onChange={(e) => this.onEditorValueChange(props, e.target.value)} keyfilter = "int" />;
+    setReceiveValue(sku, remainingQuantity, receivedQuantity){
+        if(Number(receivedQuantity) > Number(remainingQuantity))
+            return;
+
+        let receiveItem = this.state.receiveList.find(item => item.sku === sku);
+        if(receiveItem) {
+            let receiveList = this.state.receiveList.map((item, index) => {
+                if (item.sku === sku) {
+                    return {
+                        sku: sku,
+                        receivedQuantity: receivedQuantity
+                    };
+                }
+                return item;
+            });
+            this.setState({receiveList: receiveList});
+        } else {
+            let receiveList = this.state.receiveList;
+            receiveItem = {
+                sku: sku,
+                receivedQuantity: receivedQuantity
+            }
+            receiveList.push(receiveItem);
+            this.setState({receiveList: receiveList});
+        }
     }
 
+    receiveInputText(rowData) {
+        let receiveItem = this.state.receiveList.find(item => item.sku === rowData.sku);
+        let receiveValue = receiveItem ? receiveItem.receivedQuantity : "0";
+        return <InputText type="text" value={receiveValue} onChange={(e) => this.setReceiveValue(rowData.sku, rowData.remainingQuantity, e.target.value)} keyfilter = "int" />;
+    }
 
     landedCostEditor(rowData, expensePerProduct) {
         let landedPrice = Number(rowData.costPrice) + Number(expensePerProduct);
@@ -102,12 +168,33 @@ class OrderDetailsDialog extends Component {
         );
     }
 
+    receiveAllCheckEvent(e){
+        this.setState({checked: e.checked});
+        let receiveList = [];
+        if(e.checked === true){
+            this.props.orderProducts.forEach(function(p){
+                receiveList.push({
+                   sku: p.sku,
+                   receivedQuantity: p.remainingQuantity
+                });
+            });
+        } else {
+            this.props.orderProducts.forEach(function(p){
+                receiveList.push({
+                    sku: p.sku,
+                    receivedQuantity: "0"
+                });
+            });
+        }
+        this.setState({receiveList: receiveList});
+    }
+
     render() {
         let totalExpenses = 0;
         if(this.props.order){
             totalExpenses = totalExpenses + Number(this.props.order.salesTax);
             totalExpenses = totalExpenses + Number(this.props.order.brokerage);
-            totalExpenses = totalExpenses + Number(this.props.order.discount);
+            totalExpenses = totalExpenses - Number(this.props.order.discount);
             totalExpenses = totalExpenses + Number(this.props.order.duties);
             totalExpenses = totalExpenses + Number(this.props.order.shipping);
         }
@@ -125,11 +212,10 @@ class OrderDetailsDialog extends Component {
 
         let orderTotal = totalProductCost + totalExpenses;
 
-
         let orderStatus = this.props.order ? this.props.order.status : "";
         let draftOpts = { };
         if(orderStatus !== 'DRAFT'){
-            draftOpts['readonly'] = 'readonly';
+            draftOpts['readOnly'] = 'readOnly';
         }
         let dialogFooter =  <div className="ui-dialog-buttonpane p-clearfix">
                         {
@@ -140,12 +226,19 @@ class OrderDetailsDialog extends Component {
                             orderStatus === 'DRAFT' &&
                             <Button label="Save" icon="pi pi-pencil" onClick={this.savePurchaseOrder}/>
                         }
-
+                        {
+                            orderStatus === 'DRAFT' &&
+                            <Button label="Delete" icon="pi pi-trash" onClick={() => this.setState({displayPODeleteConfirmation: true})}/>
+                        }
                         {
                             orderStatus !== 'DRAFT' &&
                             <Button label="Download PDF" icon="pi pi-download"/>
                         }
-                                <Button label="Close" icon="pi pi-times" onClick={this.hideDialog}/>
+                        {
+                            orderStatus === 'SUBMITTED' &&
+                            <Button label="Cancel Order" icon="pi pi-ban"/>
+                        }
+                                <Button label="Close" icon="pi pi-times" onClick={() => this.setState({displayPOCancelConfirmation: true})}/>
                             </div>;
 
         let columnCss = {whiteSpace: 'nowrap', textAlign:'center'};
@@ -161,13 +254,13 @@ class OrderDetailsDialog extends Component {
                         {
                             orderStatus !== 'DRAFT' && orderStatus !== 'COMPLETED' &&
                             <div className="p-col-2">
-                                <Button label="Receive Products" />
+                                <Button label="Receive Products" onClick={this.receiveProducts} />
                             </div>
                         }
                         {
                             orderStatus !== 'DRAFT' && orderStatus !== 'COMPLETED' &&
                             <div className="p-col-2">
-                                <Checkbox inputId="allProductsCheck"></Checkbox>
+                                <Checkbox inputId="allProductsCheck" onChange={e => this.receiveAllCheckEvent(e)} checked={this.state.checked}></Checkbox>
                                 <label htmlFor="allProductsCheck" className="p-checkbox-label">receive all</label>
                             </div>
                         }
@@ -213,7 +306,11 @@ class OrderDetailsDialog extends Component {
                                         }
                                         {
                                             orderStatus !== "DRAFT" &&
-                                            <Column bodyStyle={columnCss} field="receivedQuantity" header="Received Quantity" style={{width:'100px'}} editor={(props) => this.submitInputTextEditor(props, 'receivedQuantity')} />
+                                            <Column bodyStyle={columnCss} field="receivedQuantity" header="Received Quantity" style={{width:'100px'}} />
+                                        }
+                                        {
+                                            orderStatus !== "DRAFT" &&
+                                            <Column bodyStyle={columnCss} header="Receive New" style={{width:'100px'}} body={this.receiveInputText} />
                                         }
                                     </DataTable>
                                 </div>
@@ -253,6 +350,16 @@ class OrderDetailsDialog extends Component {
                             </div>
                             <ProductSelectDialog visibleProperty={this.state.displayProductSelect}
                                                  onHideEvent={() => this.setState({displayProductSelect: false})}  />
+
+                            <ConfirmationDialog  visibleProperty={this.state.displayPODeleteConfirmation}
+                                                 noHandler={() => this.setState({displayPODeleteConfirmation: false})}
+                                                 yesHandler={() => this.setState({displayPODeleteConfirmation: false})}
+                                                 message="Do you confirm to delete this purchase order ?" />
+
+                            <ConfirmationDialog  visibleProperty={this.state.displayPOCancelConfirmation}
+                                                 noHandler={() => this.setState({displayPOCancelConfirmation: false})}
+                                                 yesHandler={() => this.setState({displayPOCancelConfirmation: false})}
+                                                 message="Do you confirm to cancel this purchase order ?" />
                         </div>
                 }
             </Dialog>
@@ -275,7 +382,8 @@ const mapDispatchToProps = dispatch => {
         setPurchaseOrder: (data) => dispatch(setPurchaseOrder(data)),
         deleteSelectedProduct: (sku) => dispatch(deleteSelectedProduct(sku)),
         deletePurchaseOrderProduct: (orderId, product, successHandler, errorHandler) => dispatch(deletePurchaseOrderProduct(orderId, product, successHandler, errorHandler)),
-        submitPurchaseOrder: (purchaseOrder, productList, successHandler, errorHandler) => dispatch(submitPurchaseOrder(purchaseOrder, productList, successHandler, errorHandler))
+        submitPurchaseOrder: (purchaseOrder, productList, successHandler, errorHandler) => dispatch(submitPurchaseOrder(purchaseOrder, productList, successHandler, errorHandler)),
+        receivePurchaseProducts: (orderId, receiveList, successHandler, errorHandler) => dispatch(receivePurchaseProducts(orderId, receiveList, successHandler, errorHandler))
     };
 };
 

@@ -25,6 +25,9 @@ public class PurchaseOrderProduct {
     private Integer orderedQuantity;
 
     @Getter @Setter
+    private Integer remainingQuantity;
+
+    @Getter @Setter
     private Integer receivedQuantity;
 
     @Getter @Setter

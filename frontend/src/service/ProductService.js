@@ -8,7 +8,7 @@ class ProductService {
 
     getProductBySku(productSku, eventHandler){
 
-        let requestUrl = API_URL + "/products/" + productSku;
+        let requestUrl = API_URL + "/products/minimum/" + productSku;
         axios.get(requestUrl)
             .catch(err => {
                 console.log("error:" + err);

@@ -184,11 +184,34 @@ export const submitPurchaseOrder = (purchaseOrder, productList, successHandler, 
                 console.log("error:" + err);
             })
             .then(response => {
-                if(response) {
+                if(response && response.data) {
                     dispatch(setPurchaseOrder(response.data));
                     successHandler("Purchase order submitted.");
                 } else{
                     errorHandler("Failed to submit purchase order.");
+                }
+            })
+    };
+}
+
+export const receivePurchaseProducts = (orderId, receiveList, successHandler, errorHandler) => {
+
+    return (dispatch) => {
+        let requestBody = {
+            receiveList: receiveList
+        }
+
+        let requestUrl = API_URL + "/purchase/orders/" + orderId + "/receive";
+        axios.post(requestUrl, requestBody)
+            .catch(err => {
+                console.log("error:" + err);
+            })
+            .then(response => {
+                if(response && response.data) {
+                    dispatch(setPurchaseOrder(response.data));
+                    successHandler("Received products.");
+                } else{
+                    errorHandler("Failed to receive products.");
                 }
             })
     };

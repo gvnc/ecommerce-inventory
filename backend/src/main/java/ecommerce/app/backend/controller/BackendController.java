@@ -90,13 +90,18 @@ public class BackendController {
         return detailedProduct;
     }
 
+    @GetMapping("/products/minimum/{productSku}")
+    public DetailedProduct getDetailedProductMinimum(@PathVariable String productSku) {
+        return storeBean.getDetailedProductsMap().get(productSku);
+    }
+
     @GetMapping("/products/skuList")
     public List<DetailedProduct> getDetailedProductsBySkuList(@RequestParam String skuList) {
         List<DetailedProduct> productList = new ArrayList();
         StringTokenizer tokenizer = new StringTokenizer(skuList, ",");
         while (tokenizer.hasMoreTokens()){
             String sku = tokenizer.nextToken();
-            DetailedProduct detailedProduct = getDetailedProduct(sku);
+            DetailedProduct detailedProduct = getDetailedProductMinimum(sku);
             if(detailedProduct != null)
                 productList.add(detailedProduct);
         }
