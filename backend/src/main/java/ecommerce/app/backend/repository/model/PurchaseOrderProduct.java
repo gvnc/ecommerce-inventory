@@ -31,7 +31,6 @@ public class PurchaseOrderProduct {
     private Integer receivedQuantity;
 
     @Getter @Setter
-    @OneToOne
     @JoinColumn(name = "purchaseOrderId", referencedColumnName = "id")
     private PurchaseOrder purchaseOrder;
 }

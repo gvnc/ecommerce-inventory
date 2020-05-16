@@ -4,7 +4,8 @@ import {Dialog} from "primereact/dialog";
 import {Button} from "primereact/button";
 import {updateSelectedPurchaseOrder, updateSelectedPOProduct, savePurchaseOrder,
     setPurchaseOrder, deleteSelectedProduct, deletePurchaseOrderProduct,
-    submitPurchaseOrder, receivePurchaseProducts } from "../../store/actions/purchaseActions";
+    submitPurchaseOrder, receivePurchaseProducts, cancelPurchaseOrder,
+    deletePurchaseOrder } from "../../store/actions/purchaseActions";
 import {Fieldset} from "primereact/fieldset";
 import {Card} from "primereact/card";
 import {Column} from "primereact/column";
@@ -34,6 +35,9 @@ class OrderDetailsDialog extends Component {
         this.receiveAllCheckEvent = this.receiveAllCheckEvent.bind(this);
         this.setReceiveValue = this.setReceiveValue.bind(this);
         this.receiveProducts = this.receiveProducts.bind(this);
+        this.cancelOrder = this.cancelOrder.bind(this);
+        this.deleteOrder = this.deleteOrder.bind(this);
+        this.deletedSuccessHandler = this.deletedSuccessHandler.bind(this);
 
         this.state = {
             displayProductSelect: false,
@@ -70,7 +74,6 @@ class OrderDetailsDialog extends Component {
             checked: false
         });
     }
-
 
     submitPurchaseOrder(){
         this.props.submitPurchaseOrder(this.props.order, this.props.orderProducts, this.successHandler, this.errorHandler);
@@ -189,6 +192,20 @@ class OrderDetailsDialog extends Component {
         this.setState({receiveList: receiveList});
     }
 
+    cancelOrder(){
+        this.props.cancelPurchaseOrder(this.props.order.id, this.successHandler, this.errorHandler);
+        this.setState({displayPOCancelConfirmation: false})
+    }
+
+    deletedSuccessHandler(message){
+        this.props.growl.show({severity: 'success', summary: 'Success', detail: message});
+        this.hideDialog();
+    }
+
+    deleteOrder(){
+        this.props.deletePurchaseOrder(this.props.order.id, this.deletedSuccessHandler, this.errorHandler);
+    }
+
     render() {
         let totalExpenses = 0;
         if(this.props.order){
@@ -236,9 +253,9 @@ class OrderDetailsDialog extends Component {
                         }
                         {
                             orderStatus === 'SUBMITTED' &&
-                            <Button label="Cancel Order" icon="pi pi-ban"/>
+                            <Button label="Cancel Order" icon="pi pi-ban" onClick={() => this.setState({displayPOCancelConfirmation: true})}/>
                         }
-                                <Button label="Close" icon="pi pi-times" onClick={() => this.setState({displayPOCancelConfirmation: true})}/>
+                                <Button label="Close" icon="pi pi-times" onClick={this.hideDialog} />
                             </div>;
 
         let columnCss = {whiteSpace: 'nowrap', textAlign:'center'};
@@ -252,13 +269,13 @@ class OrderDetailsDialog extends Component {
                             </div>
                         }
                         {
-                            orderStatus !== 'DRAFT' && orderStatus !== 'COMPLETED' &&
+                            orderStatus !== 'DRAFT' && orderStatus !== 'COMPLETED' && orderStatus !== "CANCELLED" &&
                             <div className="p-col-2">
                                 <Button label="Receive Products" onClick={this.receiveProducts} />
                             </div>
                         }
                         {
-                            orderStatus !== 'DRAFT' && orderStatus !== 'COMPLETED' &&
+                            orderStatus !== 'DRAFT' && orderStatus !== 'COMPLETED' && orderStatus !== "CANCELLED" &&
                             <div className="p-col-2">
                                 <Checkbox inputId="allProductsCheck" onChange={e => this.receiveAllCheckEvent(e)} checked={this.state.checked}></Checkbox>
                                 <label htmlFor="allProductsCheck" className="p-checkbox-label">receive all</label>
@@ -309,7 +326,7 @@ class OrderDetailsDialog extends Component {
                                             <Column bodyStyle={columnCss} field="receivedQuantity" header="Received Quantity" style={{width:'100px'}} />
                                         }
                                         {
-                                            orderStatus !== "DRAFT" &&
+                                            orderStatus !== "DRAFT" && orderStatus !== "CANCELLED" && orderStatus !== "COMPLETED" &&
                                             <Column bodyStyle={columnCss} header="Receive New" style={{width:'100px'}} body={this.receiveInputText} />
                                         }
                                     </DataTable>
@@ -353,12 +370,12 @@ class OrderDetailsDialog extends Component {
 
                             <ConfirmationDialog  visibleProperty={this.state.displayPODeleteConfirmation}
                                                  noHandler={() => this.setState({displayPODeleteConfirmation: false})}
-                                                 yesHandler={() => this.setState({displayPODeleteConfirmation: false})}
+                                                 yesHandler={this.deleteOrder}
                                                  message="Do you confirm to delete this purchase order ?" />
 
                             <ConfirmationDialog  visibleProperty={this.state.displayPOCancelConfirmation}
                                                  noHandler={() => this.setState({displayPOCancelConfirmation: false})}
-                                                 yesHandler={() => this.setState({displayPOCancelConfirmation: false})}
+                                                 yesHandler={this.cancelOrder}
                                                  message="Do you confirm to cancel this purchase order ?" />
                         </div>
                 }
@@ -383,7 +400,9 @@ const mapDispatchToProps = dispatch => {
         deleteSelectedProduct: (sku) => dispatch(deleteSelectedProduct(sku)),
         deletePurchaseOrderProduct: (orderId, product, successHandler, errorHandler) => dispatch(deletePurchaseOrderProduct(orderId, product, successHandler, errorHandler)),
         submitPurchaseOrder: (purchaseOrder, productList, successHandler, errorHandler) => dispatch(submitPurchaseOrder(purchaseOrder, productList, successHandler, errorHandler)),
-        receivePurchaseProducts: (orderId, receiveList, successHandler, errorHandler) => dispatch(receivePurchaseProducts(orderId, receiveList, successHandler, errorHandler))
+        receivePurchaseProducts: (orderId, receiveList, successHandler, errorHandler) => dispatch(receivePurchaseProducts(orderId, receiveList, successHandler, errorHandler)),
+        cancelPurchaseOrder: (orderId, successHandler, errorHandler) => dispatch(cancelPurchaseOrder(orderId, successHandler, errorHandler)),
+        deletePurchaseOrder: (orderId, deletedSuccessHandler, errorHandler)  => dispatch(deletePurchaseOrder(orderId, deletedSuccessHandler, errorHandler))
     };
 };
 

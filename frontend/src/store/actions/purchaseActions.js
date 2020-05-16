@@ -5,7 +5,8 @@ import {
     UPDATE_SELECTED_PURCHASE_ORDER,
     UPDATE_SELECTED_PO_PRODUCT,
     GET_PURCHASE_ORDER_COMPLETED,
-    DELETE_SELECTED_PRODUCT
+    DELETE_SELECTED_PRODUCT,
+    DELETE_PURCHASE_ORDER
 } from '../actionTypes';
 
 import {API_URL} from '../../apiConfig';
@@ -168,7 +169,6 @@ export const deletePurchaseOrderProduct = (orderId, product, successHandler, err
     };
 }
 
-
 export const submitPurchaseOrder = (purchaseOrder, productList, successHandler, errorHandler) => {
 
     return (dispatch) => {
@@ -216,3 +216,49 @@ export const receivePurchaseProducts = (orderId, receiveList, successHandler, er
             })
     };
 }
+
+export const cancelPurchaseOrder = (orderId, successHandler, errorHandler) => {
+
+    return (dispatch) => {
+        let requestUrl = API_URL + "/purchase/orders/" + orderId + "/cancel";
+        axios.post(requestUrl)
+            .catch(err => {
+                console.log("error:" + err);
+            })
+            .then(response => {
+                if(response && response.data) {
+                    dispatch(setPurchaseOrder(response.data));
+                    successHandler("Purchase order cancelled.");
+                } else{
+                    errorHandler("Failed to cancel order.");
+                }
+            })
+    };
+}
+
+export const deletePurchaseOrder = (orderId, successHandler, errorHandler) => {
+
+    return (dispatch) => {
+        let requestUrl = API_URL + "/purchase/orders/" + orderId;
+        axios.delete(requestUrl)
+            .catch(err => {
+                console.log("error:" + err);
+            })
+            .then(response => {
+                if(response && response.data === "success"){
+                    dispatch(deletePurchaseOrderFromStore(orderId));
+                    successHandler("Purchase Order deleted.");
+                } else {
+                    errorHandler("Failed to delete purchase order.");
+                }
+            })
+    };
+}
+
+export const deletePurchaseOrderFromStore = (orderId) => {
+
+    return {
+        type: DELETE_PURCHASE_ORDER,
+        orderId: orderId
+    };
+};

@@ -160,6 +160,34 @@ public class PurchaseOrderController {
         return null;
     }
 
+    @PostMapping("/orders/{orderId}/cancel")
+    public PurchaseOrderRequest cancelPurchaseOrder(@PathVariable Integer orderId) {
+        try{
+            PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(orderId).orElse(null);
+            if(purchaseOrder != null){
+                PurchaseOrderRequest request = new PurchaseOrderRequest();
+                purchaseOrder.setStatus(PurchaseOrderConstants.CANCELLED);
+                purchaseOrderRepository.save(purchaseOrder);
+                request.setPurchaseOrder(purchaseOrder);
+                return request;
+            }
+        } catch (Exception e){
+            log.error("Failed to cancel purchase order by id " + orderId, e);
+        }
+        return null;
+    }
+
+    @DeleteMapping("/orders/{orderId}")
+    public String deletePurchaseOrder(@PathVariable Integer orderId) {
+        try{
+            purchaseOrderProductRepository.deleteByPurchaseOrder_Id(orderId);
+            purchaseOrderRepository.deleteById(orderId);
+        } catch (Exception e){
+            log.error("Failed to delete purchase order by id " + orderId, e);
+        }
+        return OperationConstants.FAIL;
+    }
+
     @PostMapping("/orders/{orderId}/receive")
     public PurchaseOrderRequest receivePurchaseProducts(@PathVariable Integer orderId, @RequestBody ObjectNode requestBody) {
         try{

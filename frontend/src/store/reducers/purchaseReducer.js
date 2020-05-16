@@ -91,9 +91,20 @@ const reducer = (state = initialState, action) => {
                 selectedOrderProducts: products
             };
         case GET_PURCHASE_ORDER_COMPLETED:
+            orders = state.orders;
+            order = action.order;
+            if(order){
+                orders = state.orders.map((item, index) =>{
+                    if(item.id === order.id){
+                        return order;
+                    }
+                    return item;
+                });
+            }
             return {
                 ...state,
-                selectedOrder: action.order,
+                orders: orders,
+                selectedOrder: order,
                 selectedOrderProducts: action.orderProducts
             };
         case DELETE_SELECTED_PRODUCT:

@@ -9,4 +9,6 @@ public interface PurchaseOrderProductRepository extends CrudRepository<PurchaseO
 
     List<PurchaseOrderProduct> findAllByPurchaseOrder_Id(Integer purchaseOrderId);
 
+    void deleteByPurchaseOrder_Id(Integer purchaseOrderId);
+
 }
