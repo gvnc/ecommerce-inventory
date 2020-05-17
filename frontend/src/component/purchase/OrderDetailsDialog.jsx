@@ -14,6 +14,8 @@ import ProductSelectDialog from "./ProductSelectDialog";
 import {InputText} from "primereact/inputtext";
 import {Checkbox} from 'primereact/checkbox';
 import ConfirmationDialog from "../ConfirmationDialog";
+import {PDFDownloadLink, PDFViewer} from "@react-pdf/renderer";
+import PDFDocument from "./PDFDocument";
 
 class OrderDetailsDialog extends Component {
 
@@ -166,7 +168,7 @@ class OrderDetailsDialog extends Component {
 
     landedCostEditor(rowData, expensePerProduct) {
         let landedPrice = Number(rowData.costPrice) + Number(expensePerProduct);
-        return <span>{landedPrice}</span>;
+        return <span>{landedPrice.toFixed(2)}</span>;
     }
 
     deleteProductFromList(product){
@@ -269,10 +271,6 @@ class OrderDetailsDialog extends Component {
                             <Button label="Delete" icon="pi pi-trash" onClick={() => this.setState({displayPODeleteConfirmation: true})}/>
                         }
                         {
-                            orderStatus !== 'DRAFT' &&
-                            <Button label="Download PDF" icon="pi pi-download"/>
-                        }
-                        {
                             orderStatus === 'SUBMITTED' &&
                             <Button label="Cancel Order" icon="pi pi-ban" onClick={() => this.setState({displayPOCancelConfirmation: true})}/>
                         }
@@ -324,10 +322,19 @@ class OrderDetailsDialog extends Component {
                                             <div className="p-col-2 labelText">Order Status</div>
                                             <div className="p-col-2">{this.props.order.status}</div>
                                             <div className="p-col-2 labelText">Supplier</div>
-                                            <div className="p-col-2">
+                                            <div className="p-col-4">
                                                 <InputText id="supplier" onChange={(e) => {this.props.updateSelectedPurchaseOrder(this.props.order.id, "supplier", e.target.value)}}
                                                            value={this.props.order.supplier} style={{width:'200px'}} {...draftOpts} />
                                             </div>
+                                            {
+                                                orderStatus !== 'DRAFT' &&
+                                                <div className="p-col-2 labelText">
+                                                    <PDFDownloadLink document={<PDFDocument order={this.props.order} orderProducts={this.props.orderProducts} />} fileName="PurchaseOrder.pdf">
+                                                        {({ blob, url, loading, error }) => (loading ? 'Loading document...' : 'Download PDF')}
+                                                    </PDFDownloadLink>
+                                                </div>
+                                            }
+
                                         </div>
                                     </Fieldset>
                                 </div>
@@ -398,6 +405,12 @@ class OrderDetailsDialog extends Component {
                                                  noHandler={() => this.setState({displayPOCancelConfirmation: false})}
                                                  yesHandler={this.cancelOrder}
                                                  message="Do you confirm to cancel this purchase order ?" />
+
+                            {/*
+                            <PDFViewer style={{width:'100%', height:'700px'}}>
+                                <PDFDocument order={this.props.order} orderProducts={this.props.orderProducts} />
+                            </PDFViewer>
+                            */}
                         </div>
                 }
             </Dialog>

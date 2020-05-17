@@ -89,7 +89,8 @@ public class JWTWebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and().ignoring()
                 .antMatchers(
                         "/**/*.html","/**/*.css","/**/*.js","/**/*.png","/**/*.jpg","/**/*.gif",
-                        "/**/*.svg","/**/*.ico","/**/*.ttf","/**/*.woff","/**/*.woff2","/**/*.otf","/**/*.eot","/**/*.json"
+                        "/**/*.svg","/**/*.ico","/**/*.ttf","/**/*.woff","/**/*.woff2","/**/*.otf",
+                        "/**/*.eot","/**/*.json", "/**/*.pdf"
                 );
     }
 }
