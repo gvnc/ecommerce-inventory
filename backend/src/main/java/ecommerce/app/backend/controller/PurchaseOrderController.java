@@ -1,14 +1,16 @@
 package ecommerce.app.backend.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import ecommerce.app.backend.bigcommerce.BigCommerceAPIService;
+import ecommerce.app.backend.bigcommerce.BigCommerceFSAPIService;
 import ecommerce.app.backend.model.PurchaseOrderRequest;
 import ecommerce.app.backend.repository.PurchaseOrderProductRepository;
 import ecommerce.app.backend.repository.PurchaseOrderRepository;
 import ecommerce.app.backend.repository.model.PurchaseOrder;
 import ecommerce.app.backend.repository.model.PurchaseOrderProduct;
+import ecommerce.app.backend.vendhq.VendHQAPIService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +31,15 @@ public class PurchaseOrderController {
 
     @Autowired
     private PurchaseOrderProductRepository purchaseOrderProductRepository;
+
+    @Autowired
+    private BigCommerceAPIService bigCommerceAPIService;
+
+    @Autowired
+    private BigCommerceFSAPIService bigCommerceFSAPIService;
+
+    @Autowired
+    private VendHQAPIService vendHQAPIService;
 
     @GetMapping("/orders")
     public List<PurchaseOrder> getPurchaseOrders() {
@@ -204,6 +215,7 @@ public class PurchaseOrderController {
                 Integer receivedQuantity = receiveNode.get("receivedQuantity").asInt();
                 PurchaseOrderProduct purchaseOrderProduct = productList.stream().filter( p -> p.getSku().equals(sku)).findFirst().orElse(null);
                 if(purchaseOrderProduct != null && receivedQuantity > 0) {
+                    updateInventories(purchaseOrderProduct.getSku(), receivedQuantity);
                     purchaseOrderProduct.setReceivedQuantity(purchaseOrderProduct.getReceivedQuantity() + receivedQuantity);
                     purchaseOrderProduct.setRemainingQuantity(purchaseOrderProduct.getOrderedQuantity() - purchaseOrderProduct.getReceivedQuantity());
                 }
@@ -233,5 +245,11 @@ public class PurchaseOrderController {
             log.error("Failed to receive products by order id " + orderId, e);
         }
         return null;
+    }
+
+    private void updateInventories(String sku, Integer quantity){
+        vendHQAPIService.updateProductQuantity(sku, quantity, false);
+        bigCommerceAPIService.updateProductQuantity(sku, quantity, false);
+        bigCommerceFSAPIService.updateProductQuantity(sku, quantity, false);
     }
 }

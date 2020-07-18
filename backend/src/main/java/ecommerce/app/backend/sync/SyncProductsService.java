@@ -1,6 +1,8 @@
 package ecommerce.app.backend.sync;
 
 import ecommerce.app.backend.StoreBean;
+import ecommerce.app.backend.amazon.AmazonCaService;
+import ecommerce.app.backend.amazon.products.AmazonProduct;
 import ecommerce.app.backend.util.Utils;
 import ecommerce.app.backend.bigcommerce.BigCommerceAPIService;
 import ecommerce.app.backend.bigcommerce.BigCommerceFSAPIService;
@@ -34,6 +36,9 @@ public class SyncProductsService {
 
     @Autowired
     private VendHQAPIService vendHQAPIService;
+
+    @Autowired
+    private AmazonCaService amazonCaService;
 
     @Value("${sync.products.enabled}")
     private Boolean syncProductsEnabled;
@@ -72,7 +77,8 @@ public class SyncProductsService {
                         storeBean.getProductsMap().put(bigCommerceProduct.getSku(), baseProduct);
                         storeBean.getProductsList().add(baseProduct);
 
-                        DetailedProduct detailedProduct = new DetailedProduct(bigCommerceProduct.getSku(), bigCommerceProduct.getName(), bigCommerceProduct, null, null);
+                        DetailedProduct detailedProduct = new DetailedProduct(bigCommerceProduct.getSku(), bigCommerceProduct.getName());
+                        detailedProduct.setBigCommerceProduct(bigCommerceProduct);
                         storeBean.getDetailedProductsMap().put(bigCommerceProduct.getSku(), detailedProduct);
                     }
                     productCounter++;
@@ -125,7 +131,8 @@ public class SyncProductsService {
                         storeBean.getProductsMap().put(bigCommerceProduct.getSku(), baseProduct);
                         storeBean.getProductsList().add(baseProduct);
 
-                        DetailedProduct detailedProduct = new DetailedProduct(bigCommerceProduct.getSku(), bigCommerceProduct.getName(), null, null, bigCommerceProduct);
+                        DetailedProduct detailedProduct = new DetailedProduct(bigCommerceProduct.getSku(), bigCommerceProduct.getName());
+                        detailedProduct.setBigCommerceFSProduct(bigCommerceProduct);
                         storeBean.getDetailedProductsMap().put(bigCommerceProduct.getSku(), detailedProduct);
                     }
                     productCounter++;
@@ -181,7 +188,8 @@ public class SyncProductsService {
                         storeBean.getProductsMap().put(vendHQProduct.getSku(), baseProduct);
                         storeBean.getProductsList().add(baseProduct);
 
-                        DetailedProduct detailedProduct = new DetailedProduct(vendHQProduct.getSku(), vendHQProduct.getName(), null, vendHQProduct, null);
+                        DetailedProduct detailedProduct = new DetailedProduct(vendHQProduct.getSku(), vendHQProduct.getName());
+                        detailedProduct.setVendHQProduct(vendHQProduct);
                         storeBean.getDetailedProductsMap().put(vendHQProduct.getSku(), detailedProduct);
                     }
                     productCounter++;
@@ -206,8 +214,40 @@ public class SyncProductsService {
     }
 
     private void syncAmazonCA(){
-        // TODO to be implemented later
-        storeBean.getSyncStatus().setAmazonCaStatus(SyncConstants.SYNC_NA);
+        int productCounter = 0;
+        try {
+            log.info("Started to get products from AmazonCA");
+            storeBean.getSyncStatus().setAmazonCaStatus(SyncConstants.SYNC_INPROGRESS);
+            List<AmazonProduct> productList = amazonCaService.getProductList();
+            if(productList == null) {
+                log.error("Product list is null for AmazonCA.");
+                storeBean.getSyncStatus().setAmazonCaStatus(SyncConstants.SYNC_FAILED);
+            } else {
+                for (AmazonProduct amazonProduct : productList) {
+                    if (storeBean.getProductsMap().get(amazonProduct.getSku()) != null) {
+                        DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(amazonProduct.getSku());
+                        detailedProduct.setAmazonCaProduct(amazonProduct);
+                    } else {
+                        BaseProduct baseProduct = new BaseProduct(amazonProduct.getSku(), amazonProduct.getName());
+                        storeBean.getProductsMap().put(amazonProduct.getSku(), baseProduct);
+                        storeBean.getProductsList().add(baseProduct);
+
+                        DetailedProduct detailedProduct = new DetailedProduct(amazonProduct.getSku(), amazonProduct.getName());
+                        detailedProduct.setAmazonCaProduct(amazonProduct);
+                        storeBean.getDetailedProductsMap().put(amazonProduct.getSku(), detailedProduct);
+                    }
+                    productCounter++;
+                }
+                storeBean.getSyncStatus().setAmazonCaStatus(SyncConstants.SYNC_COMPLETED);
+            }
+            storeBean.getSyncStatus().setAmazonCaLastUpdate(Utils.getNowAsString());
+
+        } catch (Exception e) {
+            storeBean.getSyncStatus().setAmazonCaStatus(SyncConstants.SYNC_FAILED);
+            log.error("Failed to sync amazonca products", e);
+        }
+
+        log.info(productCounter + " products found in AmazonCA.");
     }
 
     private void setSyncStatusIntoPending(){
@@ -230,8 +270,8 @@ public class SyncProductsService {
             this.resetStore();
 
             syncBigCommerce();
-          //  syncBigCommerceFS();
-          //  syncVendHQ();
+            syncBigCommerceFS();
+            syncVendHQ();
             syncAmazonUS();
             syncAmazonCA();
         }

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
+import { Page, Text, View, Document, Image } from '@react-pdf/renderer';
 import { Table, TableBody, TableCell, TableHeader, DataTableCell } from "@david.kucsai/react-pdf-table";
 import { styles } from './pdfDocumentStyle';
 
@@ -23,13 +23,12 @@ export default class PDFDocument extends Component {
 
         let todate = this.formattedDate();
 
-        let logoUrl = "http://" + window.location.hostname + ":3000/Defcon-Paintball-Logo.png";
+        let logoUrl = "http://" + window.location.hostname + ":8080/Defcon-Paintball-Logo.png";
 
         let address1 = "Defcon Paintball";
         let address2 = "3550 Victoria Park Avenue";
         let address3 = "Toronto, ON M2H 2N5";
         let address4 = "CANADA";
-
 
         let totalExpenses = 0;
         if(this.props.order){

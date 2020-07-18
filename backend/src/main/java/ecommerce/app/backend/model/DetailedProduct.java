@@ -1,5 +1,6 @@
 package ecommerce.app.backend.model;
 
+import ecommerce.app.backend.amazon.products.AmazonProduct;
 import ecommerce.app.backend.bigcommerce.products.BigCommerceProduct;
 import ecommerce.app.backend.vendhq.products.VendHQProduct;
 import lombok.Getter;
@@ -25,11 +26,11 @@ public class DetailedProduct {
     @Getter @Setter
     private VendHQProduct vendHQProduct;
 
-    public DetailedProduct(String sku, String name, BigCommerceProduct bigCommerceProduct, VendHQProduct vendHQProduct, BigCommerceProduct bigCommerceFSProduct) {
+    @Getter @Setter
+    private AmazonProduct amazonCaProduct;
+
+    public DetailedProduct(String sku, String name) {
         this.sku = sku;
         this.name = name;
-        this.bigCommerceProduct = bigCommerceProduct;
-        this.vendHQProduct = vendHQProduct;
-        this.bigCommerceFSProduct = bigCommerceFSProduct;
     }
 }

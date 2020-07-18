@@ -40,13 +40,16 @@ class OrderDetailsDialog extends Component {
         this.cancelOrder = this.cancelOrder.bind(this);
         this.deleteOrder = this.deleteOrder.bind(this);
         this.deletedSuccessHandler = this.deletedSuccessHandler.bind(this);
+        this.receiveErrorHandler = this.receiveErrorHandler.bind(this);
+        this.receiveSuccessHandler = this.receiveSuccessHandler.bind(this);
 
         this.state = {
             displayProductSelect: false,
             checked: false,
             receiveList: [],
             displayPODeleteConfirmation: false,
-            displayPOCancelConfirmation: false
+            displayPOCancelConfirmation: false,
+            receiveButtonEnabled: true
         }
     }
 
@@ -56,7 +59,8 @@ class OrderDetailsDialog extends Component {
             checked: false,
             receiveList: [],
             displayPODeleteConfirmation: false,
-            displayPOCancelConfirmation: false
+            displayPOCancelConfirmation: false,
+            receiveButtonEnabled: true
         });
     }
 
@@ -65,7 +69,7 @@ class OrderDetailsDialog extends Component {
     }
 
     receiveProducts(){
-        this.props.receivePurchaseProducts(this.props.order.id, this.state.receiveList, this.successHandler, this.errorHandler);
+        this.props.receivePurchaseProducts(this.props.order.id, this.state.receiveList, this.receiveSuccessHandler, this.receiveErrorHandler);
         let receiveList = [];
         this.props.orderProducts.forEach(function(p){
             receiveList.push({
@@ -74,6 +78,7 @@ class OrderDetailsDialog extends Component {
             });
         });
         this.setState({
+            receiveButtonEnabled: false,
             receiveList: receiveList,
             checked: false
         });
@@ -89,9 +94,7 @@ class OrderDetailsDialog extends Component {
                 this.props.submitPurchaseOrder(this.props.order, this.props.orderProducts, this.successHandler, this.errorHandler);
             }
         }
-
     }
-
 
     errorHandler(message){
         this.props.growl.show({severity: 'error', summary: 'Error', detail: message});
@@ -99,6 +102,17 @@ class OrderDetailsDialog extends Component {
 
     successHandler(message){
         this.props.growl.show({severity: 'success', summary: 'Success', detail: message});
+    }
+
+    receiveErrorHandler(message){
+        this.setState({receiveButtonEnabled: true});
+        this.errorHandler(message);
+
+    }
+
+    receiveSuccessHandler(message){
+        this.setState({receiveButtonEnabled: true});
+        this.successHandler(message);
     }
 
     hideDialog(){
@@ -257,6 +271,10 @@ class OrderDetailsDialog extends Component {
             }
         }
 
+        let receiveButtonOpts = { disabled: 'disabled'};
+        if(this.state.receiveButtonEnabled === true)
+            receiveButtonOpts = {};
+
         let dialogFooter =  <div className="ui-dialog-buttonpane p-clearfix">
                         {
                             orderStatus === 'DRAFT' &&
@@ -290,13 +308,13 @@ class OrderDetailsDialog extends Component {
                         {
                             orderStatus !== 'DRAFT' && orderStatus !== 'COMPLETED' && orderStatus !== "CANCELLED" &&
                             <div className="p-col-2">
-                                <Button label="Receive Products" onClick={this.receiveProducts} />
+                                <Button label="Receive Products" onClick={this.receiveProducts} {...receiveButtonOpts} />
                             </div>
                         }
                         {
                             orderStatus !== 'DRAFT' && orderStatus !== 'COMPLETED' && orderStatus !== "CANCELLED" &&
                             <div className="p-col-2">
-                                <Checkbox inputId="allProductsCheck" onChange={e => this.receiveAllCheckEvent(e)} checked={this.state.checked}></Checkbox>
+                                <Checkbox inputId="allProductsCheck" {...receiveButtonOpts} onChange={e => this.receiveAllCheckEvent(e)} checked={this.state.checked}></Checkbox>
                                 <label htmlFor="allProductsCheck" className="p-checkbox-label">receive all</label>
                             </div>
                         }
@@ -434,7 +452,7 @@ const mapDispatchToProps = dispatch => {
         deleteSelectedProduct: (sku) => dispatch(deleteSelectedProduct(sku)),
         deletePurchaseOrderProduct: (orderId, product, successHandler, errorHandler) => dispatch(deletePurchaseOrderProduct(orderId, product, successHandler, errorHandler)),
         submitPurchaseOrder: (purchaseOrder, productList, successHandler, errorHandler) => dispatch(submitPurchaseOrder(purchaseOrder, productList, successHandler, errorHandler)),
-        receivePurchaseProducts: (orderId, receiveList, successHandler, errorHandler) => dispatch(receivePurchaseProducts(orderId, receiveList, successHandler, errorHandler)),
+        receivePurchaseProducts: (orderId, receiveList, receiveSuccessHandler, receiveErrorHandler) => dispatch(receivePurchaseProducts(orderId, receiveList, receiveSuccessHandler, receiveErrorHandler)),
         cancelPurchaseOrder: (orderId, successHandler, errorHandler) => dispatch(cancelPurchaseOrder(orderId, successHandler, errorHandler)),
         deletePurchaseOrder: (orderId, deletedSuccessHandler, errorHandler)  => dispatch(deletePurchaseOrder(orderId, deletedSuccessHandler, errorHandler))
     };
