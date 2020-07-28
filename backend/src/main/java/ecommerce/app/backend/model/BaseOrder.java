@@ -26,4 +26,16 @@ public class BaseOrder {
         this.status = status;
         this.dateModified = Utils.getDateAsString(modifiedDate);
     }
+
+    public BaseOrder(String marketPlace, String orderId, String totalPrice, Date modifiedDate, String status) {
+        this.marketPlace = marketPlace;
+        this.orderId = orderId;
+
+        try{
+            this.totalPrice = Float.parseFloat(totalPrice);
+        } catch (Exception e){}
+
+        this.status = status;
+        this.dateModified = Utils.getDateAsString(modifiedDate);
+    }
 }

@@ -1,12 +1,17 @@
 package ecommerce.app.backend.inventory;
 
+import com.amazonservices.mws.orders._2013_09_01.model.Order;
+import com.amazonservices.mws.orders._2013_09_01.model.OrderItem;
 import ecommerce.app.backend.StoreBean;
+import ecommerce.app.backend.amazon.AmazonCaService;
+import ecommerce.app.backend.amazon.products.AmazonProduct;
 import ecommerce.app.backend.bigcommerce.BigCommerceAPIService;
 import ecommerce.app.backend.bigcommerce.BigCommerceFSAPIService;
 import ecommerce.app.backend.bigcommerce.order.BCOrder;
 import ecommerce.app.backend.bigcommerce.order.BCOrderProduct;
 import ecommerce.app.backend.bigcommerce.order.BCOrderStatuses;
 import ecommerce.app.backend.model.BaseOrder;
+import ecommerce.app.backend.model.DetailedProduct;
 import ecommerce.app.backend.vendhq.VendHQAPIService;
 import ecommerce.app.backend.vendhq.products.VendHQProduct;
 import ecommerce.app.backend.vendhq.sales.VendHQSale;
@@ -18,6 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -36,6 +42,9 @@ public class OrderListener {
     private VendHQAPIService vendHQAPIService;
 
     @Autowired
+    private AmazonCaService amazonCaService;
+
+    @Autowired
     private StoreBean storeBean;
 
     @Value("${order.listener.enabled}")
@@ -48,15 +57,16 @@ public class OrderListener {
         this.latestOrderInfo = OrderListenerUtil.getLatestOrderInfo(orderListenerDataFile);
     }
 
-    @Scheduled(fixedDelay = 30000)
+    @Scheduled(fixedDelayString = "${order.listener.delay}")
     public void listenInventoryChanges(){
 
         if(orderListenerEnabled == true){
             // TODO if sync is in progress do nothing !!
             log.info("Order listener started to run.");
-            listenBigCommerceOrders();
-            listenVendHQSales();
-            listenBigCommerceFSOrders();
+          //  listenBigCommerceOrders();
+          //  listenVendHQSales();
+          //  listenBigCommerceFSOrders();
+            listenAmazonCAOrders();
             OrderListenerUtil.saveLatestOrderInfo(orderListenerDataFile, latestOrderInfo);
             log.info("Order listener ended running.");
         }
@@ -105,7 +115,6 @@ public class OrderListener {
         }
     }
 
-
     public void listenBigCommerceFSOrders(){
         log.info("Started to check bigcommerce fs orders.");
         try {
@@ -149,7 +158,6 @@ public class OrderListener {
         }
     }
 
-
     public void listenVendHQSales(){
         log.info("Started to check vend sales.");
         try {
@@ -192,6 +200,52 @@ public class OrderListener {
             }
         }catch (Exception e){
             log.error("Failed to update inventory after a change in vendhq.[saleId:" + saleId + "]", e);
+        }
+    }
+
+    public void listenAmazonCAOrders(){
+        log.info("Started to check amazon ca orders.");
+        try {
+            // get orders first
+            List<Order> orderList = amazonCaService.getOrders(latestOrderInfo.getAmazonCaLastUpdate());
+
+            // and second set last update date
+            latestOrderInfo.setAmazonCaLastUpdate(new Date());
+
+            // process the orders
+            if(orderList != null){
+                for(Order amazonOrder:orderList){
+                    log.info("An order is captured for AmazonCA. [orderId:" + amazonOrder.getAmazonOrderId() + ",status:" + amazonOrder.getOrderStatus() + "]");
+                    String orderTotal = "0";
+                    if(amazonOrder.getOrderTotal() != null){
+                        orderTotal = amazonOrder.getOrderTotal().getAmount();
+                    }
+
+                    BaseOrder baseOrder = new BaseOrder("AmazonCA", amazonOrder.getAmazonOrderId(), orderTotal,
+                            amazonOrder.getLastUpdateDate().toGregorianCalendar().getTime(), amazonOrder.getOrderStatus());
+
+                    storeBean.getOrderStatusChanges().add(0,baseOrder);
+
+                    List<OrderItem> orderItemList = amazonCaService.getOrderItems(amazonOrder.getAmazonOrderId());
+                    if(orderItemList != null){
+                        for(OrderItem orderItem: orderItemList){
+                            String sku = orderItem.getSellerSKU();
+                            Integer quantity = orderItem.getQuantityOrdered();
+                            log.info("Order Item sku=" + sku + ", quantity=" + quantity);
+                            DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(sku);
+                            if(detailedProduct != null && detailedProduct.getAmazonCaProduct() != null){
+                                AmazonProduct amazonProduct = detailedProduct.getAmazonCaProduct();
+                                if(amazonOrder.getOrderStatus().equals("Unshipped")) {
+
+                                }
+                                // no returns !!!!!
+                            }
+                        }
+                    }
+                }
+            }
+        }catch (Exception e){
+            log.error("AmazonCA listener failed.", e);
         }
     }
 }

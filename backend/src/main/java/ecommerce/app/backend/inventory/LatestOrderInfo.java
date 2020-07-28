@@ -16,4 +16,6 @@ public class LatestOrderInfo {
     @Getter @Setter
     private Date bcFsOrderLastModifiedDate;
 
+    @Getter @Setter
+    private Date amazonCaLastUpdate;
 }

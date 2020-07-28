@@ -8,10 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class StoreBean {
@@ -30,4 +27,16 @@ public class StoreBean {
 
     @Getter @Setter
     private SyncStatus syncStatus = new SyncStatus();
+
+    @Getter @Setter
+    private Set<String> amazonCaQuantityUpdateSet = new HashSet<>();
+
+    @Getter @Setter
+    private Set<String> amazonCaPriceUpdateSet = new HashSet<>();
+
+    @Getter @Setter
+    private Set<String> amazonUsQuantityUpdateSet = new HashSet<>();
+
+    @Getter @Setter
+    private Set<String> amazonUsPriceUpdateSet = new HashSet<>();
 }

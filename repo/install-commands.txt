@@ -6,3 +6,20 @@ mvn install:install-file -Dfile=MaWSJavaClientLibrary-1.1.jar \
                          -Dpackaging=jar \
                          -DgeneratePom=true
                          
+
+mvn install:install-file -Dfile=MWSOrders_2013-09-01_v2020-05-11.jar \
+                         -DgroupId=com.amazonaws.mws \
+                         -DartifactId=orders \
+                         -Dversion=2020.05.11 \
+                         -Dpackaging=jar \
+                         -DgeneratePom=true
+
+
+mvn install:install-file -Dfile=MWSClientJavaRuntime-1.0.jar \
+                         -DgroupId=com.amazonaws.mws \
+                         -DartifactId=orders-client \
+                         -Dversion=2020.05.11 \
+                         -Dpackaging=jar \
+                         -DgeneratePom=true
+
+
