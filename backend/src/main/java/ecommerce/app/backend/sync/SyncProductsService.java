@@ -269,12 +269,12 @@ public class SyncProductsService {
             this.setSyncStatusIntoPending();
             this.resetStore();
 
-            syncBigCommerce();
-            syncBigCommerceFS();
+       //     syncBigCommerce();
+     //       syncBigCommerceFS();
             syncVendHQ();
 
-            syncAmazonUS();
-            syncAmazonCA();
+   //         syncAmazonUS();
+ //           syncAmazonCA();
         }
     }
 }

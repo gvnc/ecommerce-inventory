@@ -63,7 +63,8 @@ class ProductSelectDialog extends Component {
             name: inventoryProduct.name,
             costPrice: costPrice,
             orderedQuantity: 0,
-            receivedQuantity: 0
+            receivedQuantity: 0,
+            dutyRate:0
         }
     }
 

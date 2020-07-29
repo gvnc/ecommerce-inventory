@@ -42,6 +42,7 @@ class OrderDetailsDialog extends Component {
         this.deletedSuccessHandler = this.deletedSuccessHandler.bind(this);
         this.receiveErrorHandler = this.receiveErrorHandler.bind(this);
         this.receiveSuccessHandler = this.receiveSuccessHandler.bind(this);
+        this.calculateDuties = this.calculateDuties.bind(this);
 
         this.state = {
             displayProductSelect: false,
@@ -121,30 +122,58 @@ class OrderDetailsDialog extends Component {
         this.props.setPurchaseOrder(null);
     }
 
-    onEditorValueChange(props, value) {
-        if(props.field === "receivedQuantity"){
-            if(Number(value) > Number(props.rowData.remainingQuantity))
+    onEditorValueChange(rowData, field, value) {
+        /*
+        if(field === "receivedQuantity"){
+            if(Number(value) > Number(rowData.remainingQuantity))
                 return;
-            let remainingQuantity = Number(props.rowData.remainingQuantity) - Number(value);
-            this.props.updateSelectedPOProduct(props.rowData.sku, "remainingQuantity", remainingQuantity);
+            let remainingQuantity = Number(rowData.remainingQuantity) - Number(value);
+            this.props.updateSelectedPOProduct(rowData.sku, "remainingQuantity", remainingQuantity);
         }
+        */
 
-        if(props.field === "orderedQuantity")
-            this.props.updateSelectedPOProduct(props.rowData.sku, "remainingQuantity", value);
+        if(field === "orderedQuantity")
+            this.props.updateSelectedPOProduct(rowData.sku, "remainingQuantity", value);
 
-        this.props.updateSelectedPOProduct(props.rowData.sku, props.field, value);
+        this.props.updateSelectedPOProduct(rowData.sku, field, value);
+
+        if(field === "dutyRate") {
+            // (orderedquantity * costprice * dutyrate / 100)
+          /*
+            let orderedQuantity = Number(rowData.orderedQuantity);
+            let costPrice = Number(rowData.costPrice);
+            let dutyRate = Number(value);
+            let calculatedDutyRate = ((orderedQuantity * costPrice * dutyRate) / 100);
+            let newDutiesValue = Number(this.props.order.duties) + calculatedDutyRate;
+            this.props.updateSelectedPurchaseOrder(this.props.order.id, "duties", newDutiesValue.toFixed(2));
+            */
+            //this.calculateDuties(rowData.sku, value);
+        }
     }
 
-    draftInputTextEditor(props, field) {
+    // calculate duties when calculating total !!!!!!
+    calculateDuties(){
+        let totalDuties = 0;
+        if(this.props.orderProducts){
+            this.props.orderProducts.forEach(function(p){
+                let calculatedDutyRate = ( Number(p.orderedQuantity) * Number(p.costPrice) * Number(p.dutyRate)) / 100;
+                totalDuties = totalDuties + calculatedDutyRate;
+            });
+        }
+        //this.props.updateSelectedPurchaseOrder(this.props.order.id, "duties", totalDuties.toFixed(2));
+        return totalDuties.toFixed(2);
+    }
+
+    draftInputTextEditor(rowData, field) {
         let orderStatus = this.props.order ? this.props.order.status : "";
         if(orderStatus !== 'DRAFT'){
-            return props.rowData[field];
+            return rowData[field];
         }
 
         if(field === "costPrice")
-            return <InputText type="text" value={props.rowData[field]} onChange={(e) => this.onEditorValueChange(props, e.target.value)} keyfilter = {/^\d*\.?\d*$/} />;
+            return <InputText type="text" value={rowData[field]} onChange={(e) => this.onEditorValueChange(rowData, field, e.target.value)} keyfilter = {/^\d*\.?\d*$/} />;
         else
-            return <InputText type="text" value={props.rowData[field]} onChange={(e) => this.onEditorValueChange(props, e.target.value)} keyfilter = "int" />;
+            return <InputText type="text" value={rowData[field]} onChange={(e) => this.onEditorValueChange(rowData, field, e.target.value)} keyfilter = "int" />;
     }
 
     setReceiveValue(sku, remainingQuantity, receivedQuantity){
@@ -235,11 +264,14 @@ class OrderDetailsDialog extends Component {
 
     render() {
         let totalExpenses = 0;
+        let dutyRate = 0;
+
         if(this.props.order){
+            dutyRate = this.calculateDuties();
             totalExpenses = totalExpenses + Number(this.props.order.salesTax);
             totalExpenses = totalExpenses + Number(this.props.order.brokerage);
             totalExpenses = totalExpenses - Number(this.props.order.discount);
-            totalExpenses = totalExpenses + Number(this.props.order.duties);
+            totalExpenses = totalExpenses + Number(dutyRate);
             totalExpenses = totalExpenses + Number(this.props.order.shipping);
         }
         let totalProducts = 0;
@@ -360,9 +392,10 @@ class OrderDetailsDialog extends Component {
                                     <DataTable value={this.props.orderProducts} paginator={false} header={productsDialogHeader} editable={true}>
                                         <Column bodyStyle={columnCss} field="sku" header="SKU" style={{width:'170px'}}/>
                                         <Column bodyStyle={columnCss} field="name" header="Name"/>
-                                        <Column bodyStyle={columnCss} field="costPrice" header="Cost Price" style={{width:'100px'}} editor={(props) => this.draftInputTextEditor(props, 'costPrice')} />
+                                        <Column bodyStyle={columnCss} header="Duty Rate %" style={{width:'100px'}} body={(rowData) => this.draftInputTextEditor(rowData, 'dutyRate')} />
+                                        <Column bodyStyle={columnCss} header="Cost Price" style={{width:'100px'}} body={(rowData) => this.draftInputTextEditor(rowData, 'costPrice')} />
+                                        <Column bodyStyle={columnCss} header="Ordered Quantity" style={{width:'100px'}} body={(rowData) => this.draftInputTextEditor(rowData, 'orderedQuantity')} />
                                         <Column bodyStyle={columnCss} header="Landed Price" style={{width:'100px'}} body={(rowData) => this.landedCostEditor(rowData, expensePerProduct)} />
-                                        <Column bodyStyle={columnCss} field="orderedQuantity" header="Ordered Quantity" style={{width:'100px'}} editor={(props) => this.draftInputTextEditor(props, 'orderedQuantity')} />
                                         {
                                             orderStatus === "DRAFT" &&
                                             <Column body={this.deleteButtonBody} headerStyle={{width: '4em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}}   />
@@ -397,8 +430,8 @@ class OrderDetailsDialog extends Component {
                                                                    value={this.props.order.discount} style={{width:'100px'}} {...draftOpts} keyfilter = {/^\d*\.?\d*$/}  /></div>
                                                     <div className="p-col-6">Duties</div>
                                                     <div className="p-col-6">
-                                                        <InputText id="duties" onChange={(e) => {this.props.updateSelectedPurchaseOrder(this.props.order.id, "duties", e.target.value)}}
-                                                                   value={this.props.order.duties} style={{width:'100px'}} {...draftOpts} keyfilter = {/^\d*\.?\d*$/}  /></div>
+                                                        <InputText id="duties" readonly={true} onChange={(e) => {this.props.updateSelectedPurchaseOrder(this.props.order.id, "duties", e.target.value)}}
+                                                                   value={dutyRate} style={{width:'100px'}} {...draftOpts} keyfilter = {/^\d*\.?\d*$/} /></div>
                                                     <div className="p-col-6">Shipping</div>
                                                     <div className="p-col-6">
                                                         <InputText id="shipping" onChange={(e) => {this.props.updateSelectedPurchaseOrder(this.props.order.id, "shipping", e.target.value)}}

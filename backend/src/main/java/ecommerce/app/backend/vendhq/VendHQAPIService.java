@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
@@ -27,6 +29,9 @@ public class VendHQAPIService {
     private String baseAPIv20;
     private String authorizationToken;
 
+    private int readTimeout = 30000;
+    private int connectionTimeout = 60000;
+
     private RestTemplate restTemplate = new RestTemplate();
 
     @Autowired
@@ -36,6 +41,11 @@ public class VendHQAPIService {
         this.authorizationToken = "Bearer " + token;
         this.baseAPIv09 = apipath;
         this.baseAPIv20 = apipath + "/2.0";
+
+        SimpleClientHttpRequestFactory rf =
+                (SimpleClientHttpRequestFactory) restTemplate.getRequestFactory();
+        rf.setReadTimeout(readTimeout);
+        rf.setConnectTimeout(connectionTimeout);
     }
 
     private HttpHeaders getHeaders(){

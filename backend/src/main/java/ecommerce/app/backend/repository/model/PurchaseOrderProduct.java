@@ -22,6 +22,9 @@ public class PurchaseOrderProduct {
     private Float costPrice;
 
     @Getter @Setter
+    private Integer dutyRate;
+
+    @Getter @Setter
     private Integer orderedQuantity;
 
     @Getter @Setter
