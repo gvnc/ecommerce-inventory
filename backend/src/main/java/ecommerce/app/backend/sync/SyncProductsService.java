@@ -269,9 +269,9 @@ public class SyncProductsService {
             this.setSyncStatusIntoPending();
             this.resetStore();
 
-     //       syncBigCommerce();
-     //       syncBigCommerceFS();
-     //       syncVendHQ();
+            syncBigCommerce();
+            syncBigCommerceFS();
+            syncVendHQ();
 
             syncAmazonUS();
             syncAmazonCA();

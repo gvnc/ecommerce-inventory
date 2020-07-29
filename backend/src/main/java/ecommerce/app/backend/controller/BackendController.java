@@ -210,7 +210,7 @@ public class BackendController {
             inventoryUpdateResult.setFinalResult(OperationConstants.FAIL);
         }
 
-        if(amazonCaService.updateInventory(productSku, inventoryLevel)  == true){
+        if(amazonCaService.updateInventory(productSku, inventoryLevel, true)  == true){
             inventoryUpdateResult.setAmazonCaInventoryUpdate(OperationConstants.SUCCESS);
         } else {
             inventoryUpdateResult.setAmazonCaInventoryUpdate(OperationConstants.FAIL);

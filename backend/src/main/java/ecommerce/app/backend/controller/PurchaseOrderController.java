@@ -3,6 +3,7 @@ package ecommerce.app.backend.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import ecommerce.app.backend.amazon.AmazonCaService;
 import ecommerce.app.backend.bigcommerce.BigCommerceAPIService;
 import ecommerce.app.backend.bigcommerce.BigCommerceFSAPIService;
 import ecommerce.app.backend.model.PurchaseOrderRequest;
@@ -40,6 +41,9 @@ public class PurchaseOrderController {
 
     @Autowired
     private VendHQAPIService vendHQAPIService;
+
+    @Autowired
+    private AmazonCaService amazonCaService;
 
     @GetMapping("/orders")
     public List<PurchaseOrder> getPurchaseOrders() {
@@ -251,5 +255,6 @@ public class PurchaseOrderController {
         vendHQAPIService.updateProductQuantity(sku, quantity, false);
         bigCommerceAPIService.updateProductQuantity(sku, quantity, false);
         bigCommerceFSAPIService.updateProductQuantity(sku, quantity, false);
+        amazonCaService.updateInventory(sku, quantity, false);
     }
 }

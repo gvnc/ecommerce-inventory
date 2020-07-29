@@ -2,6 +2,7 @@ package ecommerce.app.backend.amazon;
 
 import ecommerce.app.backend.StoreBean;
 import ecommerce.app.backend.amazon.products.AmazonProduct;
+import ecommerce.app.backend.inventory.TestProducts;
 import ecommerce.app.backend.model.DetailedProduct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +55,10 @@ public class AmazonCaService extends AmazonBaseService {
         }
     }
 
-    public boolean updateInventory(String productSku, Integer quantity){
+    public boolean updateInventory(String productSku, Integer quantity, Boolean overwrite){
+        if(!TestProducts.isAvailable(productSku)){
+            return true;
+        }
         try {
             log.info("Inventory update request for amazon ca. [product:"+productSku+",quantity:"+quantity+"]");
             DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(productSku);
@@ -71,8 +75,22 @@ public class AmazonCaService extends AmazonBaseService {
                 log.warn("Inventory change request ignored for amazon ca. Quantity value is null.");
                 return false;
             }
+
+            int currentQuantity = amazonProduct.getQuantity();
+            int newQuantity = currentQuantity + quantity;
+            if(overwrite == false){
+                newQuantity = currentQuantity;
+            }
+            if (newQuantity < 0) {
+                log.warn("There is no enough inventory in the amazon ca store for sku " + productSku + ". [currentQuantity:" + currentQuantity + ", demanded:" + quantity);
+                log.warn("Set inventory to 0 for sku " + productSku);
+                newQuantity = 0;
+            }
+            // just change it in memory
+            amazonProduct.setQuantity(newQuantity);
+
+            // set product sku in update set to let listener change it
             storeBean.getAmazonCaQuantityUpdateSet().add(detailedProduct.getSku());
-            amazonProduct.setQuantity(quantity);
 
             log.info("Inventory change successful for amazon ca. [product:"+productSku+",quantity:"+quantity+"]");
             return true;

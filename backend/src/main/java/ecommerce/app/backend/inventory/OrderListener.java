@@ -108,6 +108,7 @@ public class OrderListener {
                     int quantity = product.getQuantity() * changeType;
                     vendHQAPIService.updateProductQuantity(product.getSku(), quantity, false);
                     bigCommerceFSAPIService.updateProductQuantity(product.getSku(), quantity, false);
+                    amazonCaService.updateInventory(product.getSku(), quantity, false);
                 }
             }
         }catch (Exception e){
@@ -151,6 +152,7 @@ public class OrderListener {
                     int quantity = product.getQuantity() * changeType;
                     vendHQAPIService.updateProductQuantity(product.getSku(), quantity, false);
                     bigCommerceAPIService.updateProductQuantity(product.getSku(), quantity, false);
+                    amazonCaService.updateInventory(product.getSku(), quantity, false);
                 }
             }
         }catch (Exception e){
@@ -196,6 +198,7 @@ public class OrderListener {
                     int quantity = salesProduct.getQuantity() * -1;
                     bigCommerceAPIService.updateProductQuantity(sku, quantity, false);
                     bigCommerceFSAPIService.updateProductQuantity(sku, quantity, false);
+                    amazonCaService.updateInventory(sku, quantity, false);
                 }
             }
         }catch (Exception e){
@@ -225,27 +228,33 @@ public class OrderListener {
                             amazonOrder.getLastUpdateDate().toGregorianCalendar().getTime(), amazonOrder.getOrderStatus());
 
                     storeBean.getOrderStatusChanges().add(0,baseOrder);
-
-                    List<OrderItem> orderItemList = amazonCaService.getOrderItems(amazonOrder.getAmazonOrderId());
-                    if(orderItemList != null){
-                        for(OrderItem orderItem: orderItemList){
-                            String sku = orderItem.getSellerSKU();
-                            Integer quantity = orderItem.getQuantityOrdered();
-                            log.info("Order Item sku=" + sku + ", quantity=" + quantity);
-                            DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(sku);
-                            if(detailedProduct != null && detailedProduct.getAmazonCaProduct() != null){
-                                AmazonProduct amazonProduct = detailedProduct.getAmazonCaProduct();
-                                if(amazonOrder.getOrderStatus().equals("Unshipped")) {
-
-                                }
-                                // no returns !!!!!
-                            }
-                        }
+                    if(amazonOrder.getOrderStatus().equals("Unshipped")) {
+                        updateInventoriesByAmazonCA(amazonOrder.getAmazonOrderId());
                     }
                 }
             }
         }catch (Exception e){
             log.error("AmazonCA listener failed.", e);
+        }
+    }
+
+    private void updateInventoriesByAmazonCA(String amazonOrderId){
+        log.info("Update inventory after an order received in amazon ca .[OrderId:" + amazonOrderId + "]");
+        try {
+            List<OrderItem> orderItemList = amazonCaService.getOrderItems(amazonOrderId);
+            if(orderItemList != null){
+                for(OrderItem orderItem: orderItemList){
+                    String sku = orderItem.getSellerSKU();
+                    Integer quantity = orderItem.getQuantityOrdered();
+
+                    quantity = quantity * -1;
+                    bigCommerceAPIService.updateProductQuantity(sku, quantity, false);
+                    bigCommerceFSAPIService.updateProductQuantity(sku, quantity, false);
+                    vendHQAPIService.updateProductQuantity(sku, quantity, false);
+                }
+            }
+        }catch (Exception e){
+            log.error("Failed to update inventory after an order received in amazon ca .[OrderId:" + amazonOrderId + "]", e);
         }
     }
 }

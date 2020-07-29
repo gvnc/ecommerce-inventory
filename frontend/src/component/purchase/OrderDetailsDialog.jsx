@@ -254,7 +254,7 @@ class OrderDetailsDialog extends Component {
         if(totalProducts > 0)
             expensePerProduct = (totalExpenses / totalProducts).toFixed(2);
 
-        let orderTotal = totalProductCost + totalExpenses;
+        let orderTotal = (totalProductCost + totalExpenses).toFixed(2);;
 
         let orderStatus = this.props.order ? this.props.order.status : "";
         let draftOpts = { };
