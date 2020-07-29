@@ -29,6 +29,9 @@ public class DetailedProduct {
     @Getter @Setter
     private AmazonProduct amazonCaProduct;
 
+    @Getter @Setter
+    private AmazonProduct amazonUsProduct;
+
     public DetailedProduct(String sku, String name) {
         this.sku = sku;
         this.name = name;

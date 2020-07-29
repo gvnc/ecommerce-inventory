@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
-import { connect } from "react-redux";
-import {getDetailedProduct, commitPriceChange, updateDetailedProduct, completeCommitPriceChange, updateInventory, completeUpdateInventory} from "../store/actions/productActions"
+import {connect} from "react-redux";
+import {commitPriceChange, updateDetailedProduct, completeCommitPriceChange, updateInventory, completeUpdateInventory} from "../store/actions/productActions"
 import {Dialog} from "primereact/dialog";
 import {Card} from 'primereact/card';
 import BigCommerceProductCard from "./marketPlaces/BigCommerceProductCard";
 import VendHQProductCard from "./marketPlaces/VendHQProductCard";
+import AmazonProductCard from "./marketPlaces/AmazonProductCard";
 import InventoryUpdate from "./InventoryUpdate";
 import {TabView,TabPanel} from 'primereact/tabview';
 
@@ -14,7 +15,8 @@ class ProductDetailDialog extends Component {
         super();
         this.state = {
             "updateInventoryInProgress" : false,
-            "savePriceInProgress" : false
+            "savePriceInProgress" : false,
+            activeIndex: 0
         }
         this.save = this.save.bind(this);
         this.updateProperty = this.updateProperty.bind(this);
@@ -27,39 +29,62 @@ class ProductDetailDialog extends Component {
 
     save() {
         let detailedProduct = this.props.detailedProduct;
-        let bigCommerceProduct = detailedProduct.bigCommerceProduct;
-        let bigCommerceFsProduct = detailedProduct.bigCommerceFSProduct;
-        let vendHQProduct = detailedProduct.vendHQProduct;
         let priceParameters = {};
 
-        // use product price parameters in reduc store to request the backend
-        // locale store does not work for some reason
-        // if bigcommerce is not null use it, else use vendhq, they should be sync
-        if(bigCommerceProduct !== undefined && bigCommerceProduct !== null){
-            priceParameters = {
-                "bigCommercePrice" : bigCommerceProduct.price,
-                "bigCommerceRetailPrice" : bigCommerceProduct.retail_price,
-                "bigCommerceCostPrice" : bigCommerceProduct.cost_price
-            };
-        } else if(bigCommerceFsProduct !== undefined && bigCommerceFsProduct !== null){
-            priceParameters = {
-                "bigCommercePrice" : bigCommerceFsProduct.price,
-                "bigCommerceRetailPrice" : bigCommerceFsProduct.retail_price,
-                "bigCommerceCostPrice" : bigCommerceFsProduct.cost_price
-            };
-        } else if(vendHQProduct !== undefined && vendHQProduct !== null){
-            priceParameters = {
-                "bigCommerceRetailPrice" : vendHQProduct.price_including_tax,
-                "bigCommerceCostPrice" : vendHQProduct.supply_price
-            };
+        if(this.state.activeIndex === 0) {
+            let marketPlace = "BigCommerce";
+
+            let bigCommerceProduct = detailedProduct.bigCommerceProduct;
+            let bigCommerceFsProduct = detailedProduct.bigCommerceFSProduct;
+            let vendHQProduct = detailedProduct.vendHQProduct;
+
+            // use product price parameters in redux store to request the backend
+            // locale store does not work for some reason
+            // if bigcommerce is not null use it, else use vendhq, they should be sync
+            if(bigCommerceProduct !== undefined && bigCommerceProduct !== null){
+                priceParameters = {
+                    "bigCommercePrice" : bigCommerceProduct.price,
+                    "bigCommerceRetailPrice" : bigCommerceProduct.retail_price,
+                    "bigCommerceCostPrice" : bigCommerceProduct.cost_price,
+                    "marketPlace" : marketPlace
+                };
+            } else if(bigCommerceFsProduct !== undefined && bigCommerceFsProduct !== null){
+                priceParameters = {
+                    "bigCommercePrice" : bigCommerceFsProduct.price,
+                    "bigCommerceRetailPrice" : bigCommerceFsProduct.retail_price,
+                    "bigCommerceCostPrice" : bigCommerceFsProduct.cost_price,
+                    "marketPlace" : marketPlace
+                };
+            } else if(vendHQProduct !== undefined && vendHQProduct !== null){
+                priceParameters = {
+                    "bigCommerceRetailPrice" : vendHQProduct.price_including_tax,
+                    "bigCommerceCostPrice" : vendHQProduct.supply_price,
+                    "marketPlace" : marketPlace
+                };
+            }
+
+            this.props.commitPriceChange(this.props.detailedProduct.sku, priceParameters);
+            this.setState({"savePriceInProgress": true});
+
+        } else if(this.state.activeIndex === 1) {
+            let marketPlace = "Amazon";
+            let amazonCaProduct = detailedProduct.amazonCaProduct;
+            if(amazonCaProduct !== undefined && amazonCaProduct !== null){
+                priceParameters = {
+                    "amazonPrice" : amazonCaProduct.price,
+                    "marketPlace" : marketPlace
+                };
+
+                this.props.commitPriceChange(this.props.detailedProduct.sku, priceParameters);
+                this.setState({"savePriceInProgress": true});
+            }
         }
-        this.props.commitPriceChange(this.props.detailedProduct.sku, priceParameters);
-        this.setState({"savePriceInProgress": true});
         //this.props.onHideEvent();
     }
 
     updateInventoryEvent() {
         let inventoryLevel = this.props.detailedProduct.inventoryLevel;
+        console.log("inventoryLevel " + inventoryLevel);
         if(inventoryLevel !== ""){
             this.props.updateInventory(this.props.detailedProduct.sku, inventoryLevel);
             this.setState({"updateInventoryInProgress": true});
@@ -97,6 +122,14 @@ class ProductDetailDialog extends Component {
 
             if(detailedProduct.vendHQProduct !== null)
                 detailedProduct.vendHQProduct.supply_price = value;
+        }
+        // copy price values between amazon
+        if(property === "amazonPrice"){
+            if(detailedProduct.amazonCaProduct !== null)
+                detailedProduct.amazonCaProduct.price = value;
+
+            if(detailedProduct.amazonUsProduct !== null)
+                detailedProduct.amazonUsProduct.price = value;
         }
         if(property === "inventoryLevel"){
             detailedProduct.inventoryLevel = value;
@@ -201,7 +234,7 @@ class ProductDetailDialog extends Component {
         return (
             <Dialog visible={this.props.visibleProperty} maximized={true} header={dialogHeader} modal={true}
                     footer={dialogFooter} onHide={this.props.onHideEvent}>
-                <TabView>
+                <TabView activeIndex={this.state.activeIndex} onTabChange={(e) => this.setState({activeIndex: e.index})}>
                     <TabPanel header="BC-Vend">
                         <div className="p-grid">
                             <div className="p-col-4">
@@ -217,16 +250,16 @@ class ProductDetailDialog extends Component {
                     </TabPanel>
                     <TabPanel header="Amazon">
                         <div className="p-grid">
-                            <div className="p-col-6">
+                            <div className="p-col-2"></div>
+                            <div className="p-col-4">
+                                <AmazonProductCard title="Amazon CA" product={this.props.detailedProduct.amazonCaProduct} updateProperty={this.updateProperty} />
+                            </div>
+                            <div className="p-col-4">
                                 <Card title="Amazon US" style={{height:'100%'}} >
                                     <p>to be implemented</p>
                                 </Card>
                             </div>
-                            <div className="p-col-6">
-                                <Card title="Amazon CA" style={{height:'100%'}} >
-                                    <p>to be implemented</p>
-                                </Card>
-                            </div>
+                            <div className="p-col-2"></div>
                         </div>
                     </TabPanel>
                 </TabView>
@@ -245,7 +278,6 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        getDetailedProduct: (productSku) => dispatch(getDetailedProduct(productSku)),
         commitPriceChange: (productSku, propertyChanges) => dispatch(commitPriceChange(productSku, propertyChanges)),
         updateDetailedProduct: (detailedProduct) => dispatch(updateDetailedProduct(detailedProduct)),
         completeCommitPriceChange: (commitPriceResult) => dispatch(completeCommitPriceChange(commitPriceResult)),

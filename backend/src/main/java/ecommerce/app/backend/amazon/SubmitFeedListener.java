@@ -29,19 +29,23 @@ public class SubmitFeedListener {
         if(priceUpdateInProgressForCA == true)
             return;
 
+        // if there are no changes, return
+        Set<String> skuSet = storeBean.getAmazonCaPriceUpdateSet();
+        if(skuSet.size() == 0)
+            return;
+
         // set to true to avoid duplicate work
         priceUpdateInProgressForCA = true;
 
         try {
-            Set<String> skuSet = storeBean.getAmazonCaPriceUpdateSet();
             List<AmazonProduct> productList = new ArrayList<>();
-            skuSet.stream().forEach(sku -> {
-                productList.add(storeBean.getDetailedProductsMap().get(sku).getAmazonCaProduct());
-                skuSet.remove(sku);
-            });
+            skuSet.stream().forEach(sku -> productList.add(storeBean.getDetailedProductsMap().get(sku).getAmazonCaProduct()));
+            productList.stream().forEach(amazonProduct -> skuSet.remove(amazonProduct.getSku()));
+
             // if update failed, push skus back into queue
             if(amazonCaService.updateProductPrice(productList) == false){
-                productList.stream().forEach(amazonProduct -> storeBean.getAmazonCaPriceUpdateSet().add(amazonProduct.getSku()));
+                //productList.stream().forEach(amazonProduct -> storeBean.getAmazonCaPriceUpdateSet().add(amazonProduct.getSku()));
+                log.warn("Failed to update prodct price.");
             }
         }catch (Exception e){
             log.error("Scheduler failed to update prices for amazon ca");
@@ -56,17 +60,23 @@ public class SubmitFeedListener {
         if(inventoryUpdateInProgressForCA == true)
             return;
 
+        // if there are no changes, return
+        Set<String> skuSet = storeBean.getAmazonCaQuantityUpdateSet();
+        if(skuSet.size() == 0)
+            return;
+
         // set to true to avoid duplicate work
         inventoryUpdateInProgressForCA = true;
 
         try {
-            Set<String> skuSet = storeBean.getAmazonCaQuantityUpdateSet();
             List<AmazonProduct> productList = new ArrayList<>();
             skuSet.stream().forEach(sku -> productList.add(storeBean.getDetailedProductsMap().get(sku).getAmazonCaProduct()));
+            productList.stream().forEach(amazonProduct -> skuSet.remove(amazonProduct.getSku()));
 
             // if update failed, push skus back into queue
             if(amazonCaService.updateProductQuantity(productList) == false) {
-                productList.stream().forEach(amazonProduct -> storeBean.getAmazonCaQuantityUpdateSet().add(amazonProduct.getSku()));
+                //productList.stream().forEach(amazonProduct -> storeBean.getAmazonCaQuantityUpdateSet().add(amazonProduct.getSku()));
+                log.warn("Failed to update product inventory.");
             }
         }catch (Exception e){
             log.error("Scheduler failed to update inventory for amazon ca");

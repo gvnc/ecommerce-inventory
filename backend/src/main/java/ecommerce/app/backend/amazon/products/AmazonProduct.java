@@ -21,4 +21,7 @@ public class AmazonProduct {
 
     @Getter @Setter
     private Integer quantity;
+
+    @Getter @Setter
+    private Boolean isFulfilledByAmazon;
 }

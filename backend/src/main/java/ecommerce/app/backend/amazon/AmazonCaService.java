@@ -28,7 +28,7 @@ public class AmazonCaService extends AmazonBaseService {
 
     public boolean updatePrice(String productSku, String price){
         try {
-            log.info("Price change request for amazonca. [product:"+productSku+",price:"+price+"]");
+            log.info("Price change request for amazon ca. [product:"+productSku+",price:"+price+"]");
             DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(productSku);
             if(detailedProduct == null)
                 return false;
@@ -40,16 +40,46 @@ public class AmazonCaService extends AmazonBaseService {
             }
 
             if(price == null){
-                log.warn("Price change request ignored for vendhq. Price values are null.");
+                log.warn("Price change request ignored for amazon ca. Price values are null.");
                 return false;
             }
+            storeBean.getAmazonCaPriceUpdateSet().add(detailedProduct.getSku());
             amazonProduct.setPrice(Float.parseFloat(price));
 
-            log.info("Price change successful for amazonca. [product:"+productSku+",price:"+price+"]");
+            log.info("Price change successful for amazon ca. [product:"+productSku+",price:"+price+"]");
             return true;
         } catch (Exception e){
-            log.error("Failed to change product price for vendhq.", e);
+            log.error("Failed to change product price for amazon ca.", e);
             return false;
         }
     }
+
+    public boolean updateInventory(String productSku, Integer quantity){
+        try {
+            log.info("Inventory update request for amazon ca. [product:"+productSku+",quantity:"+quantity+"]");
+            DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(productSku);
+            if(detailedProduct == null)
+                return false;
+
+            AmazonProduct amazonProduct = detailedProduct.getAmazonCaProduct();
+            if(amazonProduct == null){
+                log.warn("Skip inventory change, no amazon product found with sku " + productSku);
+                return true;
+            }
+
+            if(quantity == null){
+                log.warn("Inventory change request ignored for amazon ca. Quantity value is null.");
+                return false;
+            }
+            storeBean.getAmazonCaQuantityUpdateSet().add(detailedProduct.getSku());
+            amazonProduct.setQuantity(quantity);
+
+            log.info("Inventory change successful for amazon ca. [product:"+productSku+",quantity:"+quantity+"]");
+            return true;
+        } catch (Exception e){
+            log.error("Failed to change product quantity for amazon ca.", e);
+            return false;
+        }
+    }
+
 }

@@ -1,7 +1,11 @@
 package ecommerce.app.backend.controller;
 
+import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import ecommerce.app.backend.StoreBean;
+import ecommerce.app.backend.amazon.AmazonCaService;
+import ecommerce.app.backend.amazon.products.AmazonProduct;
 import ecommerce.app.backend.bigcommerce.BigCommerceAPIService;
 import ecommerce.app.backend.bigcommerce.BigCommerceFSAPIService;
 import ecommerce.app.backend.bigcommerce.products.BigCommerceProduct;
@@ -31,6 +35,9 @@ public class BackendController {
 
     @Autowired
     private VendHQAPIService vendHQAPIService;
+
+    @Autowired
+    private AmazonCaService amazonCaService;
 
     @Autowired
     private SyncProductsService syncProductsService;
@@ -64,6 +71,12 @@ public class BackendController {
     @GetMapping("/products/{productSku}")
     public DetailedProduct getDetailedProduct(@PathVariable String productSku) {
         DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(productSku);
+
+        // if amazon ca product not null, get inventory
+        if(detailedProduct.getAmazonCaProduct() != null){
+            AmazonProduct amazonProduct = detailedProduct.getAmazonCaProduct();
+            detailedProduct.setInventoryLevel(amazonProduct.getQuantity());
+        }
 
         // if vendhq product not null, get inventory via apiservice
         if(detailedProduct.getVendHQProduct() != null){
@@ -114,34 +127,49 @@ public class BackendController {
         CommitPriceResult commitPriceResult = new CommitPriceResult();
         commitPriceResult.setFinalResult(OperationConstants.SUCCESS);
 
-        String newCostPrice = propertyChanges.get("bigCommerceCostPrice") == null? null : propertyChanges.get("bigCommerceCostPrice").textValue();
-        String newRetailPrice = propertyChanges.get("bigCommerceRetailPrice") == null? null : propertyChanges.get("bigCommerceRetailPrice").textValue();
-        String newPrice = propertyChanges.get("bigCommercePrice") == null? null : propertyChanges.get("bigCommercePrice").textValue();
+        String marketPlace = propertyChanges.get("marketPlace") == null? null : propertyChanges.get("marketPlace").textValue();
+        if(marketPlace != null){
+            if(marketPlace.equals("BigCommerce")){
 
-        // update bigcommerce product inventory
-        if(bigCommerceAPIService.updatePrice(productSku, newCostPrice, newRetailPrice, newPrice) == true){
-            commitPriceResult.setBigCommercePriceChange(OperationConstants.SUCCESS);
+                String newCostPrice = propertyChanges.get("bigCommerceCostPrice") == null? null : propertyChanges.get("bigCommerceCostPrice").textValue();
+                String newRetailPrice = propertyChanges.get("bigCommerceRetailPrice") == null? null : propertyChanges.get("bigCommerceRetailPrice").textValue();
+                String newPrice = propertyChanges.get("bigCommercePrice") == null? null : propertyChanges.get("bigCommercePrice").textValue();
+
+                // update bigcommerce product inventory
+                if(bigCommerceAPIService.updatePrice(productSku, newCostPrice, newRetailPrice, newPrice) == true){
+                    commitPriceResult.setBigCommercePriceChange(OperationConstants.SUCCESS);
+                } else {
+                    commitPriceResult.setBigCommercePriceChange(OperationConstants.FAIL);
+                    commitPriceResult.setFinalResult(OperationConstants.FAIL);
+                }
+
+                // update bigcommerce fs product inventory
+                if(bigCommerceFSAPIService.updatePrice(productSku, newCostPrice, newRetailPrice, newPrice) == true){
+                    commitPriceResult.setBigCommerceFSPriceChange(OperationConstants.SUCCESS);
+                } else {
+                    commitPriceResult.setBigCommerceFSPriceChange(OperationConstants.FAIL);
+                    commitPriceResult.setFinalResult(OperationConstants.FAIL);
+                }
+
+                // update vendhq product inventory
+                if(vendHQAPIService.updatePrice(productSku, newCostPrice, newRetailPrice) == true){
+                    commitPriceResult.setVendhqPriceChange(OperationConstants.SUCCESS);
+                } else {
+                    commitPriceResult.setVendhqPriceChange(OperationConstants.FAIL);
+                    commitPriceResult.setFinalResult(OperationConstants.FAIL);
+                }
+            } else if (marketPlace.equals("Amazon")){
+                String newPrice = propertyChanges.get("amazonPrice") == null? null : propertyChanges.get("amazonPrice").textValue();
+                if(amazonCaService.updatePrice(productSku, newPrice) == true){
+                    commitPriceResult.setAmazonCaPriceChange(OperationConstants.SUCCESS);
+                } else {
+                    commitPriceResult.setAmazonCaPriceChange(OperationConstants.FAIL);
+                    commitPriceResult.setFinalResult(OperationConstants.FAIL);
+                }
+            }
         } else {
-            commitPriceResult.setBigCommercePriceChange(OperationConstants.FAIL);
             commitPriceResult.setFinalResult(OperationConstants.FAIL);
         }
-
-        // update bigcommerce fs product inventory
-        if(bigCommerceFSAPIService.updatePrice(productSku, newCostPrice, newRetailPrice, newPrice) == true){
-            commitPriceResult.setBigCommerceFSPriceChange(OperationConstants.SUCCESS);
-        } else {
-            commitPriceResult.setBigCommerceFSPriceChange(OperationConstants.FAIL);
-            commitPriceResult.setFinalResult(OperationConstants.FAIL);
-        }
-
-        // update vendhq product inventory
-        if(vendHQAPIService.updatePrice(productSku, newCostPrice, newRetailPrice) == true){
-            commitPriceResult.setVendhqPriceChange(OperationConstants.SUCCESS);
-        } else {
-            commitPriceResult.setVendhqPriceChange(OperationConstants.FAIL);
-            commitPriceResult.setFinalResult(OperationConstants.FAIL);
-        }
-
         return commitPriceResult;
     }
 
@@ -150,7 +178,16 @@ public class BackendController {
 
         InventoryUpdateResult inventoryUpdateResult = new InventoryUpdateResult();
         inventoryUpdateResult.setFinalResult(OperationConstants.SUCCESS);
-        int inventoryLevel = Integer.parseInt(requestBody.get("inventory").textValue());
+
+        int inventoryLevel = -1;
+        if(requestBody.get("inventory") instanceof TextNode){
+            inventoryLevel = Integer.parseInt(requestBody.get("inventory").textValue());
+        } else if(requestBody.get("inventory") instanceof IntNode){
+            inventoryLevel = requestBody.get("inventory").intValue();
+        } else {
+            inventoryUpdateResult.setFinalResult(OperationConstants.FAIL);
+            return inventoryUpdateResult;
+        }
 
         if(bigCommerceAPIService.updateProductQuantity(productSku, inventoryLevel, true) == true){
             inventoryUpdateResult.setBigCommerceInventoryUpdate(OperationConstants.SUCCESS);
@@ -170,6 +207,13 @@ public class BackendController {
             inventoryUpdateResult.setVendhqInventoryUpdate(OperationConstants.SUCCESS);
         } else {
             inventoryUpdateResult.setVendhqInventoryUpdate(OperationConstants.FAIL);
+            inventoryUpdateResult.setFinalResult(OperationConstants.FAIL);
+        }
+
+        if(amazonCaService.updateInventory(productSku, inventoryLevel)  == true){
+            inventoryUpdateResult.setAmazonCaInventoryUpdate(OperationConstants.SUCCESS);
+        } else {
+            inventoryUpdateResult.setAmazonCaInventoryUpdate(OperationConstants.FAIL);
             inventoryUpdateResult.setFinalResult(OperationConstants.FAIL);
         }
 

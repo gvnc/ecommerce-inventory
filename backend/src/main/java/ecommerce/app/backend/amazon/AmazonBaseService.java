@@ -158,6 +158,13 @@ public class AmazonBaseService {
                         amazonProduct.setQuantity(0);
 
                     amazonProduct.setId(productProperties[22]);
+
+                    if(productProperties[26].contains("AMAZON")){
+                        log.info("Fulfilled by amazon. " + amazonProduct.getSku());
+                        amazonProduct.setIsFulfilledByAmazon(true);
+                    } else{
+                        amazonProduct.setIsFulfilledByAmazon(false);
+                    }
                     productList.add(amazonProduct);
                 }catch (Exception e){
                     log.warn("Failed to parse product." + temp, e );
@@ -269,6 +276,7 @@ public class AmazonBaseService {
 
     private String submitFeed(String feedXml, String feedType){
         log.info("Submit feed initiated.");
+        log.info("Submit Feed XML " + feedXml);
         int maxRetry = 5;
         long sleepBeforeRetry = 30000;
         for(int i=0; i<maxRetry; i++) {
@@ -314,10 +322,13 @@ public class AmazonBaseService {
     }
 
     private boolean isFeedSubmissionSuccessful(String feedSubmissionId){
-        int maxRetry = 3;
-        long sleepBeforeRetry = 15000;
+        int maxRetry = 4;
+        long sleepBeforeRetry = 45000;
         for(int i=0; i<maxRetry; i++) {
             try {
+                log.warn("Sleep for " + sleepBeforeRetry + " before retry to get feed submission result. [feedSubmissionId:" + feedSubmissionId + "]");
+                this.sleepFor(sleepBeforeRetry);
+
                 GetFeedSubmissionResultRequest request = new GetFeedSubmissionResultRequest();
                 request.setMerchant(this.merchantId);
                 request.setFeedSubmissionId(feedSubmissionId);
@@ -327,7 +338,9 @@ public class AmazonBaseService {
 
                 this.mwsClient.getFeedSubmissionResult(request);
                 String responseXml = responseStream.toString("UTF-8");
-                if(responseXml.contains("<FeedProcessingStatus>_COMPLETED_</FeedProcessingStatus>")){
+
+                if(responseXml.contains("<StatusCode>Complete</StatusCode>")){
+                    log.info("Feed Submission Response " + responseXml);
                     log.info("Feed submission is completed. [feedSubmissionId:" + feedSubmissionId + "]");
                     return true;
                 }
@@ -339,10 +352,6 @@ public class AmazonBaseService {
                 } else {
                     log.error("Failed to get feed submission result.", e);
                 }
-            }
-            if(i < maxRetry-1){
-                log.warn("Sleep for " + sleepBeforeRetry + " before retry to get feed submission result. [feedSubmissionId:" + feedSubmissionId + "]");
-                this.sleepFor(sleepBeforeRetry);
             }
         }
         log.error("Failed to get submission result after retries. [feedSubmissionId:" + feedSubmissionId + "]");
