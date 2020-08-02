@@ -63,9 +63,9 @@ public class OrderListener {
         if(orderListenerEnabled == true){
             // TODO if sync is in progress do nothing !!
             log.info("Order listener started to run.");
-          //  listenBigCommerceOrders();
-          //  listenVendHQSales();
-          //  listenBigCommerceFSOrders();
+            listenBigCommerceOrders();
+            listenVendHQSales();
+            listenBigCommerceFSOrders();
             listenAmazonCAOrders();
             OrderListenerUtil.saveLatestOrderInfo(orderListenerDataFile, latestOrderInfo);
             log.info("Order listener ended running.");

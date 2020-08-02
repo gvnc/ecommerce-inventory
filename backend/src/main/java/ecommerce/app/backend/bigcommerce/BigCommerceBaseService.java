@@ -9,6 +9,7 @@ import ecommerce.app.backend.bigcommerce.products.BigCommerceData;
 import ecommerce.app.backend.bigcommerce.products.BigCommerceProduct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
@@ -25,6 +26,9 @@ public class BigCommerceBaseService {
     private String clientId;
 
     private RestTemplate restTemplate = new RestTemplate();
+
+    @Autowired
+    private TestProducts testProducts;
 
     public BigCommerceBaseService(Class parentClass, String apipath, String clientId, String accessToken) {
         log = LoggerFactory.getLogger(parentClass);
@@ -176,7 +180,7 @@ public class BigCommerceBaseService {
 
     public boolean updateProductQuantity(String sku, Integer amount, Boolean overwrite){
         log.info("Inventory update requested for bigcommerce product. [sku:" + sku + ",amount:" + amount + "]");
-        if(TestProducts.isAvailable(sku)){
+        if(testProducts.isAvailable(sku)){
             BigCommerceProduct product = getProductBySku(sku);
             if(product != null) {
                 int newQuantity = amount;

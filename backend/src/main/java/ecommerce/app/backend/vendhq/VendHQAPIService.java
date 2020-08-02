@@ -37,6 +37,9 @@ public class VendHQAPIService {
     @Autowired
     private StoreBean storeBean;
 
+    @Autowired
+    private TestProducts testProducts;
+
     public VendHQAPIService(@Value("${vend.apipath}") String apipath, @Value("${vend.token}") String token) {
         this.authorizationToken = "Bearer " + token;
         this.baseAPIv09 = apipath;
@@ -215,7 +218,7 @@ public class VendHQAPIService {
 
     public boolean updateProductQuantity(String sku, Integer amount, Boolean overwrite){
         log.info("Inventory update requested for vendhq product. [sku:" + sku + ",amount:" + amount + "]");
-        if(TestProducts.isAvailable(sku)){
+        if(testProducts.isAvailable(sku)){
 
             VendHQProduct product = getProductBySku(sku);
             if(product == null){

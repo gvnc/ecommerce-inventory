@@ -9,15 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Slf4j
 @Service
 public class AmazonCaService extends AmazonBaseService {
 
     @Autowired
     private StoreBean storeBean;
+
+    @Autowired
+    private TestProducts testProducts;
 
     public AmazonCaService(@Value("${aws.ca.accessKeyId}")String accessKeyId,
                            @Value("${aws.ca.secret}")String secretAccessKey,
@@ -56,7 +56,7 @@ public class AmazonCaService extends AmazonBaseService {
     }
 
     public boolean updateInventory(String productSku, Integer quantity, Boolean overwrite){
-        if(!TestProducts.isAvailable(productSku)){
+        if(!testProducts.isAvailable(productSku)){
             return true;
         }
         try {

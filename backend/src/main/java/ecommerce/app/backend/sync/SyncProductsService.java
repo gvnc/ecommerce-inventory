@@ -268,13 +268,11 @@ public class SyncProductsService {
         if(syncProductsEnabled == true) {
             this.setSyncStatusIntoPending();
             this.resetStore();
-
-       //     syncBigCommerce();
-     //       syncBigCommerceFS();
+            syncBigCommerce();
+            syncBigCommerceFS();
             syncVendHQ();
-
-   //         syncAmazonUS();
- //           syncAmazonCA();
+            syncAmazonUS();
+            syncAmazonCA();
         }
     }
 }
