@@ -3,6 +3,7 @@ package ecommerce.app.backend.amazon;
 import ecommerce.app.backend.StoreBean;
 import ecommerce.app.backend.amazon.products.AmazonProduct;
 import ecommerce.app.backend.inventory.TestProducts;
+import ecommerce.app.backend.model.BaseProduct;
 import ecommerce.app.backend.model.DetailedProduct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,9 @@ public class AmazonCaService extends AmazonBaseService {
             }
             storeBean.getAmazonCaPriceUpdateSet().add(detailedProduct.getSku());
             amazonProduct.setPrice(Float.parseFloat(price));
+
+            BaseProduct baseProduct = storeBean.getProductsMap().get(productSku);
+            baseProduct.setAmazonCAPrice(Float.parseFloat(price));
 
             log.info("Price change successful for amazon ca. [product:"+productSku+",price:"+price+"]");
             return true;

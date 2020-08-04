@@ -1,5 +1,5 @@
 import { GET_PRODUCTS, SET_DETAILED_PRODUCT, COMPLETE_COMMIT_PRICE_CHANGE,
-    SET_PRODUCTS_REQUESTED, COMPLETE_UPDATE_INVENTORY} from '../actionTypes';
+    SET_PRODUCTS_REQUESTED, COMPLETE_UPDATE_INVENTORY, UPDATE_BASEPRODUCT_PRICE} from '../actionTypes';
 
 import {API_URL} from '../../apiConfig';
 import axios from 'axios'
@@ -37,7 +37,6 @@ export const updateProductList = (data) => {
 };
 
 export const getDetailedProduct = (productSku) => {
-
     return (dispatch) => {
 
         let requestUrl = API_URL + "/products/" + productSku;
@@ -79,7 +78,6 @@ export const commitPriceChange = (productSku, propertyChanges) => {
 }
 
 export const completeCommitPriceChange = (data) => {
-
     return {
         type: COMPLETE_COMMIT_PRICE_CHANGE,
         commitPriceResult: data
@@ -87,7 +85,6 @@ export const completeCommitPriceChange = (data) => {
 };
 
 export const updateInventory = (productSku, inventory) => {
-
     return (dispatch) => {
 
         let requestUrl = API_URL + "/products/" + productSku + "/updateInventory";
@@ -105,9 +102,15 @@ export const updateInventory = (productSku, inventory) => {
 }
 
 export const completeUpdateInventory = (data) => {
-
     return {
         type: COMPLETE_UPDATE_INVENTORY,
         updateInventoryResult: data
+    };
+};
+
+export const updateBaseProductPrice = (baseProduct) => {
+    return {
+        type: UPDATE_BASEPRODUCT_PRICE,
+        baseProduct:baseProduct
     };
 };

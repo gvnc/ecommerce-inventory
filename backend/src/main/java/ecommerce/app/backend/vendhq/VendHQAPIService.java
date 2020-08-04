@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import ecommerce.app.backend.StoreBean;
 import ecommerce.app.backend.inventory.TestProducts;
+import ecommerce.app.backend.model.BaseProduct;
 import ecommerce.app.backend.model.DetailedProduct;
 import ecommerce.app.backend.vendhq.products.*;
 import ecommerce.app.backend.vendhq.sales.VendHQSale;
@@ -118,8 +119,11 @@ public class VendHQAPIService {
                 return false;
             }
 
-            if(price != null)
+            if(price != null) {
                 vendHQProduct.setPrice(Float.parseFloat(price));
+                BaseProduct baseProduct = storeBean.getProductsMap().get(productSku);
+                baseProduct.setVendHQPrice(Float.parseFloat(price));
+            }
 
             if(supplyPrice != null)
                 vendHQProduct.setSupplyPrice(Float.parseFloat(supplyPrice));

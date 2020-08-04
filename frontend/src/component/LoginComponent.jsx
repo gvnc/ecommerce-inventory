@@ -52,7 +52,7 @@ class LoginComponent extends Component {
 
         return (
             <div className="p-grid p-justify-center">
-                <Card title="Login" style={{width:'350px', marginTop:'50px'}} footer={footerContent}>
+                <Card title="Login" style={{width:'375px', marginTop:'50px'}} footer={footerContent}>
                     <div className="p-grid p-fluid">
                         <div className="p-col-6">
                             <label>User Name</label>

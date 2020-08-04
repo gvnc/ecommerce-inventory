@@ -1,6 +1,7 @@
 package ecommerce.app.backend.bigcommerce;
 
 import ecommerce.app.backend.StoreBean;
+import ecommerce.app.backend.model.BaseProduct;
 import ecommerce.app.backend.model.DetailedProduct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class BigCommerceAPIService extends BigCommerceBaseService {
-    
+
     @Autowired
     private StoreBean storeBean;
 
@@ -26,11 +27,16 @@ public class BigCommerceAPIService extends BigCommerceBaseService {
             if(detailedProduct == null)
                 return false;
 
-            super.updatePrice(detailedProduct.getBigCommerceProduct(), productSku, costPrice, retailPrice, price);
-
-            return true;
+            if(super.updatePrice(detailedProduct.getBigCommerceProduct(), productSku, costPrice, retailPrice, price) == true){
+                if(retailPrice != null){ // update base order price
+                    BaseProduct baseProduct = storeBean.getProductsMap().get(productSku);
+                    baseProduct.setBigCommercePrice(Float.parseFloat(retailPrice));
+                }
+                return true;
+            }
         } catch (Exception e){
-            return false;
+            log.error("Error:", e);
         }
+        return false;
     }
 }

@@ -64,7 +64,6 @@ class ListProducts extends Component {
 
 const mapStateToProps = state => {
     return {
-        productsRequested: state.product.productsRequested,
         productList: state.product.productList
     };
 };

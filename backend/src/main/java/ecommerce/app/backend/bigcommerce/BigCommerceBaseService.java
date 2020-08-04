@@ -7,6 +7,7 @@ import ecommerce.app.backend.bigcommerce.order.BCOrder;
 import ecommerce.app.backend.bigcommerce.order.BCOrderProduct;
 import ecommerce.app.backend.bigcommerce.products.BigCommerceData;
 import ecommerce.app.backend.bigcommerce.products.BigCommerceProduct;
+import ecommerce.app.backend.model.BaseProduct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,9 +107,15 @@ public class BigCommerceBaseService {
                 return false;
             }
 
-            bigCommerceProduct.setCostPrice(costPrice);
-            bigCommerceProduct.setRetailPrice(retailPrice);
-            bigCommerceProduct.setPrice(price);
+            if(costPrice!= null)
+                bigCommerceProduct.setCostPrice(costPrice);
+
+            if(retailPrice != null) {
+                bigCommerceProduct.setRetailPrice(retailPrice);
+            }
+
+            if(price != null)
+                bigCommerceProduct.setPrice(price);
 
             log.info("Price change successful for bigcommerce. [product:"+productSku+",costPrice:"+costPrice+",retailPrice:"+retailPrice+",price:"+price+"]");
             return true;
