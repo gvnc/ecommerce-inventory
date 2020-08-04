@@ -9,6 +9,7 @@ export const getProductList = () => {
     return (dispatch) => {
         dispatch(setProductsRequested(true));
         let requestUrl = API_URL + "/products/list";
+        console.log("API_URL:" + API_URL);
         axios.get(requestUrl)
             .catch(err => {
                 console.log("error:" + err);
@@ -60,7 +61,7 @@ export const updateDetailedProduct = (data) => {
     };
 };
 
-export const commitPriceChange = (productSku, propertyChanges) => {
+export const commitPriceChange = (productSku, propertyChanges, noFeedback) => {
 
     return (dispatch) => {
 
@@ -71,7 +72,8 @@ export const commitPriceChange = (productSku, propertyChanges) => {
             })
             .then(response => {
                 if(response) {
-                    dispatch(completeCommitPriceChange(response.data));
+                    if(noFeedback !== true)
+                        dispatch(completeCommitPriceChange(response.data));
                 }
             })
     };

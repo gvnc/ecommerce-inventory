@@ -28,7 +28,7 @@ public class BigCommerceFSAPIService extends BigCommerceBaseService {
                 return false;
 
             if(super.updatePrice(detailedProduct.getBigCommerceFSProduct(), productSku, costPrice, retailPrice, price) == true){
-                if(retailPrice != null){ // update base order price
+                if(detailedProduct.getBigCommerceFSProduct()!= null && retailPrice != null){ // update base order price
                     BaseProduct baseProduct = storeBean.getProductsMap().get(productSku);
                     baseProduct.setBigCommerceFSPrice(Float.parseFloat(retailPrice));
                 }

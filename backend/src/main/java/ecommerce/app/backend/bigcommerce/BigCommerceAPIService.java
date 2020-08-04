@@ -28,7 +28,7 @@ public class BigCommerceAPIService extends BigCommerceBaseService {
                 return false;
 
             if(super.updatePrice(detailedProduct.getBigCommerceProduct(), productSku, costPrice, retailPrice, price) == true){
-                if(retailPrice != null){ // update base order price
+                if(detailedProduct.getBigCommerceProduct() != null && retailPrice != null){ // update base order price
                     BaseProduct baseProduct = storeBean.getProductsMap().get(productSku);
                     baseProduct.setBigCommercePrice(Float.parseFloat(retailPrice));
                 }

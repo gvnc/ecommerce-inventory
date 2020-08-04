@@ -202,7 +202,7 @@ const mapDispatchToProps = dispatch => {
     return {
         getProductList: () => dispatch(getProductList()),
         updateBaseProductPrice: (baseOrder) => dispatch(updateBaseProductPrice(baseOrder)),
-        commitPriceChange: (productSku, propertyChanges) => dispatch(commitPriceChange(productSku, propertyChanges))
+        commitPriceChange: (productSku, propertyChanges) => dispatch(commitPriceChange(productSku, propertyChanges, true))
     };
 };
 
