@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Page, Text, View, Document, Image } from '@react-pdf/renderer';
 import { Table, TableBody, TableCell, TableHeader, DataTableCell } from "@david.kucsai/react-pdf-table";
 import { styles } from './pdfDocumentStyle';
+import { API_URL } from '../../apiConfig';
 
 export default class PDFDocument extends Component {
 
@@ -20,10 +21,9 @@ export default class PDFDocument extends Component {
     }
 
     render(){
-
         let todate = this.formattedDate();
 
-        let logoUrl = "http://" + window.location.hostname + ":8080/Defcon-Paintball-Logo.png";
+        let logoUrl = API_URL + "/Defcon-Paintball-Logo.png";
 
         let address1 = "Defcon Paintball";
         let address2 = "3550 Victoria Park Avenue";
