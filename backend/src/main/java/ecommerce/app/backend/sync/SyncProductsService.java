@@ -286,7 +286,7 @@ public class SyncProductsService {
             syncBigCommerceFS();
             syncVendHQ();
             syncAmazonUS();
-           // syncAmazonCA();
+            syncAmazonCA();
         }
     }
 }
