@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from "react-redux";
-import {getDetailedProduct, getProductList, updateDetailedProduct} from "../store/actions/productActions"
+import {getDetailedProduct, getProductList, updateDetailedProduct} from "../../store/actions/productActions"
 import {DataTable} from "primereact/datatable";
 import {Column} from "primereact/column";
 import ProductDetailDialog from "./ProductDetailDialog";
@@ -37,7 +37,7 @@ class ListProducts extends Component {
     }
 
     render() {
-        let header = <div className="p-clearfix" style={{lineHeight:'1.87em'}}>All Products in Market Places</div>;
+        let header = <div className="p-clearfix" style={{lineHeight:'1.87em'}}>Product List - Manual Edit Mode</div>;
 
         return (
             <div>

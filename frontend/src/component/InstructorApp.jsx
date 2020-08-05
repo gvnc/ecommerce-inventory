@@ -5,7 +5,7 @@ import LogoutComponent from './LogoutComponent';
 import MenuComponent from './MenuComponent';
 import MarketPlaceSyncStatus from './MarketPlaceSyncStatus';
 import AuthenticatedRoute from './AuthenticatedRoute';
-import ListProducts from "./ListProducts";
+import ListProducts from "./products/ListProducts";
 import AuthenticationService from "../service/AuthenticationService";
 import OrderMonitoring from "./OrderMonitoring";
 import PurchaseOrders from "./purchase/PurchaseOrders";

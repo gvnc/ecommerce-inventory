@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
 import {connect} from "react-redux";
-import {commitPriceChange, updateDetailedProduct, completeCommitPriceChange, updateInventory, completeUpdateInventory} from "../store/actions/productActions"
+import {commitPriceChange, updateDetailedProduct, completeCommitPriceChange, updateInventory, completeUpdateInventory} from "../../store/actions/productActions"
 import {Dialog} from "primereact/dialog";
 import {Card} from 'primereact/card';
-import BigCommerceProductCard from "./marketPlaces/BigCommerceProductCard";
-import VendHQProductCard from "./marketPlaces/VendHQProductCard";
-import AmazonProductCard from "./marketPlaces/AmazonProductCard";
+import BigCommerceProductCard from "./BigCommerceProductCard";
+import VendHQProductCard from "./VendHQProductCard";
+import AmazonProductCard from "./AmazonProductCard";
 import InventoryUpdate from "./InventoryUpdate";
 import {TabView,TabPanel} from 'primereact/tabview';
 

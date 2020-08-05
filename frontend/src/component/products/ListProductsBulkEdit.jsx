@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from "react-redux";
-import {commitPriceChange, getProductList, updateBaseProductPrice} from "../store/actions/productActions"
+import {commitPriceChange, getProductList, updateBaseProductPrice} from "../../store/actions/productActions"
 import {DataTable} from "primereact/datatable";
 import {InputText} from "primereact/inputtext";
 import {Column} from "primereact/column";
@@ -153,7 +153,7 @@ class ListProductsBulkEdit extends Component {
     }
 
     render() {
-        let header = <div className="p-clearfix" style={{lineHeight:'1.87em'}}>All Products in Market Places</div>;
+        let header = <div className="p-clearfix" style={{lineHeight:'1.87em'}}>Product List - Bulk Edit Mode</div>;
 
         return (
             <div>
