@@ -30,7 +30,7 @@ class ListProducts extends Component {
                         <div className="p-toolbar-group-right">
                             <ToggleButton style={{width:'250px', marginRight:'.25em'}} checked={this.state.isManualEditChecked}
                                           onChange={(e) => this.setState({isManualEditChecked: e.value})}
-                                          onLabel="Switch to Bulk Mode" offLabel="Switch to Manual Mode" />
+                                          onLabel="Switch to Bulk Edit" offLabel="Switch to Manual Edit" />
                         </div>
                     </Toolbar>
                     {

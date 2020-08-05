@@ -15,6 +15,7 @@ class MenuComponent extends Component {
                         <ul className="navbar-nav">
                             <li><Link className="nav-link" to="/status">Status</Link></li>
                             <li><Link className="nav-link" to="/products">Products</Link></li>
+                            <li><Link className="nav-link" to="/inventoryCounts">Inventory Count</Link></li>
                             <li><Link className="nav-link" to="/purchaseOrders">Purchase Orders</Link></li>
                             <li><Link className="nav-link" to="/orderMonitoring">Order Monitoring</Link></li>
                         </ul>

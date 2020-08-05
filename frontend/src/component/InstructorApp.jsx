@@ -9,6 +9,7 @@ import ListProducts from "./products/ListProducts";
 import AuthenticationService from "../service/AuthenticationService";
 import OrderMonitoring from "./OrderMonitoring";
 import PurchaseOrders from "./purchase/PurchaseOrders";
+import InventoryCounts from "./inventoryCount/InventoryCounts";
 
 class InstructorApp extends Component {
 
@@ -32,6 +33,7 @@ class InstructorApp extends Component {
                             <Route path="/login" exact component={LoginComponent} />
                             <AuthenticatedRoute path="/logout" exact component={LogoutComponent} />
                             <AuthenticatedRoute path="/products" exact component={ListProducts} />
+                            <AuthenticatedRoute path="/inventoryCounts" exact component={InventoryCounts} />
                             <AuthenticatedRoute path="/purchaseOrders" exact component={PurchaseOrders} />
                             <AuthenticatedRoute path="/orderMonitoring" exact component={OrderMonitoring} />
                             <AuthenticatedRoute path="/*" exact component={MarketPlaceSyncStatus} />
