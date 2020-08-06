@@ -1,13 +1,10 @@
 import {
     GET_INVENTORY_COUNTS,
-    CREATE_PURCHASE_ORDER,
-    ADD_SELECTED_PURCHASE_PRODUCTS,
-    UPDATE_SELECTED_PURCHASE_ORDER,
-    UPDATE_SELECTED_PO_PRODUCT,
-    DELETE_SELECTED_PRODUCT,
-    DELETE_PURCHASE_ORDER,
+    ADD_INVENTORY_COUNT_TO_LIST,
     GET_INVENTORY_COUNT_COMPLETED,
-    UPDATE_SELECTED_INVENTORY_COUNT
+    UPDATE_SELECTED_INVENTORY_COUNT,
+    ADD_SELECTED_INVENTORY_COUNT_PRODUCTS,
+    REMOVE_SELECTED_INVENTORY_COUNT_PRODUCTS
 } from '../actionTypes';
 
 const initialState = {
@@ -24,34 +21,8 @@ const reducer = (state = initialState, action) => {
                 ...state,
                 inventoryCounts: action.inventoryCounts
             };
-        case CREATE_PURCHASE_ORDER:
-            let order = action.order;
-            let orders = state.orders;
-            orders.splice(0,0,order);
-            return {
-                ...state,
-                orders: orders,
-                selectedOrder: order
-            };
-        case ADD_SELECTED_PURCHASE_PRODUCTS:
-            let productsToAdd = action.productsToAdd;
-
-            // create a new array to mutate the state
-            let newProducts = Array.from(state.selectedOrderProducts);
-
-            // only add products if it not already added
-            productsToAdd.forEach(function (product) {
-                let productExistAlready = newProducts.some(arrayItem => product.sku === arrayItem.sku);
-                if(productExistAlready === false){
-                    newProducts.push(product);
-                }
-            })
-            return {
-                ...state,
-                selectedOrderProducts: newProducts
-            };
         case GET_INVENTORY_COUNT_COMPLETED:
-            let inventoryCounts = state.inventoryCounts;
+            inventoryCounts = state.inventoryCounts;
             let inventoryCount = action.inventoryCount;
             if(inventoryCount){
                 inventoryCounts = state.inventoryCounts.map((item, index) =>{
@@ -67,6 +38,15 @@ const reducer = (state = initialState, action) => {
                 selectedInventoryCount: inventoryCount,
                 selectedInventoryCountProducts: action.inventoryCountProducts
             };
+        case ADD_INVENTORY_COUNT_TO_LIST:
+            let inventoryCounts = state.inventoryCounts.map((item, index) =>{
+                return item;
+            });
+            inventoryCounts.unshift(action.inventoryCount);
+            return {
+                ...state,
+                inventoryCounts: inventoryCounts
+            }
         case UPDATE_SELECTED_INVENTORY_COUNT:
             let propertyName = action.propertyName;
             let propertyValue = action.propertyValue;
@@ -76,6 +56,31 @@ const reducer = (state = initialState, action) => {
                     ...state.selectedInventoryCount,
                     [propertyName]: propertyValue
                 }
+            };
+        case ADD_SELECTED_INVENTORY_COUNT_PRODUCTS:
+            let productsToAdd = action.productsToAdd;
+
+            // create a new array to mutate the state
+            let newProducts = Array.from(state.selectedInventoryCountProducts);
+
+            // only add products if it is not already added
+            productsToAdd.forEach(function (product) {
+                let productExistAlready = newProducts.some(arrayItem => product.sku === arrayItem.sku);
+                if(productExistAlready === false){
+                    newProducts.push(product);
+                }
+            })
+            return {
+                ...state,
+                selectedInventoryCountProducts: newProducts
+            };
+        case REMOVE_SELECTED_INVENTORY_COUNT_PRODUCTS:
+            let productsToRemove = action.productsToAdd;
+            let remainingProducts = state.selectedInventoryCountProducts.filter(a => !productsToRemove.map(b=>b.sku).includes(a.sku))
+
+            return {
+                ...state,
+                selectedInventoryCountProducts: remainingProducts
             };
         default:
             return state;

@@ -7,7 +7,9 @@ import {InputText} from "primereact/inputtext";
 import {Checkbox} from 'primereact/checkbox';
 import ConfirmationDialog from "../ConfirmationDialog";
 import {RadioButton} from "primereact/radiobutton";
-import { updateSelectedInventoryCount } from "../../store/actions/inventoryCountActions";
+import { updateSelectedInventoryCount, saveInventoryCount } from "../../store/actions/inventoryCountActions";
+import {Growl} from "primereact/growl";
+import ProductSelectComponent from "./ProductSelectComponent";
 
 class EditInventoryCountDialog extends Component {
 
@@ -16,35 +18,29 @@ class EditInventoryCountDialog extends Component {
 
         this.hideDialog = this.hideDialog.bind(this);
         this.resetInputs = this.resetInputs.bind(this);
-        this.saveInventoryCount = this.saveInventoryCount.bind(this);
+        this.save = this.save.bind(this);
         this.inactiveProductsCheckEvent = this.inactiveProductsCheckEvent.bind(this);
         this.partialCountRadioEvent = this.partialCountRadioEvent.bind(this);
+        this.saveSuccessHandler = this.saveSuccessHandler.bind(this);
+        this.saveErrorHandler = this.saveErrorHandler.bind(this);
 
         this.state = {
-            displayProductSelect: false,
-            checked: false,
-            receiveList: [],
-            displayPODeleteConfirmation: false,
-            displayPOCancelConfirmation: false,
-            receiveButtonEnabled: true
+
         }
     }
 
     hideDialog(){
         this.props.onHideEvent();
-        //this.resetInputs();
+        this.resetInputs();
         //this.props.setPurchaseOrderById(null);
     }
 
     resetInputs(){
-        this.setState({
-            displayProductSelect: false,
-            checked: false,
-            receiveList: [],
-            displayPODeleteConfirmation: false,
-            displayPOCancelConfirmation: false,
-            receiveButtonEnabled: true
+     /*   this.setState({
+
         });
+
+      */
     }
 
     inactiveProductsCheckEvent(e){
@@ -55,28 +51,38 @@ class EditInventoryCountDialog extends Component {
         this.props.updateSelectedInventoryCount("partialCount", e.value);
     }
 
-    saveInventoryCount(){
+    save(){
+        let inventoryCount = this.props.inventoryCount;
+        let inventoryCountProducts = this.props.inventoryCountProducts;
+        this.props.saveInventoryCount(inventoryCount, inventoryCountProducts, this.saveSuccessHandler, this.saveErrorHandler);
+    }
 
+    saveSuccessHandler(){
+        this.growl.show({severity: 'success', summary: 'Success', detail: 'Inventory count saved.'});
+    }
+
+    saveErrorHandler(){
+        this.growl.show({severity: 'error', summary: 'Error', detail: 'Failed to save inventory count.'});
     }
 
     render() {
         let dialogFooter =  <div className="ui-dialog-buttonpane p-clearfix">
-            <Button label="Save" icon="pi pi-check" onClick={this.saveInventoryCount}/>
-            <Button label="Start" icon="pi pi-check" onClick={this.saveInventoryCount}/>
+            <Button label="Save" icon="pi pi-check" onClick={this.save}/>
+            <Button label="Start" icon="pi pi-check" onClick={this.save}/>
         </div>;
 
         //console.log("of " + JSON.stringify(this.props.inventoryCount));
 
         return (
-
-            <Dialog visible={this.props.visibleProperty} modal={true} style={{width:'800px'}}
-                    footer={dialogFooter} onHide={this.hideDialog} showHeader={false} >
+            <Dialog visible={this.props.visibleProperty} modal={true} maximized={true}
+                    footer={dialogFooter} onHide={this.hideDialog} showHeader={true} >
+                <Growl ref={(el) => this.growl = el} />
                 {
                     this.props.inventoryCount &&
 
                     <div className="p-grid p-fluid">
-                        <div className="p-col-3 productProperty" style={{padding: '.75em'}}><label>Name</label></div>
-                        <div className="p-col-3" style={{padding: '.75em'}}>
+                        <div className="p-col-2 productProperty" style={{padding: '.75em'}}><label>Name</label></div>
+                        <div className="p-col-4" style={{padding: '.75em'}}>
                             <InputText id="name" onChange={e => this.props.updateSelectedInventoryCount("name", e.target.value)}
                                        value={this.props.inventoryCount.name}/>
                         </div>
@@ -98,6 +104,10 @@ class EditInventoryCountDialog extends Component {
                                          checked={this.props.inventoryCount.partialCount}/>
                             <label htmlFor="countType2" className="p-radiobutton-label">Partial Count</label>
                         </div>
+                        <div className="p-col-6"></div>
+                        <div className="p-col-12">
+                            <ProductSelectComponent partialCount={this.props.inventoryCount.partialCount} />
+                        </div>
                     </div>
                 }
             </Dialog>
@@ -114,7 +124,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        updateSelectedInventoryCount: (propertyName, propertyValue) => dispatch(updateSelectedInventoryCount(propertyName, propertyValue))
+        updateSelectedInventoryCount: (propertyName, propertyValue) => dispatch(updateSelectedInventoryCount(propertyName, propertyValue)),
+        saveInventoryCount: (inventoryCount, productList, successHandler, errorHandler) => dispatch(saveInventoryCount(inventoryCount, productList, successHandler, errorHandler))
     };
 };
 

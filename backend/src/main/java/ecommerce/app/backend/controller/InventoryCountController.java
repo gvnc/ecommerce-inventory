@@ -1,16 +1,17 @@
 package ecommerce.app.backend.controller;
 
 
+import ecommerce.app.backend.model.InventoryCountRequest;
+import ecommerce.app.backend.repository.InventoryCountProductRepository;
 import ecommerce.app.backend.repository.InventoryCountRepository;
 import ecommerce.app.backend.repository.model.InventoryCount;
+import ecommerce.app.backend.repository.model.InventoryCountProduct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -22,6 +23,9 @@ public class InventoryCountController {
     @Autowired
     private InventoryCountRepository inventoryCountRepository;
 
+    @Autowired
+    private InventoryCountProductRepository inventoryCountProductRepository;
+
     @GetMapping("/list")
     public List<InventoryCount> getInventoryCounts() {
         List<InventoryCount> inventoryCountList = new ArrayList<>();
@@ -32,5 +36,41 @@ public class InventoryCountController {
             log.error("Failed to get purchase orders.", e);
         }
         return  inventoryCountList;
+    }
+
+    @GetMapping("/get/{id}")
+    public InventoryCountRequest getPurchaseOrder(@PathVariable Integer id) {
+        try{
+            InventoryCountRequest icq = new InventoryCountRequest();
+            InventoryCount inventoryCount = inventoryCountRepository.findById(id).orElse(null);
+            icq.setInventoryCount(inventoryCount);
+
+            List<InventoryCountProduct> productList = inventoryCountProductRepository.findAllByInventoryCount_Id(id);
+            icq.setProductList(productList);
+
+            return icq;
+        } catch (Exception e){
+            log.error("Failed to get inventory count by id " + id, e);
+        }
+        return null;
+    }
+
+    @PostMapping("/saveOrUpdate")
+    public InventoryCountRequest saveOrUpdateInventoryCount(@RequestBody InventoryCountRequest inventoryCountRequest) {
+        try{
+            InventoryCount inventoryCount = inventoryCountRequest.getInventoryCount();
+            if(inventoryCount.getId() == null){
+                inventoryCount.setCreateDate(new Date());
+                inventoryCount.setStatus(InventoryCountConstants.PLANNED);
+            }
+            inventoryCountRepository.save(inventoryCount);
+            inventoryCountRequest.setInventoryCount(inventoryCount);
+
+            // TODO - save product list
+            return inventoryCountRequest;
+        } catch (Exception e){
+            log.error("Failed to save inventory count.", e);
+            return null;
+        }
     }
 }
