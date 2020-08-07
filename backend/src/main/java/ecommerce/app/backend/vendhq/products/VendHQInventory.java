@@ -1,49 +1,23 @@
 package ecommerce.app.backend.vendhq.products;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.Setter;
 
 public class VendHQInventory {
 
+    @Getter @Setter
     @JsonProperty("product_id")
     private String productId;
 
+    @Getter @Setter
     @JsonProperty("inventory_level")
     private Integer inventoryLevel;
 
+    @Getter @Setter
     private Integer count;
 
+    @Getter @Setter
     @JsonProperty("outlet_id")
     private String outletId;
-
-    public String getProductId() {
-        return productId;
-    }
-
-    public void setProductId(String productId) {
-        this.productId = productId;
-    }
-
-    public Integer getInventoryLevel() {
-        return inventoryLevel;
-    }
-
-    public void setInventoryLevel(Integer inventoryLevel) {
-        this.inventoryLevel = inventoryLevel;
-    }
-
-    public Integer getCount() {
-        return count;
-    }
-
-    public void setCount(Integer count) {
-        this.count = count;
-    }
-
-    public String getOutletId() {
-        return outletId;
-    }
-
-    public void setOutletId(String outletId) {
-        this.outletId = outletId;
-    }
 }

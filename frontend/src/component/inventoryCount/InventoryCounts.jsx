@@ -79,7 +79,7 @@ class InventoryCounts extends Component {
                             <Column bodyStyle={columnCss} field="status" header="Status"/>
                             <Column body={this.editButtonBody} headerStyle={{width: '4em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}}   />
                         </DataTable>
-                        <EditInventoryCountDialog visibleProperty={this.state.displayDetailsDialog}
+                        <EditInventoryCountDialog visibleProperty={this.state.displayDetailsDialog} historyFrom={this.props.history}
                                                   onHideEvent={() => this.setState({displayDetailsDialog: false})} />
                     </div>
                 }

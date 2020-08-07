@@ -10,6 +10,7 @@ import AuthenticationService from "../service/AuthenticationService";
 import OrderMonitoring from "./OrderMonitoring";
 import PurchaseOrders from "./purchase/PurchaseOrders";
 import InventoryCounts from "./inventoryCount/InventoryCounts";
+import InventoryCountInProgress from "./inventoryCount/InventoryCountInProgress";
 
 class InstructorApp extends Component {
 
@@ -36,6 +37,7 @@ class InstructorApp extends Component {
                             <AuthenticatedRoute path="/inventoryCounts" exact component={InventoryCounts} />
                             <AuthenticatedRoute path="/purchaseOrders" exact component={PurchaseOrders} />
                             <AuthenticatedRoute path="/orderMonitoring" exact component={OrderMonitoring} />
+                            <AuthenticatedRoute path="/inventoryCountInProgress/:inventoryCountId" exact component={InventoryCountInProgress} />
                             <AuthenticatedRoute path="/*" exact component={MarketPlaceSyncStatus} />
                         </Switch>
                     </>

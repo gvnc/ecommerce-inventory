@@ -10,6 +10,7 @@ import ecommerce.app.backend.repository.model.InventoryCount;
 import ecommerce.app.backend.repository.model.InventoryCountProduct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ public class InventoryCountController {
         return null;
     }
 
+    @Transactional
     @PostMapping("/saveOrUpdate")
     public InventoryCountRequest saveOrUpdateInventoryCount(@RequestBody InventoryCountRequest inventoryCountRequest) {
         try{
@@ -89,11 +91,14 @@ public class InventoryCountController {
     }
 
     @PostMapping("/start/{id}")
-    public List<InventoryCountProduct> startInventoryCount(@PathVariable Integer id) {
+    public InventoryCountRequest startInventoryCount(@PathVariable Integer id) {
         try{
+            InventoryCountRequest inventoryCountRequest = new InventoryCountRequest();
+
             // change inventory count status
             InventoryCount inventoryCount = inventoryCountRepository.findById(id).orElse(null);
             if(inventoryCount != null){
+                inventoryCountRequest.setInventoryCount(inventoryCount);
                 inventoryCount.setStatus(InventoryCountConstants.STARTED);
                 inventoryCountRepository.save(inventoryCount);
 
@@ -102,12 +107,22 @@ public class InventoryCountController {
                 productList.stream().forEach(product -> {
                     DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(product.getSku());
                     if(detailedProduct.getVendHQProduct() != null){
-                        product.setVendhqQuantity(detailedProduct.getVendHQProduct().getInventory().getInventoryLevel());
+                        if(detailedProduct.getVendHQProduct().getInventory() != null)
+                            product.setVendhqQuantity(detailedProduct.getVendHQProduct().getInventory().getInventoryLevel());
                     }
-                    // TODO - how to set inventory - vendhq inventory level is not initiated at first startup
+                    if(detailedProduct.getBigCommerceProduct() != null){
+                        product.setBigcommerceQuantity(detailedProduct.getBigCommerceProduct().getInventoryLevel());
+                    }
+                    if(detailedProduct.getBigCommerceFSProduct() != null){
+                        product.setBigcommerceQuantity(detailedProduct.getBigCommerceFSProduct().getInventoryLevel());
+                    }
+                    if(detailedProduct.getAmazonCaProduct() != null){
+                        product.setBigcommerceQuantity(detailedProduct.getAmazonCaProduct().getQuantity());
+                    }
                 });
                 inventoryCountProductRepository.saveAll(productList);
-                return productList;
+                inventoryCountRequest.setProductList(productList);
+                return inventoryCountRequest;
             }
         } catch (Exception e){
             log.error("Failed to save inventory count.", e);

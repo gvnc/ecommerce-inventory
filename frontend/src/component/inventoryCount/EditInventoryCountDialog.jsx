@@ -6,7 +6,7 @@ import {InputText} from "primereact/inputtext";
 import {Checkbox} from 'primereact/checkbox';
 import ConfirmationDialog from "../ConfirmationDialog";
 import {RadioButton} from "primereact/radiobutton";
-import { updateSelectedInventoryCount, saveInventoryCount } from "../../store/actions/inventoryCountActions";
+import { updateSelectedInventoryCount, saveInventoryCount, startInventoryCount} from "../../store/actions/inventoryCountActions";
 import {Growl} from "primereact/growl";
 import ProductSelectComponent from "./ProductSelectComponent";
 
@@ -22,6 +22,8 @@ class EditInventoryCountDialog extends Component {
         this.partialCountRadioEvent = this.partialCountRadioEvent.bind(this);
         this.saveSuccessHandler = this.saveSuccessHandler.bind(this);
         this.saveErrorHandler = this.saveErrorHandler.bind(this);
+        this.start = this.start.bind(this);
+        this.startSuccessHandler = this.startSuccessHandler.bind(this);
 
         this.state = {
 
@@ -64,10 +66,24 @@ class EditInventoryCountDialog extends Component {
         this.growl.show({severity: 'error', summary: 'Error', detail: 'Failed to save inventory count.'});
     }
 
+    start(){
+        this.props.startInventoryCount(this.props.inventoryCount.id, this.startSuccessHandler);
+    }
+
+    startSuccessHandler(){
+        if(this.props.history){
+            console.log("ee var iste");
+        }
+        if(this.props.historyFrom){
+            console.log("frommm var iste");
+        }
+        this.props.historyFrom.push("/inventoryCountInProgress/" + this.props.inventoryCount.id);
+    }
+
     render() {
         let dialogFooter =  <div className="ui-dialog-buttonpane p-clearfix">
             <Button label="Save" icon="pi pi-check" onClick={this.save}/>
-            <Button label="Start" icon="pi pi-check" onClick={this.save}/>
+            <Button label="Start" icon="pi pi-check" onClick={this.start}/>
         </div>;
 
         //console.log("of " + JSON.stringify(this.props.inventoryCount));
@@ -124,7 +140,8 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
     return {
         updateSelectedInventoryCount: (propertyName, propertyValue) => dispatch(updateSelectedInventoryCount(propertyName, propertyValue)),
-        saveInventoryCount: (inventoryCount, productList, successHandler, errorHandler) => dispatch(saveInventoryCount(inventoryCount, productList, successHandler, errorHandler))
+        saveInventoryCount: (inventoryCount, productList, successHandler, errorHandler) => dispatch(saveInventoryCount(inventoryCount, productList, successHandler, errorHandler)),
+        startInventoryCount: (inventoryCountId, successHandler) => dispatch(startInventoryCount(inventoryCountId, successHandler))
     };
 };
 

@@ -118,3 +118,20 @@ export const removeSelectedInventoryCountProducts = (productsArray) => {
         productsToAdd: productsArray
     };
 };
+
+export const startInventoryCount = (inventoryCountId, successHandler) => {
+
+    return (dispatch) => {
+        let requestUrl = API_URL + "/inventoryCount/start/" + inventoryCountId;
+        axios.post(requestUrl, null)
+            .catch(err => {
+                console.log("error:" + err);
+            })
+            .then(response => {
+                if(response) {
+                    dispatch(setInventoryCountById(response.data));
+                    successHandler();
+                }
+            })
+    };
+}

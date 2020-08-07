@@ -78,6 +78,24 @@ public class VendHQAPIService {
         return null;
     }
 
+    public VendHQInventoryData getInventoryList(long version){
+        try {
+            String url = baseAPIv20 + "/inventory?page_size=100&after=" + version;
+
+            HttpEntity<String> requestEntity = new HttpEntity<>("", getHeaders());
+
+            ResponseEntity<VendHQInventoryData> dataResponse =
+                    restTemplate.exchange(url, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<VendHQInventoryData>() { });
+
+            return dataResponse.getBody();
+        } catch (Exception e){
+            log.error("Failed to get inventory list.", e);
+            if(e instanceof ResourceAccessException)
+                throw e;
+        }
+        return null;
+    }
+
     public boolean updatePrice(String productSku, String supplyPrice, String price){
         try {
             log.info("Price change request for vendhq. [product:"+productSku+",costPrice:"+supplyPrice+",price:"+price+"]");
@@ -248,7 +266,7 @@ public class VendHQAPIService {
         return true;
     }
 
-    public boolean updateInventory(VendHQProduct product, Integer newQuantity){
+    private boolean updateInventory(VendHQProduct product, Integer newQuantity){
 
         try {
             log.info("Inventory change request for vendhq. [productId:"+product.getId()+",sku:"+product.getSku()+",newQuantity:"+newQuantity+"]");
