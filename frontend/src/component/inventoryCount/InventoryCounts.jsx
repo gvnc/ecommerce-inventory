@@ -15,6 +15,7 @@ class InventoryCounts extends Component {
         this.createNew = this.createNew.bind(this);
         this.openInventoryCountDialog = this.openInventoryCountDialog.bind(this);
         this.editButtonBody = this.editButtonBody.bind(this);
+        this.editButtonClicked = this.editButtonClicked.bind(this);
     }
 
     componentDidMount() {
@@ -48,10 +49,17 @@ class InventoryCounts extends Component {
         });
     }
 
+    editButtonClicked(status, id){
+        if(status === "PLANNED") {
+            this.openInventoryCountDialog(id);
+        } else {
+            this.props.history.push("/inventoryCountInProgress/" + id)
+        }
+    }
+
     editButtonBody(rowData) {
-        return (
-            <Button type="button" icon="pi pi-cog" className="p-button-secondary" onClick={() => this.openInventoryCountDialog(rowData.id)}></Button>
-        );
+        return <Button type="button" icon="pi pi-cog" className="p-button-secondary"
+                       onClick={() => this.editButtonClicked(rowData.status, rowData.id)}></Button>;
     }
 
     render() {
@@ -79,7 +87,7 @@ class InventoryCounts extends Component {
                             <Column bodyStyle={columnCss} field="status" header="Status"/>
                             <Column body={this.editButtonBody} headerStyle={{width: '4em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}}   />
                         </DataTable>
-                        <EditInventoryCountDialog visibleProperty={this.state.displayDetailsDialog} historyFrom={this.props.history}
+                        <EditInventoryCountDialog visibleProperty={this.state.displayDetailsDialog} history={this.props.history}
                                                   onHideEvent={() => this.setState({displayDetailsDialog: false})} />
                     </div>
                 }

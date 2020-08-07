@@ -15,15 +15,20 @@ class InventoryCountInProgress extends Component {
 
     componentDidMount() {
         let inventoryCountId = this.props.match.params.inventoryCountId;
+        console.log("lan " + inventoryCountId);
         // if same id with props selected, do nothing
-        if(this.props.inventoryCount.id !== inventoryCountId){
+        if(this.props.inventoryCount !== undefined && this.props.inventoryCount !== null && this.props.inventoryCount.id === inventoryCountId){
+            // do nothing
+        } else {
+            console.log("eeuu");
             this.props.getInventoryCountById(inventoryCountId);
         }
     }
 
     render() {
         return (
-            <p>{this.props.inventoryCount.name}</p>
+                this.props.inventoryCount &&
+                    <p>{this.props.inventoryCount.name}</p>
         )
     }
 }

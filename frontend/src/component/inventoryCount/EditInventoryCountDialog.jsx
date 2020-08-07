@@ -71,13 +71,7 @@ class EditInventoryCountDialog extends Component {
     }
 
     startSuccessHandler(){
-        if(this.props.history){
-            console.log("ee var iste");
-        }
-        if(this.props.historyFrom){
-            console.log("frommm var iste");
-        }
-        this.props.historyFrom.push("/inventoryCountInProgress/" + this.props.inventoryCount.id);
+        this.props.history.push("/inventoryCountInProgress/" + this.props.inventoryCount.id);
     }
 
     render() {
