@@ -22,7 +22,7 @@ const reducer = (state = initialState, action) => {
                 inventoryCounts: action.inventoryCounts
             };
         case GET_INVENTORY_COUNT_COMPLETED:
-            inventoryCounts = state.inventoryCounts;
+            let inventoryCounts = state.inventoryCounts;
             let inventoryCount = action.inventoryCount;
             if(inventoryCount){
                 inventoryCounts = state.inventoryCounts.map((item, index) =>{
@@ -39,7 +39,7 @@ const reducer = (state = initialState, action) => {
                 selectedInventoryCountProducts: action.inventoryCountProducts
             };
         case ADD_INVENTORY_COUNT_TO_LIST:
-            let inventoryCounts = state.inventoryCounts.map((item, index) =>{
+            inventoryCounts = state.inventoryCounts.map((item, index) =>{
                 return item;
             });
             inventoryCounts.unshift(action.inventoryCount);

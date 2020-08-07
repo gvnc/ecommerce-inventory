@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import {connect} from "react-redux";
 import {Dialog} from "primereact/dialog";
 import {Button} from "primereact/button";
-import {DataTable} from "primereact/datatable";
 import {InputText} from "primereact/inputtext";
 import {Checkbox} from 'primereact/checkbox';
 import ConfirmationDialog from "../ConfirmationDialog";
@@ -118,7 +117,7 @@ class EditInventoryCountDialog extends Component {
 const mapStateToProps = state => {
     return {
         inventoryCount: state.inventoryCount.selectedInventoryCount,
-        inventoryCountProducts: state.purchase.selectedInventoryCountProducts
+        inventoryCountProducts: state.inventoryCount.selectedInventoryCountProducts
     };
 };
 

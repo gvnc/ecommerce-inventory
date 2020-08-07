@@ -285,21 +285,6 @@ public class VendHQAPIService {
                 return false;
             }
 
-            // set values in the store bean as well !!
-            /*
-            DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(product.getSku());
-            if(detailedProduct == null) {
-                detailedProduct = new DetailedProduct(product.getSku(), product.getName(), null,product);
-                storeBean.getDetailedProductsMap().put(product.getSku(), detailedProduct);
-                BaseProduct baseProduct = new BaseProduct(product.getSku(), product.getName());
-                storeBean.getProductsMap().put(product.getSku(), baseProduct);
-                storeBean.getProductsList().add(baseProduct);
-            } else {
-                detailedProduct.getVendHQProduct().setInventory(inventory);
-            }
-
-             */
-
             log.info("Inventory change successful for vendhq. [productId:"+product.getId()+",sku:"+product.getSku()+",newQuantity:"+newQuantity+"]");
             return true;
         } catch (Exception e){

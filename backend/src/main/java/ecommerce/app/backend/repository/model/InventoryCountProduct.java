@@ -15,7 +15,10 @@ public class InventoryCountProduct {
     private String sku;
 
     @Getter @Setter
-    private Integer venhqQuantity;
+    private String name;
+
+    @Getter @Setter
+    private Integer vendhqQuantity;
 
     @Getter @Setter
     private Integer bigcommerceQuantity;
@@ -27,16 +30,14 @@ public class InventoryCountProduct {
     private Integer amazonCAQuantity;
 
     @Getter @Setter
-    private Integer count;
+    private Integer count = 0;
 
     @Getter @Setter
-    private Boolean counted;
+    private Boolean counted = false;
 
     @Getter @Setter
-    private String status; // Matched - Unmatched
+    private String status = "INITIAL"; // Matched - Unmatched
 
     @Getter @Setter
-    @OneToOne
-    @JoinColumn(name = "inventoryCountId", referencedColumnName = "id")
-    private InventoryCount inventoryCount;
+    private Integer inventoryCountId;
 }

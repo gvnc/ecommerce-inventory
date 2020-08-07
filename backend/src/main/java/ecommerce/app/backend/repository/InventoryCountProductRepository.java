@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface InventoryCountProductRepository extends CrudRepository<InventoryCountProduct, Integer> {
 
-    List<InventoryCountProduct> findAllByInventoryCount_Id(Integer inventoryCountId);
+    List<InventoryCountProduct> findAllByInventoryCountId(Integer inventoryCountId);
 
-    void deleteByInventoryCount_Id(Integer inventoryCountId);
+    void deleteByInventoryCountId(Integer inventoryCountId);
 }
