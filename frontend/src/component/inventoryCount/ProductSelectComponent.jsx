@@ -3,6 +3,7 @@ import {connect} from "react-redux";
 import {Button} from "primereact/button";
 import {DataTable} from "primereact/datatable";
 import {Column} from "primereact/column";
+import {Fieldset} from 'primereact/fieldset';
 import {getProductList} from "../../store/actions/productActions";
 import {addSelectedInventoryCountProducts, removeSelectedInventoryCountProducts} from "../../store/actions/inventoryCountActions"
 
@@ -115,7 +116,9 @@ class ProductSelectComponent extends Component {
 
                     <div className="p-grid p-fluid">
                         <div className="p-col-12">
-                            move products from the list on the left to the right to include in count
+                            <Fieldset legend="Partial Count">
+                                move products from left to right to include in count
+                            </Fieldset>
                         </div>
                         <div className="p-col-5">
                             <DataTable value={availableProducts} paginator={true} rows={5}
@@ -172,7 +175,9 @@ class ProductSelectComponent extends Component {
 
                     <div className="p-grid p-fluid">
                         <div className="p-col-12">
-                            full count is selected, total number of products is {this.props.productList.length}
+                            <Fieldset legend="Full Count">
+                                full count is selected, total number of products is {this.props.productList.length}
+                            </Fieldset>
                         </div>
                     </div>
                 }

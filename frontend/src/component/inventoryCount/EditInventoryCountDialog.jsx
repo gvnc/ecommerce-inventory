@@ -83,7 +83,7 @@ class EditInventoryCountDialog extends Component {
         //console.log("of " + JSON.stringify(this.props.inventoryCount));
 
         return (
-            <Dialog visible={this.props.visibleProperty} modal={true} maximized={true}
+            <Dialog visible={this.props.visibleProperty} modal={true} maximized={true} header=" Edit Inventory Count"
                     footer={dialogFooter} onHide={this.hideDialog} showHeader={true} >
                 <Growl ref={(el) => this.growl = el} />
                 {
@@ -94,12 +94,6 @@ class EditInventoryCountDialog extends Component {
                         <div className="p-col-4" style={{padding: '.75em'}}>
                             <InputText id="name" onChange={e => this.props.updateSelectedInventoryCount("name", e.target.value)}
                                        value={this.props.inventoryCount.name}/>
-                        </div>
-                        <div className="p-col-6" style={{padding: '.75em'}}>
-                            <Checkbox inputId="includeInactiveCheck" onChange={e => this.inactiveProductsCheckEvent(e)}
-                                      checked={this.props.inventoryCount.includeInactive}></Checkbox>
-                            <label htmlFor="includeInactiveCheck" className="p-checkbox-label">include inactive
-                                products</label>
                         </div>
                         <div className="p-col-3">
                             <RadioButton inputId="countType1" name="countType" value={false}
@@ -113,7 +107,6 @@ class EditInventoryCountDialog extends Component {
                                          checked={this.props.inventoryCount.partialCount}/>
                             <label htmlFor="countType2" className="p-radiobutton-label">Partial Count</label>
                         </div>
-                        <div className="p-col-6"></div>
                         <div className="p-col-12">
                             <ProductSelectComponent partialCount={this.props.inventoryCount.partialCount} />
                         </div>

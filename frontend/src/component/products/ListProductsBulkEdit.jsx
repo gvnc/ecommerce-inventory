@@ -4,7 +4,6 @@ import {commitPriceChange, getProductList, updateBaseProductPrice} from "../../s
 import {DataTable} from "primereact/datatable";
 import {InputText} from "primereact/inputtext";
 import {Column} from "primereact/column";
-import ProductDetailDialog from "./ProductDetailDialog";
 import {Growl} from 'primereact/growl';
 
 
@@ -113,6 +112,7 @@ class ListProductsBulkEdit extends Component {
 
         if(bigCommercePrice !== null && !isNaN(parseFloat(bigCommercePrice))) {
             let priceParameters = {
+                "bigCommercePrice" : bigCommercePrice,
                 "bigCommerceRetailPrice" : bigCommercePrice,
                 "marketPlace" : "BigCommerce"
             };
@@ -181,11 +181,6 @@ class ListProductsBulkEdit extends Component {
                                 editor={(props) => this.editorForRowEditing(props, 'amazonCAPrice')} style={{height: '3.5em'}}/>
                         <Column rowEditor={true} style={{'width': '70px', 'textAlign': 'center'}}></Column>
                     </DataTable>
-
-                    <ProductDetailDialog visibleProperty={this.state.displayDialog}
-                                         onHideEvent={() => this.setState({displayDialog: false})} productSku={null}
-                                         setGrowlMessage={(messages) => this.setGrowlMessage(messages)}
-                    />
                 </div>
             </div>
         )
