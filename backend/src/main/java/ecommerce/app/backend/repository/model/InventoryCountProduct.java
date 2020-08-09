@@ -36,7 +36,7 @@ public class InventoryCountProduct {
     private Boolean counted = false;
 
     @Getter @Setter
-    private String status = "INITIAL"; // Matched - Unmatched
+    private Boolean matched = false;
 
     @Getter @Setter
     private Integer inventoryCountId;

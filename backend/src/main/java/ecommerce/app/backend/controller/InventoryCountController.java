@@ -103,23 +103,48 @@ public class InventoryCountController {
                 inventoryCountRepository.save(inventoryCount);
 
                 // find products and set inventory levels
-                List<InventoryCountProduct> productList = inventoryCountProductRepository.findAllByInventoryCountId(id);
-                productList.stream().forEach(product -> {
-                    DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(product.getSku());
-                    if(detailedProduct.getVendHQProduct() != null){
-                        if(detailedProduct.getVendHQProduct().getInventory() != null)
-                            product.setVendhqQuantity(detailedProduct.getVendHQProduct().getInventory().getInventoryLevel());
-                    }
-                    if(detailedProduct.getBigCommerceProduct() != null){
-                        product.setBigcommerceQuantity(detailedProduct.getBigCommerceProduct().getInventoryLevel());
-                    }
-                    if(detailedProduct.getBigCommerceFSProduct() != null){
-                        product.setBigcommerceQuantity(detailedProduct.getBigCommerceFSProduct().getInventoryLevel());
-                    }
-                    if(detailedProduct.getAmazonCaProduct() != null){
-                        product.setBigcommerceQuantity(detailedProduct.getAmazonCaProduct().getQuantity());
-                    }
-                });
+                List<InventoryCountProduct> productList;
+                if(inventoryCount.getPartialCount() == true){
+                    productList = inventoryCountProductRepository.findAllByInventoryCountId(id);
+                    productList.stream().forEach(product -> {
+                        DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(product.getSku());
+                        if(detailedProduct.getVendHQProduct() != null){
+                            if(detailedProduct.getVendHQProduct().getInventory() != null)
+                                product.setVendhqQuantity(detailedProduct.getVendHQProduct().getInventory().getInventoryLevel());
+                        }
+                        if(detailedProduct.getBigCommerceProduct() != null){
+                            product.setBigcommerceQuantity(detailedProduct.getBigCommerceProduct().getInventoryLevel());
+                        }
+                        if(detailedProduct.getBigCommerceFSProduct() != null){
+                            product.setBigcommerceQuantity(detailedProduct.getBigCommerceFSProduct().getInventoryLevel());
+                        }
+                        if(detailedProduct.getAmazonCaProduct() != null){
+                            product.setBigcommerceQuantity(detailedProduct.getAmazonCaProduct().getQuantity());
+                        }
+                    });
+                } else { // full count detected
+                    productList = new ArrayList<>();
+                    storeBean.getDetailedProductsMap().forEach((sku, detailedProduct) -> {
+                        InventoryCountProduct product = new InventoryCountProduct();
+                        product.setInventoryCountId(inventoryCount.getId());
+                        product.setSku(detailedProduct.getSku());
+                        product.setName(detailedProduct.getName());
+                        if(detailedProduct.getVendHQProduct() != null){
+                            if(detailedProduct.getVendHQProduct().getInventory() != null)
+                                product.setVendhqQuantity(detailedProduct.getVendHQProduct().getInventory().getInventoryLevel());
+                        }
+                        if(detailedProduct.getBigCommerceProduct() != null){
+                            product.setBigcommerceQuantity(detailedProduct.getBigCommerceProduct().getInventoryLevel());
+                        }
+                        if(detailedProduct.getBigCommerceFSProduct() != null){
+                            product.setBigcommerceQuantity(detailedProduct.getBigCommerceFSProduct().getInventoryLevel());
+                        }
+                        if(detailedProduct.getAmazonCaProduct() != null){
+                            product.setBigcommerceQuantity(detailedProduct.getAmazonCaProduct().getQuantity());
+                        }
+                        productList.add(product);
+                    });
+                }
                 inventoryCountProductRepository.saveAll(productList);
                 inventoryCountRequest.setProductList(productList);
                 return inventoryCountRequest;
@@ -128,5 +153,16 @@ public class InventoryCountController {
             log.error("Failed to save inventory count.", e);
         }
         return null;
+    }
+
+    @PostMapping("/saveInventoryCountProduct")
+    public String saveInventoryCountProduct(@RequestBody InventoryCountProduct inventoryCountProduct) {
+        try{
+            inventoryCountProductRepository.save(inventoryCountProduct);
+            return OperationConstants.SUCCESS;
+        } catch (Exception e){
+            log.error("Failed to save inventory count product.", e);
+        }
+        return OperationConstants.FAIL;
     }
 }

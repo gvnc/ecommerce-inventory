@@ -4,7 +4,8 @@ import {
     UPDATE_SELECTED_INVENTORY_COUNT,
     ADD_INVENTORY_COUNT_TO_LIST,
     ADD_SELECTED_INVENTORY_COUNT_PRODUCTS,
-    REMOVE_SELECTED_INVENTORY_COUNT_PRODUCTS
+    REMOVE_SELECTED_INVENTORY_COUNT_PRODUCTS,
+    SET_INVENTORY_COUNT_PRODUCT
 } from '../actionTypes';
 
 import {API_URL} from '../../apiConfig';
@@ -119,7 +120,39 @@ export const removeSelectedInventoryCountProducts = (productsArray) => {
     };
 };
 
-export const startInventoryCount = (inventoryCountId, successHandler) => {
+
+export const startInventoryCount = (inventoryCount, productList, successHandler) => {
+
+    return (dispatch) => {
+
+        let requestBody = {
+            inventoryCount: inventoryCount,
+            productList: productList
+        }
+
+        let requestUrl = API_URL + "/inventoryCount/saveOrUpdate";
+        axios.post(requestUrl, requestBody)
+            .catch(err => {
+                console.log("error:" + err);
+            })
+            .then(response => {
+                if(response) {
+                    if(response.data !== null){
+                        // if this is create not update, update the list
+                        if(inventoryCount.id === null){
+                            dispatch(addNewInventoryCountToList(response.data.inventoryCount));
+                        }
+                        dispatch(startInventoryCountRaw(response.data.inventoryCount.id, successHandler));
+                    } else{
+                        console.log("response data is null");
+                    }
+
+                }
+            })
+    };
+}
+
+export const startInventoryCountRaw = (inventoryCountId, successHandler) => {
 
     return (dispatch) => {
         let requestUrl = API_URL + "/inventoryCount/start/" + inventoryCountId;
@@ -135,3 +168,26 @@ export const startInventoryCount = (inventoryCountId, successHandler) => {
             })
     };
 }
+
+export const saveInventoryCountProduct = (inventoryCountProduct) => {
+
+    return (dispatch) => {
+        let requestUrl = API_URL + "/inventoryCount/saveInventoryCountProduct";
+        axios.post(requestUrl, inventoryCountProduct)
+            .catch(err => {
+                console.log("error:" + err);
+            })
+            .then(response => {
+                if(response) {
+                    dispatch(setInventoryCountProduct(inventoryCountProduct));
+                }
+            })
+    };
+}
+
+export const setInventoryCountProduct = (inventoryCountProduct) => {
+    return {
+        type: SET_INVENTORY_COUNT_PRODUCT,
+        inventoryCountProduct: inventoryCountProduct
+    };
+};

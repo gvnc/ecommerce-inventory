@@ -3,7 +3,6 @@ import {connect} from "react-redux";
 import {Dialog} from "primereact/dialog";
 import {Button} from "primereact/button";
 import {InputText} from "primereact/inputtext";
-import {Checkbox} from 'primereact/checkbox';
 import ConfirmationDialog from "../ConfirmationDialog";
 import {RadioButton} from "primereact/radiobutton";
 import { updateSelectedInventoryCount, saveInventoryCount, startInventoryCount} from "../../store/actions/inventoryCountActions";
@@ -55,6 +54,10 @@ class EditInventoryCountDialog extends Component {
     save(){
         let inventoryCount = this.props.inventoryCount;
         let inventoryCountProducts = this.props.inventoryCountProducts;
+        if(inventoryCount.name === null || inventoryCount.name === ""){
+            this.growl.show({severity: 'error', summary: 'Error', detail: 'Name field can not be blank.'});
+            return;
+        }
         this.props.saveInventoryCount(inventoryCount, inventoryCountProducts, this.saveSuccessHandler, this.saveErrorHandler);
     }
 
@@ -67,7 +70,21 @@ class EditInventoryCountDialog extends Component {
     }
 
     start(){
-        this.props.startInventoryCount(this.props.inventoryCount.id, this.startSuccessHandler);
+        let inventoryCount = this.props.inventoryCount;
+        let inventoryCountProducts = this.props.inventoryCountProducts;
+
+        if(inventoryCount.name === null || inventoryCount.name === ""){
+            this.growl.show({severity: 'error', summary: 'Error', detail: 'Name field can not be blank.'});
+            return;
+        }
+
+        if(inventoryCount.partialCount === true && (inventoryCountProducts === null || inventoryCountProducts.length === 0)){
+            this.growl.show({severity: 'error', summary: 'Error', detail: 'You can not start a partial count with an empty list.'});
+            return;
+        } else {
+            this.props.startInventoryCount(inventoryCount, inventoryCountProducts, this.startSuccessHandler);
+        }
+
     }
 
     startSuccessHandler(){
@@ -95,18 +112,19 @@ class EditInventoryCountDialog extends Component {
                             <InputText id="name" onChange={e => this.props.updateSelectedInventoryCount("name", e.target.value)}
                                        value={this.props.inventoryCount.name}/>
                         </div>
-                        <div className="p-col-3">
+                        <div className="p-col-2" style={{padding: '.75em'}}>
                             <RadioButton inputId="countType1" name="countType" value={false}
                                          onChange={e => this.partialCountRadioEvent(e)}
                                          checked={!this.props.inventoryCount.partialCount}/>
                             <label htmlFor="countType1" className="p-radiobutton-label">Full Count</label>
                         </div>
-                        <div className="p-col-3">
+                        <div className="p-col-2" style={{padding: '.75em'}}>
                             <RadioButton inputId="countType2" name="countType" value={true}
                                          onChange={e => this.partialCountRadioEvent(e)}
                                          checked={this.props.inventoryCount.partialCount}/>
                             <label htmlFor="countType2" className="p-radiobutton-label">Partial Count</label>
                         </div>
+                        <div className="p-col-2"></div>
                         <div className="p-col-12">
                             <ProductSelectComponent partialCount={this.props.inventoryCount.partialCount} />
                         </div>
@@ -128,7 +146,7 @@ const mapDispatchToProps = dispatch => {
     return {
         updateSelectedInventoryCount: (propertyName, propertyValue) => dispatch(updateSelectedInventoryCount(propertyName, propertyValue)),
         saveInventoryCount: (inventoryCount, productList, successHandler, errorHandler) => dispatch(saveInventoryCount(inventoryCount, productList, successHandler, errorHandler)),
-        startInventoryCount: (inventoryCountId, successHandler) => dispatch(startInventoryCount(inventoryCountId, successHandler))
+        startInventoryCount: (inventoryCount, productList, successHandler) => dispatch(startInventoryCount(inventoryCount, productList, successHandler))
     };
 };
 
