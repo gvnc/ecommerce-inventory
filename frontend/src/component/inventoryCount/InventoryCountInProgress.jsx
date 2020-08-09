@@ -9,6 +9,7 @@ import {InputText} from "primereact/inputtext";
 import {Fieldset} from "primereact/fieldset";
 import {Growl} from "primereact/growl";
 import {TabView,TabPanel} from 'primereact/tabview';
+import {Toolbar} from "primereact/toolbar";
 
 class InventoryCountInProgress extends Component {
 
@@ -162,6 +163,14 @@ class InventoryCountInProgress extends Component {
                             </TabPanel>
                         </TabView>
                     </div>
+                    <Toolbar>
+                        <div className="p-toolbar-group-left">
+                            <Button label="Abandon Count" icon="pi pi-sign-out" style={{marginRight:'.25em'}} />
+                        </div>
+                        <div className="p-toolbar-group-right">
+                            <Button label="Review Count" icon="pi pi-briefcase" style={{marginRight:'.25em'}} />
+                        </div>
+                    </Toolbar>
                 </div>
         )
     }
