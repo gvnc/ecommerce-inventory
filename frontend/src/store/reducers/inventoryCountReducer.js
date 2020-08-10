@@ -5,7 +5,8 @@ import {
     UPDATE_SELECTED_INVENTORY_COUNT,
     ADD_SELECTED_INVENTORY_COUNT_PRODUCTS,
     REMOVE_SELECTED_INVENTORY_COUNT_PRODUCTS,
-    SET_INVENTORY_COUNT_PRODUCT
+    SET_INVENTORY_COUNT_PRODUCT,
+    SET_INVENTORY_COUNT_STATUS
 } from '../actionTypes';
 
 const initialState = {
@@ -94,6 +95,23 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 selectedInventoryCountProducts: inventoryCountProducts
+            }
+        case SET_INVENTORY_COUNT_STATUS:
+            inventoryCounts = state.inventoryCounts.map((item, index) =>{
+                if(item.id === action.inventoryCountId){
+                    item.status = action.status;
+                    return item;
+                }
+                return item;
+            });
+
+            return {
+                ...state,
+                inventoryCounts: inventoryCounts,
+                selectedInventoryCount: {
+                    ...state.selectedInventoryCount,
+                    status: action.status
+                }
             }
         default:
             return state;

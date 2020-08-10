@@ -5,4 +5,6 @@ public interface InventoryCountConstants {
     String STARTED = "STARTED";
     String COMPLETED = "COMPLETED";
     String CANCELLED = "CANCELLED";
+    String ABANDONED = "ABANDONED";
+    String REVIEW = "REVIEW";
 }

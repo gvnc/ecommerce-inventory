@@ -165,4 +165,36 @@ public class InventoryCountController {
         }
         return OperationConstants.FAIL;
     }
+
+    @PostMapping("/abandon/{id}")
+    public String abandonInventoryCount(@PathVariable Integer id) {
+        try{
+            // change inventory count status
+            InventoryCount inventoryCount = inventoryCountRepository.findById(id).orElse(null);
+            if(inventoryCount != null){
+                inventoryCount.setStatus(InventoryCountConstants.ABANDONED);
+                inventoryCountRepository.save(inventoryCount);
+                return OperationConstants.SUCCESS;
+            }
+        } catch (Exception e){
+            log.error("Failed to save inventory count.", e);
+        }
+        return OperationConstants.FAIL;
+    }
+
+    @PostMapping("/review/{id}")
+    public String reviewInventoryCount(@PathVariable Integer id) {
+        try{
+            // change inventory count status
+            InventoryCount inventoryCount = inventoryCountRepository.findById(id).orElse(null);
+            if(inventoryCount != null){
+                inventoryCount.setStatus(InventoryCountConstants.REVIEW);
+                inventoryCountRepository.save(inventoryCount);
+                return OperationConstants.SUCCESS;
+            }
+        } catch (Exception e){
+            log.error("Failed to save inventory count.", e);
+        }
+        return OperationConstants.FAIL;
+    }
 }

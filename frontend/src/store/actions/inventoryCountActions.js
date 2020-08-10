@@ -5,7 +5,8 @@ import {
     ADD_INVENTORY_COUNT_TO_LIST,
     ADD_SELECTED_INVENTORY_COUNT_PRODUCTS,
     REMOVE_SELECTED_INVENTORY_COUNT_PRODUCTS,
-    SET_INVENTORY_COUNT_PRODUCT
+    SET_INVENTORY_COUNT_PRODUCT,
+    SET_INVENTORY_COUNT_STATUS
 } from '../actionTypes';
 
 import {API_URL} from '../../apiConfig';
@@ -191,3 +192,45 @@ export const setInventoryCountProduct = (inventoryCountProduct) => {
         inventoryCountProduct: inventoryCountProduct
     };
 };
+
+export const abandonInventoryCount = (inventoryCountId, successHandler) => {
+
+    return (dispatch) => {
+        let requestUrl = API_URL + "/inventoryCount/abandon/" + inventoryCountId;
+        axios.post(requestUrl, null)
+            .catch(err => {
+                console.log("error:" + err);
+            })
+            .then(response => {
+                if(response) {
+                    dispatch(setInventoryCountStatus(inventoryCountId, "ABANDONED"));
+                    successHandler();
+                }
+            })
+    };
+}
+
+export const setInventoryCountStatus = (inventoryCountId, status) => {
+    return {
+        type: SET_INVENTORY_COUNT_STATUS,
+        inventoryCountId: inventoryCountId,
+        status: status
+    };
+};
+
+export const reviewInventoryCount = (inventoryCountId, successHandler) => {
+
+    return (dispatch) => {
+        let requestUrl = API_URL + "/inventoryCount/review/" + inventoryCountId;
+        axios.post(requestUrl, null)
+            .catch(err => {
+                console.log("error:" + err);
+            })
+            .then(response => {
+                if(response) {
+                    dispatch(setInventoryCountStatus(inventoryCountId, "REVIEW"));
+                    successHandler();
+                }
+            })
+    };
+}

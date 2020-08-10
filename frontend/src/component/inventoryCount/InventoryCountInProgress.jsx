@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from "react-redux";
-import { getInventoryCountById, saveInventoryCountProduct} from "../../store/actions/inventoryCountActions";
+import { getInventoryCountById, saveInventoryCountProduct, abandonInventoryCount, reviewInventoryCount} from "../../store/actions/inventoryCountActions";
 import {Card} from 'primereact/card';
 import {DataTable} from "primereact/datatable";
 import {Column} from "primereact/column";
@@ -10,6 +10,7 @@ import {Fieldset} from "primereact/fieldset";
 import {Growl} from "primereact/growl";
 import {TabView,TabPanel} from 'primereact/tabview';
 import {Toolbar} from "primereact/toolbar";
+import ConfirmationDialog from "../ConfirmationDialog";
 
 class InventoryCountInProgress extends Component {
 
@@ -18,9 +19,12 @@ class InventoryCountInProgress extends Component {
         this.state= {
             selectedProduct : null,
             countValue: "",
-            activeIndex: 0
+            activeIndex: 0,
+            displayAbandonConfirmation: false
         };
         this.countProduct = this.countProduct.bind(this);
+        this.abandonSuccessHandler = this.abandonSuccessHandler.bind(this);
+        this.reviewSuccessHandler = this.reviewSuccessHandler.bind(this);
     }
 
     componentDidMount() {
@@ -75,6 +79,14 @@ class InventoryCountInProgress extends Component {
         this.growl.show({severity: 'success', summary: 'Success', detail: 'Count saved.'});
     }
 
+    abandonSuccessHandler(){
+        this.growl.show({severity: 'success', summary: 'Success', detail: 'Inventory count abandoned.'});
+    }
+
+    reviewSuccessHandler(){
+
+    }
+
     render() {
 
         let countedProducts = this.props.inventoryCountProducts.filter(p => p.counted === true);
@@ -88,18 +100,24 @@ class InventoryCountInProgress extends Component {
                         Name : {this.props.inventoryCount.name} | Created At : {this.props.inventoryCount.createDate} | Status : {this.props.inventoryCount.status}
                     </Fieldset>
                     {
-                        this.state.selectedProduct === null &&
+                        this.props.inventoryCount.status !=="STARTED" &&
+                        <Card style={{height:'85px', width:'100%', marginTop:'2px', textAlign:'center', fontSize:18}}>
+                            This count is in {this.props.inventoryCount.status} state. You can not count products anymore.
+                        </Card>
+                    }
+                    {
+                        this.props.inventoryCount.status ==="STARTED" && this.state.selectedProduct === null &&
                         <Card style={{height:'85px', width:'100%', marginTop:'2px', textAlign:'center', fontSize:18}}>
                             Select a product to count.
                         </Card>
                     }
                     {
-                        this.state.selectedProduct !== null &&
+                        this.props.inventoryCount.status ==="STARTED" && this.state.selectedProduct !== null &&
                         <Card style={{height:'85px', width:'100%', marginTop:'2px', paddingTop: '20px'}}>
                             <div className="p-grid p-fluid">
                                 <div className="p-col-5">
                                     <span className="p-float-label">
-                                        <InputText id="nameInput" value={this.state.selectedProduct.name} readonly={true} />
+                                        <InputText id="nameInput" value={this.state.selectedProduct.name} readOnly={true} />
                                         <label htmlFor="nameInput">Product Name</label>
                                     </span>
                                 </div>
@@ -163,14 +181,27 @@ class InventoryCountInProgress extends Component {
                             </TabPanel>
                         </TabView>
                     </div>
-                    <Toolbar>
-                        <div className="p-toolbar-group-left">
-                            <Button label="Abandon Count" icon="pi pi-sign-out" style={{marginRight:'.25em'}} />
-                        </div>
-                        <div className="p-toolbar-group-right">
-                            <Button label="Review Count" icon="pi pi-briefcase" style={{marginRight:'.25em'}} />
-                        </div>
-                    </Toolbar>
+                    {
+                        this.props.inventoryCount.status === "STARTED" &&
+                        <Toolbar>
+                            <div className="p-toolbar-group-left">
+                                <Button label="Abandon Count" icon="pi pi-sign-out" style={{marginRight:'.25em'}}
+                                        onClick={() => this.setState({displayAbandonConfirmation: true})} />
+                            </div>
+                            <div className="p-toolbar-group-right">
+                                <Button label="Review Count" icon="pi pi-briefcase" style={{marginRight:'.25em'}}
+                                        onClick={() => this.props.reviewInventoryCount(this.props.inventoryCount.id, this.reviewSuccessHandler)}  />
+                            </div>
+                        </Toolbar>
+                    }
+
+                    <ConfirmationDialog  visibleProperty={this.state.displayAbandonConfirmation}
+                                         noHandler={() => this.setState({displayAbandonConfirmation: false})}
+                                         yesHandler={() => {
+                                             this.setState({displayAbandonConfirmation: false});
+                                             this.props.abandonInventoryCount(this.props.inventoryCount.id, this.abandonSuccessHandler)
+                                         }}
+                                         message="You will no longer be able to edit this count. Do you confirm to abandon ?" />
                 </div>
         )
     }
@@ -186,7 +217,10 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
     return {
         getInventoryCountById: (id) => dispatch(getInventoryCountById(id)),
-        saveInventoryCountProduct: (inventoryCountProduct) => dispatch(saveInventoryCountProduct(inventoryCountProduct))
+        saveInventoryCountProduct: (inventoryCountProduct) => dispatch(saveInventoryCountProduct(inventoryCountProduct)),
+        abandonInventoryCount: (inventoryCountId, successHandler) => dispatch(abandonInventoryCount(inventoryCountId, successHandler)),
+        reviewInventoryCount: (inventoryCountId, successHandler) => dispatch(reviewInventoryCount(inventoryCountId, successHandler))
+
     };
 };
 
