@@ -116,10 +116,10 @@ public class InventoryCountController {
                             product.setBigcommerceQuantity(detailedProduct.getBigCommerceProduct().getInventoryLevel());
                         }
                         if(detailedProduct.getBigCommerceFSProduct() != null){
-                            product.setBigcommerceQuantity(detailedProduct.getBigCommerceFSProduct().getInventoryLevel());
+                            product.setBigcommerceFSQuantity(detailedProduct.getBigCommerceFSProduct().getInventoryLevel());
                         }
                         if(detailedProduct.getAmazonCaProduct() != null){
-                            product.setBigcommerceQuantity(detailedProduct.getAmazonCaProduct().getQuantity());
+                            product.setAmazonCAQuantity(detailedProduct.getAmazonCaProduct().getQuantity());
                         }
                     });
                 } else { // full count detected

@@ -11,6 +11,7 @@ import OrderMonitoring from "./OrderMonitoring";
 import PurchaseOrders from "./purchase/PurchaseOrders";
 import InventoryCounts from "./inventoryCount/InventoryCounts";
 import InventoryCountInProgress from "./inventoryCount/InventoryCountInProgress";
+import InventoryCountReview from "./inventoryCount/InventoryCountReview";
 
 class InstructorApp extends Component {
 
@@ -38,6 +39,7 @@ class InstructorApp extends Component {
                             <AuthenticatedRoute path="/purchaseOrders" exact component={PurchaseOrders} />
                             <AuthenticatedRoute path="/orderMonitoring" exact component={OrderMonitoring} />
                             <AuthenticatedRoute path="/inventoryCountInProgress/:inventoryCountId" exact component={InventoryCountInProgress} />
+                            <AuthenticatedRoute path="/inventoryCountReview/:inventoryCountId" exact component={InventoryCountReview} />
                             <AuthenticatedRoute path="/*" exact component={MarketPlaceSyncStatus} />
                         </Switch>
                     </>

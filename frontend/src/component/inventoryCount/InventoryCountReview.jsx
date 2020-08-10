@@ -1,30 +1,28 @@
 import React, { Component } from 'react'
 import { connect } from "react-redux";
-import { getInventoryCountById, saveInventoryCountProduct, abandonInventoryCount, reviewInventoryCount} from "../../store/actions/inventoryCountActions";
+import { getInventoryCountById, updateInventoryCount, abandonInventoryCount} from "../../store/actions/inventoryCountActions";
 import {Card} from 'primereact/card';
 import {DataTable} from "primereact/datatable";
 import {Column} from "primereact/column";
 import {Button} from "primereact/button";
-import {InputText} from "primereact/inputtext";
 import {Fieldset} from "primereact/fieldset";
 import {Growl} from "primereact/growl";
 import {TabView,TabPanel} from 'primereact/tabview';
 import {Toolbar} from "primereact/toolbar";
 import ConfirmationDialog from "../ConfirmationDialog";
 
-class InventoryCountInProgress extends Component {
+class InventoryCountReview extends Component {
 
     constructor() {
         super();
         this.state= {
             selectedProduct : null,
-            countValue: "",
             activeIndex: 0,
+            displayUpdateConfirmation: false,
             displayAbandonConfirmation: false
         };
-        this.countProduct = this.countProduct.bind(this);
+        this.updateSuccessHandler = this.updateSuccessHandler.bind(this);
         this.abandonSuccessHandler = this.abandonSuccessHandler.bind(this);
-        this.reviewSuccessHandler = this.reviewSuccessHandler.bind(this);
     }
 
     componentDidMount() {
@@ -36,70 +34,18 @@ class InventoryCountInProgress extends Component {
         }
     }
 
-    countProduct(){
-        let selectedProduct = this.state.selectedProduct;
-        selectedProduct.count = this.state.countValue;
-        selectedProduct.counted = true;
-
-        let matched = true;
-        let anyProductHit = false;
-
-        console.log(JSON.stringify(selectedProduct));
-
-        if(selectedProduct.vendhqQuantity !== null){
-            anyProductHit = true;
-            if(this.forceToString(selectedProduct.vendhqQuantity) !== this.state.countValue.toString()){
-                matched = false;
-            }
-        }
-        if(selectedProduct.bigcommerceQuantity !== null){
-            anyProductHit = true;
-            if(this.forceToString(selectedProduct.bigcommerceQuantity) !== this.state.countValue.toString()){
-                matched = false;
-            }
-        }
-        if(selectedProduct.bigcommerceFSQuantity !== null){
-            anyProductHit = true;
-            if(this.forceToString(selectedProduct.bigcommerceFSQuantity) !== this.state.countValue.toString()){
-                matched = false;
-            }
-        }
-        if(selectedProduct.amazonCAQuantity !== null){
-            anyProductHit = true;
-            if(this.forceToString(selectedProduct.amazonCAQuantity) !== this.state.countValue){
-                matched = false;
-            }
-        }
-        if(anyProductHit === true){
-            selectedProduct.matched = matched;
-        } else {
-            selectedProduct.matched = false;
-        }
-
-        console.log(JSON.stringify(selectedProduct));
-        // save count product
-        this.props.saveInventoryCountProduct(selectedProduct);
-        this.growl.show({severity: 'success', summary: 'Success', detail: 'Count saved.'});
-    }
-
-    forceToString(value){
-        if(value !== null && value !== undefined)
-            return value.toString();
-        return "";
-    }
-
     abandonSuccessHandler(){
         this.growl.show({severity: 'success', summary: 'Success', detail: 'Inventory count abandoned.'});
     }
 
-    reviewSuccessHandler(){
-        this.props.history.push("/inventoryCountReview/" + this.props.inventoryCount.id);
+    updateSuccessHandler(){
+
     }
 
     render() {
-
         let countedProducts = this.props.inventoryCountProducts.filter(p => p.counted === true);
-        let uncountedProducts = this.props.inventoryCountProducts.filter(p => p.counted === false);
+        let matchedProducts = this.props.inventoryCountProducts.filter(p => p.counted === true && p.matched === true);
+        let unmatchedProducts = this.props.inventoryCountProducts.filter(p => p.counted === true && p.matched === false);
 
         return (
                 this.props.inventoryCount &&
@@ -109,46 +55,22 @@ class InventoryCountInProgress extends Component {
                         Name : {this.props.inventoryCount.name} | Created At : {this.props.inventoryCount.createDate} | Status : {this.props.inventoryCount.status}
                     </Fieldset>
                     {
-                        this.props.inventoryCount.status !=="STARTED" &&
+                        this.props.inventoryCount.status !=="REVIEW" &&
                         <Card style={{height:'85px', width:'100%', marginTop:'2px', textAlign:'center', fontSize:18}}>
-                            This count is in {this.props.inventoryCount.status} state. You can not count products anymore.
+                            This count is in {this.props.inventoryCount.status} state. You are not allowed to review.
                         </Card>
                     }
                     {
-                        this.props.inventoryCount.status ==="STARTED" && this.state.selectedProduct === null &&
+                        this.props.inventoryCount.status ==="REVIEW" &&
                         <Card style={{height:'85px', width:'100%', marginTop:'2px', textAlign:'center', fontSize:18}}>
-                            Select a product to count.
-                        </Card>
-                    }
-                    {
-                        this.props.inventoryCount.status ==="STARTED" && this.state.selectedProduct !== null &&
-                        <Card style={{height:'85px', width:'100%', marginTop:'2px', paddingTop: '20px'}}>
-                            <div className="p-grid p-fluid">
-                                <div className="p-col-5">
-                                    <span className="p-float-label">
-                                        <InputText id="nameInput" value={this.state.selectedProduct.name} readOnly={true} />
-                                        <label htmlFor="nameInput">Product Name</label>
-                                    </span>
-                                </div>
-                                <div className="p-col-1">
-                                    <span className="p-float-label">
-                                        <InputText id="countInput" value={this.state.countValue} keyfilter="int"
-                                                   onChange={e => this.setState({countValue: e.target.value})}/>
-                                        <label htmlFor="countInput">Quantity</label>
-                                    </span>
-                                </div>
-                                <div className="p-col-1">
-                                    <Button className="p-button-success" label="COUNT" onClick={this.countProduct} />
-                                </div>
-                            </div>
+                            Counted products : {countedProducts.length} | Matched products : {matchedProducts.length} | Unmatched products : {unmatchedProducts.length}
                         </Card>
                     }
                     <div style={{marginTop:'2px'}}>
                         <TabView activeIndex={this.state.activeIndex} renderActiveOnly={true}
                                  onTabChange={(e) => this.setState({activeIndex: e.index})}>
-                            <TabPanel header="All Products">
-                                <DataTable value={this.props.inventoryCountProducts} paginator={true} rows={10} selectionMode="single"
-                                           selection={this.state.selectedProduct} onSelectionChange={e => this.setState({selectedProduct: e.value, countValue:e.value.count})}
+                            <TabPanel header="Counted Products">
+                                <DataTable value={countedProducts} paginator={true} rows={10}
                                            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
                                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" >
                                     <Column field="sku" header="Product SKU" sortable={true} filter={true} filterPlaceholder="search sku" filterMatchMode="contains" />
@@ -160,9 +82,8 @@ class InventoryCountInProgress extends Component {
                                     <Column header="Counted Quantity" field="count" style={{height: '3.5em', 'textAlign': 'center'}}/>
                                 </DataTable>
                             </TabPanel>
-                            <TabPanel header="Uncounted">
-                                <DataTable value={uncountedProducts} paginator={true} rows={10} selectionMode="single"
-                                           selection={this.state.selectedProduct} onSelectionChange={e => this.setState({selectedProduct: e.value, countValue:e.value.count})}
+                            <TabPanel header="Matched">
+                                <DataTable value={matchedProducts} paginator={true} rows={10}
                                            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
                                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" >
                                     <Column field="sku" header="Product SKU" sortable={true} filter={true} filterPlaceholder="search sku" filterMatchMode="contains" />
@@ -174,9 +95,8 @@ class InventoryCountInProgress extends Component {
                                     <Column header="Counted Quantity" field="count" style={{height: '3.5em', 'textAlign': 'center'}}/>
                                 </DataTable>
                             </TabPanel>
-                            <TabPanel header="Counted">
-                                <DataTable value={countedProducts} paginator={true} rows={10} selectionMode="single"
-                                           selection={this.state.selectedProduct} onSelectionChange={e => this.setState({selectedProduct: e.value, countValue:e.value.count})}
+                            <TabPanel header="UnMatched">
+                                <DataTable value={unmatchedProducts} paginator={true} rows={10}
                                            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
                                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" >
                                     <Column field="sku" header="Product SKU" sortable={true} filter={true} filterPlaceholder="search sku" filterMatchMode="contains" />
@@ -191,15 +111,15 @@ class InventoryCountInProgress extends Component {
                         </TabView>
                     </div>
                     {
-                        this.props.inventoryCount.status === "STARTED" &&
+                        this.props.inventoryCount.status === "REVIEW" &&
                         <Toolbar>
                             <div className="p-toolbar-group-left">
                                 <Button label="Abandon Count" icon="pi pi-sign-out" style={{marginRight:'.25em'}}
                                         onClick={() => this.setState({displayAbandonConfirmation: true})} />
                             </div>
                             <div className="p-toolbar-group-right">
-                                <Button label="Review Count" icon="pi pi-briefcase" style={{marginRight:'.25em'}}
-                                        onClick={() => this.props.reviewInventoryCount(this.props.inventoryCount.id, this.reviewSuccessHandler)}  />
+                                <Button label="Update Inventory" icon="pi pi-save" style={{marginRight:'.25em'}}
+                                        onClick={() => this.setState({displayUpdateConfirmation: true})} />
                             </div>
                         </Toolbar>
                     }
@@ -211,6 +131,14 @@ class InventoryCountInProgress extends Component {
                                              this.props.abandonInventoryCount(this.props.inventoryCount.id, this.abandonSuccessHandler)
                                          }}
                                          message="You will no longer be able to edit this count. Do you confirm to abandon ?" />
+
+                    <ConfirmationDialog visibleProperty={this.state.displayUpdateConfirmation}
+                                         noHandler={() => this.setState({displayUpdateConfirmation: false})}
+                                         yesHandler={() => {
+                                             this.setState({displayUpdateConfirmation: false});
+                                             //this.props.abandonInventoryCount(this.props.inventoryCount.id, this.abandonSuccessHandler)
+                                         }}
+                                         message="Do you confirm to update inventory in market places ?" />
                 </div>
         )
     }
@@ -226,10 +154,9 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
     return {
         getInventoryCountById: (id) => dispatch(getInventoryCountById(id)),
-        saveInventoryCountProduct: (inventoryCountProduct) => dispatch(saveInventoryCountProduct(inventoryCountProduct)),
         abandonInventoryCount: (inventoryCountId, successHandler) => dispatch(abandonInventoryCount(inventoryCountId, successHandler)),
-        reviewInventoryCount: (inventoryCountId, successHandler) => dispatch(reviewInventoryCount(inventoryCountId, successHandler))
+        updateInventoryCount: (inventoryCountId, successHandler) => dispatch(updateInventoryCount(inventoryCountId, successHandler))
     };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(InventoryCountInProgress);
+export default connect(mapStateToProps, mapDispatchToProps)(InventoryCountReview);

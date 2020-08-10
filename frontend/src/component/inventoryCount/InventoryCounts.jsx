@@ -50,15 +50,18 @@ class InventoryCounts extends Component {
     }
 
     editButtonClicked(status, id){
+        console.log(status);
         if(status === "PLANNED") {
             this.openInventoryCountDialog(id);
+        } else if(status === "STARTED" || status === "ABANDONED"){
+            this.props.history.push("/inventoryCountInProgress/" + id);
         } else {
-            this.props.history.push("/inventoryCountInProgress/" + id)
+            this.props.history.push("/inventoryCountReview/" + id);
         }
     }
 
     editButtonBody(rowData) {
-        return <Button type="button" icon="pi pi-cog" className="p-button-secondary"
+        return <Button type="button" icon="pi pi-reply" className="p-button-secondary"
                        onClick={() => this.editButtonClicked(rowData.status, rowData.id)}></Button>;
     }
 

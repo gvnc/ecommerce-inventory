@@ -234,3 +234,20 @@ export const reviewInventoryCount = (inventoryCountId, successHandler) => {
             })
     };
 }
+
+export const updateInventoryCount = (inventoryCountId, successHandler) => {
+
+    return (dispatch) => {
+        let requestUrl = API_URL + "/inventoryCount/review/" + inventoryCountId;
+        axios.post(requestUrl, null)
+            .catch(err => {
+                console.log("error:" + err);
+            })
+            .then(response => {
+                if(response) {
+                    dispatch(setInventoryCountStatus(inventoryCountId, "REVIEW"));
+                    successHandler();
+                }
+            })
+    };
+}
