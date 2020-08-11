@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:4200" })
+@CrossOrigin(origins = { "http://95.111.250.92:3000", "http://localhost:3000", "http://localhost:4200" })
 @RestController
 public class BackendController {
 
@@ -70,37 +70,8 @@ public class BackendController {
 
     @GetMapping("/products/{productSku}")
     public DetailedProduct getDetailedProduct(@PathVariable String productSku) {
-        DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(productSku);
-
-        // if amazon ca product not null, get inventory
-        if(detailedProduct.getAmazonCaProduct() != null){
-            AmazonProduct amazonProduct = detailedProduct.getAmazonCaProduct();
-            detailedProduct.setInventoryLevel(amazonProduct.getQuantity());
-        }
-
-        // if vendhq product not null, get inventory via apiservice
-        if(detailedProduct.getVendHQProduct() != null){
-            VendHQInventory inventory = vendHQAPIService.getProductInventoryById(detailedProduct.getVendHQProduct().getId());
-            detailedProduct.getVendHQProduct().setInventory(inventory);
-            if(inventory != null)
-                detailedProduct.setInventoryLevel(inventory.getInventoryLevel());
-        }
-
-        // if bigcommerce fs product not null, get inventory via apiservice
-        if(detailedProduct.getBigCommerceFSProduct() != null){
-            BigCommerceProduct bigCommerceProduct = bigCommerceFSAPIService.getProductBySku(productSku);
-            detailedProduct.setBigCommerceFSProduct(bigCommerceProduct);
-            detailedProduct.setInventoryLevel(bigCommerceProduct.getInventoryLevel());
-        }
-
-        // if bigcommerce product not null, get inventory via apiservice
-        if(detailedProduct.getBigCommerceProduct() != null){
-             BigCommerceProduct bigCommerceProduct = bigCommerceAPIService.getProductBySku(productSku);
-             detailedProduct.setBigCommerceProduct(bigCommerceProduct);
-             detailedProduct.setInventoryLevel(bigCommerceProduct.getInventoryLevel());
-        }
-
-        return detailedProduct;
+        // became same method with below after deleting instant inventory queries
+        return storeBean.getDetailedProductsMap().get(productSku);
     }
 
     @GetMapping("/products/minimum/{productSku}")
@@ -189,22 +160,27 @@ public class BackendController {
             return inventoryUpdateResult;
         }
 
-        if(bigCommerceAPIService.updateProductQuantity(productSku, inventoryLevel, true) == true){
+        DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(productSku);
+
+        if(bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), productSku, inventoryLevel, true) == true){
             inventoryUpdateResult.setBigCommerceInventoryUpdate(OperationConstants.SUCCESS);
+            detailedProduct.setInventoryLevel(inventoryLevel);
         } else {
             inventoryUpdateResult.setBigCommerceInventoryUpdate(OperationConstants.FAIL);
             inventoryUpdateResult.setFinalResult(OperationConstants.FAIL);
         }
 
-        if(bigCommerceFSAPIService.updateProductQuantity(productSku, inventoryLevel, true) == true){
+        if(bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), productSku, inventoryLevel, true) == true){
             inventoryUpdateResult.setBigCommerceFSInventoryUpdate(OperationConstants.SUCCESS);
+            detailedProduct.setInventoryLevel(inventoryLevel);
         } else {
             inventoryUpdateResult.setBigCommerceFSInventoryUpdate(OperationConstants.FAIL);
             inventoryUpdateResult.setFinalResult(OperationConstants.FAIL);
         }
 
-        if(vendHQAPIService.updateProductQuantity(productSku, inventoryLevel, true)  == true){
+        if(vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), productSku, inventoryLevel, true)  == true){
             inventoryUpdateResult.setVendhqInventoryUpdate(OperationConstants.SUCCESS);
+            detailedProduct.setInventoryLevel(inventoryLevel);
         } else {
             inventoryUpdateResult.setVendhqInventoryUpdate(OperationConstants.FAIL);
             inventoryUpdateResult.setFinalResult(OperationConstants.FAIL);
@@ -212,6 +188,7 @@ public class BackendController {
 
         if(amazonCaService.updateInventory(productSku, inventoryLevel, true)  == true){
             inventoryUpdateResult.setAmazonCaInventoryUpdate(OperationConstants.SUCCESS);
+            detailedProduct.setInventoryLevel(inventoryLevel);
         } else {
             inventoryUpdateResult.setAmazonCaInventoryUpdate(OperationConstants.FAIL);
             inventoryUpdateResult.setFinalResult(OperationConstants.FAIL);

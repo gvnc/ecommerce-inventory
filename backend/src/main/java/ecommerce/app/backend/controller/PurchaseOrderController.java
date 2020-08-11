@@ -3,9 +3,11 @@ package ecommerce.app.backend.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import ecommerce.app.backend.StoreBean;
 import ecommerce.app.backend.amazon.AmazonCaService;
 import ecommerce.app.backend.bigcommerce.BigCommerceAPIService;
 import ecommerce.app.backend.bigcommerce.BigCommerceFSAPIService;
+import ecommerce.app.backend.model.DetailedProduct;
 import ecommerce.app.backend.model.PurchaseOrderRequest;
 import ecommerce.app.backend.repository.PurchaseOrderProductRepository;
 import ecommerce.app.backend.repository.PurchaseOrderRepository;
@@ -23,7 +25,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:4200" })
+@CrossOrigin(origins = { "http://95.111.250.92:3000", "http://localhost:3000", "http://localhost:4200" })
 @RequestMapping("/purchase")
 public class PurchaseOrderController {
 
@@ -44,6 +46,9 @@ public class PurchaseOrderController {
 
     @Autowired
     private AmazonCaService amazonCaService;
+
+    @Autowired
+    private StoreBean storeBean;
 
     @GetMapping("/orders")
     public List<PurchaseOrder> getPurchaseOrders() {
@@ -252,9 +257,18 @@ public class PurchaseOrderController {
     }
 
     private void updateInventories(String sku, Integer quantity){
-        vendHQAPIService.updateProductQuantity(sku, quantity, false);
-        bigCommerceAPIService.updateProductQuantity(sku, quantity, false);
-        bigCommerceFSAPIService.updateProductQuantity(sku, quantity, false);
+        DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(sku);
+
+        // set overall quantity
+        int newQuantity = quantity;
+        if(detailedProduct.getInventoryLevel() != null)
+            newQuantity = detailedProduct.getInventoryLevel() + quantity;
+        detailedProduct.setInventoryLevel(newQuantity);
+
+        // set quantities for each market place
+        vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), sku, quantity, false);
+        bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), sku, quantity, false);
+        bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), sku, quantity, false);
         amazonCaService.updateInventory(sku, quantity, false);
     }
 }

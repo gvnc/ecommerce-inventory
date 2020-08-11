@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@CrossOrigin(origins={ "http://localhost:3000", "http://localhost:4200" })
+@CrossOrigin(origins={ "http://95.111.250.92:3000", "http://localhost:3000", "http://localhost:4200" })
 public class JwtAuthenticationRestController {
 
   @Value("${jwt.http.request.header}")

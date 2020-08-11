@@ -106,8 +106,14 @@ public class OrderListener {
             if(productList != null){
                 for(BCOrderProduct product:productList){
                     int quantity = product.getQuantity() * changeType;
-                    vendHQAPIService.updateProductQuantity(product.getSku(), quantity, false);
-                    bigCommerceFSAPIService.updateProductQuantity(product.getSku(), quantity, false);
+
+                    // set overall quantity
+                    DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(product.getSku());
+                    setOverallQuantity(detailedProduct, quantity);
+
+                    // set quantity for other market places
+                    vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), product.getSku(), quantity, false);
+                    bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), product.getSku(), quantity, false);
                     amazonCaService.updateInventory(product.getSku(), quantity, false);
                 }
             }
@@ -150,8 +156,14 @@ public class OrderListener {
             if(productList != null){
                 for(BCOrderProduct product:productList){
                     int quantity = product.getQuantity() * changeType;
-                    vendHQAPIService.updateProductQuantity(product.getSku(), quantity, false);
-                    bigCommerceAPIService.updateProductQuantity(product.getSku(), quantity, false);
+
+                    // set overall quantity
+                    DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(product.getSku());
+                    setOverallQuantity(detailedProduct, quantity);
+
+                    // set quantity for other market places
+                    vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), product.getSku(), quantity, false);
+                    bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), product.getSku(), quantity, false);
                     amazonCaService.updateInventory(product.getSku(), quantity, false);
                 }
             }
@@ -193,11 +205,15 @@ public class OrderListener {
                     // TODO - change this to api 2.0
                     VendHQProduct vendProduct = vendHQAPIService.getProductById(salesProduct.getProductId());
                     String sku = vendProduct.getSku();
-
-                    // update bigcommerce inventory
                     int quantity = salesProduct.getQuantity() * -1;
-                    bigCommerceAPIService.updateProductQuantity(sku, quantity, false);
-                    bigCommerceFSAPIService.updateProductQuantity(sku, quantity, false);
+
+                    // set overall quantity
+                    DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(sku);
+                    setOverallQuantity(detailedProduct, quantity);
+
+                    // set quantity for other marketplaces
+                    bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), sku, quantity, false);
+                    bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), sku, quantity, false);
                     amazonCaService.updateInventory(sku, quantity, false);
                 }
             }
@@ -246,15 +262,34 @@ public class OrderListener {
                 for(OrderItem orderItem: orderItemList){
                     String sku = orderItem.getSellerSKU();
                     Integer quantity = orderItem.getQuantityOrdered();
-
                     quantity = quantity * -1;
-                    bigCommerceAPIService.updateProductQuantity(sku, quantity, false);
-                    bigCommerceFSAPIService.updateProductQuantity(sku, quantity, false);
-                    vendHQAPIService.updateProductQuantity(sku, quantity, false);
+
+                    // set overall quantity
+                    DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(sku);
+                    setOverallQuantity(detailedProduct, quantity);
+
+                    // update quantity for other market places
+                    bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), sku, quantity, false);
+                    bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), sku, quantity, false);
+                    vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), sku, quantity, false);
                 }
             }
         }catch (Exception e){
             log.error("Failed to update inventory after an order received in amazon ca .[OrderId:" + amazonOrderId + "]", e);
+        }
+    }
+
+    private void setOverallQuantity(DetailedProduct detailedProduct, Integer quantity){
+        try {
+            int newQuantity = detailedProduct.getInventoryLevel() + quantity;
+            if (newQuantity < 0) {
+                log.warn("There is no enough inventory in overall for sku " + detailedProduct.getSku() +
+                        ". [currentQuantity:" + detailedProduct.getInventoryLevel() + ", demanded:" + quantity + "]");
+                newQuantity = 0;
+            }
+            detailedProduct.setInventoryLevel(newQuantity);
+        } catch (Exception e){
+            log.error("Error in setOverallQuantity.", e);
         }
     }
 }

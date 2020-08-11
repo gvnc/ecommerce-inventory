@@ -19,7 +19,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:4200" })
+@CrossOrigin(origins = { "http://95.111.250.92:3000", "http://localhost:3000", "http://localhost:4200" })
 @RequestMapping("/inventoryCount")
 public class InventoryCountController {
 

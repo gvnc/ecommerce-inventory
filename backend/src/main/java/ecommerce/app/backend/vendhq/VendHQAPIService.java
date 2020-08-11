@@ -238,22 +238,22 @@ public class VendHQAPIService {
         return null;
     }
 
-    public boolean updateProductQuantity(String sku, Integer amount, Boolean overwrite){
+    public boolean updateProductQuantity(VendHQProduct product, String sku, Integer amount, Boolean overwrite){
         log.info("Inventory update requested for vendhq product. [sku:" + sku + ",amount:" + amount + "]");
         if(testProducts.isAvailable(sku)){
-
-            VendHQProduct product = getProductBySku(sku);
             if(product == null){
                 log.warn("Product can not be found with sku " + sku);
                 return false;
             }
 
-            VendHQInventory vendHQInventory = getProductInventoryById(product.getId());
-            product.setInventory(vendHQInventory);
+            VendHQInventory vendHQInventory = product.getInventory();
 
             int newQuantity = amount;
             if(overwrite == false) {
-                int currentQuantity = vendHQInventory.getInventoryLevel();
+                int currentQuantity = 0;
+                if(vendHQInventory != null)
+                    currentQuantity = vendHQInventory.getInventoryLevel();
+
                 newQuantity = currentQuantity + amount;
                 if (newQuantity < 0) {
                     log.warn("There is no enough inventory in the vendhq store for sku " + sku + ". [currentQuantity:" + currentQuantity + ", demanded:" + amount + "]");
@@ -277,12 +277,13 @@ public class VendHQAPIService {
             if(product.getInventory() != null)
                 inventory = product.getInventory();
             else {
-                log.warn("Can not find inventory product. [productId:"+product.getId()+",sku:"+product.getSku()+"]");
+                log.warn("Can not find product inventory. [productId:"+product.getId()+",sku:"+product.getSku()+"]");
                 return true;
             }
 
             inventory.setInventoryLevel(newQuantity);
             inventory.setCount(newQuantity);
+
             VendHQInventory[] inventoryArray = new VendHQInventory[1];
             inventoryArray[0] = inventory;
 

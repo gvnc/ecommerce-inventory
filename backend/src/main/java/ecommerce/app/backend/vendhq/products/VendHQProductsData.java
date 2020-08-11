@@ -1,27 +1,15 @@
 package ecommerce.app.backend.vendhq.products;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Getter;
+import lombok.Setter;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class VendHQProductsData {
 
+    @Getter @Setter
     private VendHQProduct data[];
 
+    @Getter @Setter
     private VendHQVersion version;
-
-    public VendHQProduct[] getData() {
-        return data;
-    }
-
-    public void setData(VendHQProduct[] data) {
-        this.data = data;
-    }
-
-    public VendHQVersion getVersion() {
-        return version;
-    }
-
-    public void setVersion(VendHQVersion version) {
-        this.version = version;
-    }
 }

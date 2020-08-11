@@ -186,7 +186,7 @@ public class BigCommerceBaseService {
         }
         return null;
     }
-
+/*
     public BigCommerceProduct getProductBySku(String sku){
         try {
             String includeFields = "id,name,sku,is_visible,price,cost_price,retail_price,sale_price,inventory_level";
@@ -206,11 +206,10 @@ public class BigCommerceBaseService {
         }
         return null;
     }
-
-    public boolean updateProductQuantity(String sku, Integer amount, Boolean overwrite){
+*/
+    public boolean updateProductQuantity(BigCommerceProduct product, String sku, Integer amount, Boolean overwrite){
         log.info("Inventory update requested for bigcommerce product. [sku:" + sku + ",amount:" + amount + "]");
         if(testProducts.isAvailable(sku)){
-            BigCommerceProduct product = getProductBySku(sku);
             if(product != null) {
                 int newQuantity = amount;
                 if(overwrite == false) {
@@ -222,7 +221,10 @@ public class BigCommerceBaseService {
                         newQuantity = 0;
                     }
                 }
-                return updateInventory(product, newQuantity);
+                if(product.getVariantId() != null)
+                    return updateVariantInventory(product, newQuantity);
+                else
+                    return updateInventory(product, newQuantity);
             }else {
                 log.warn("No product found in bigcommerce with sku " + sku);
             }
@@ -260,6 +262,41 @@ public class BigCommerceBaseService {
             return true;
         } catch (Exception e){
             log.error("Failed to change product inventory for bigcommerce.", e);
+            return false;
+        }
+    }
+
+    public boolean updateVariantInventory(BigCommerceProduct product, Integer newQuantity){
+        try {
+            log.info("Variant inventory change request for bigcommerce. [productId:"+product.getId()+",variantId:"+product.getVariantId()+",sku:"+product.getSku()+",newQuantity:"+newQuantity+"]");
+
+            String url = baseAPIv3 + "/catalog/products/{productId}/variants/{variantId}";
+
+            Map<String, String> param = new HashMap();
+            param.put("productId", product.getId());
+            param.put("variantId", product.getVariantId());
+
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode jsonObject = mapper.createObjectNode();
+            jsonObject.put("inventory_level", newQuantity);
+
+            HttpEntity requestEntity = new HttpEntity(jsonObject, getHeaders());
+
+            ResponseEntity<ObjectNode> responseObject = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, ObjectNode.class, param);
+
+            ObjectNode response = responseObject.getBody();
+
+            if(response.get("errors") != null){
+                log.error("Failed to change variant inventory for bigcommerce. Returning response has errors.");
+                log.error("Errors " + response.get("errors").toString());
+                return false;
+            }
+            product.setInventoryLevel(newQuantity);
+
+            log.info("Variant inventory change successful for bigcommerce. [productId:"+product.getId()+",variantId:"+product.getVariantId()+",sku:"+product.getSku()+",newQuantity:"+newQuantity+"]");
+            return true;
+        } catch (Exception e){
+            log.error("Failed to change variant inventory for bigcommerce.", e);
             return false;
         }
     }
