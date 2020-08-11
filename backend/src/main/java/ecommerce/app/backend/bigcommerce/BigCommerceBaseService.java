@@ -2,6 +2,8 @@ package ecommerce.app.backend.bigcommerce;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import ecommerce.app.backend.bigcommerce.products.BigCommerceVariant;
+import ecommerce.app.backend.bigcommerce.products.BigCommerceVariantData;
 import ecommerce.app.backend.inventory.TestProducts;
 import ecommerce.app.backend.bigcommerce.order.BCOrder;
 import ecommerce.app.backend.bigcommerce.order.BCOrderProduct;
@@ -50,7 +52,7 @@ public class BigCommerceBaseService {
 
     public BigCommerceProduct[] getProductList(int page){
         try {
-            String includeFields = "id,name,sku,is_visible,price,cost_price,retail_price,sale_price,inventory_level";
+            String includeFields = "id,name,sku,is_visible,price,cost_price,retail_price,sale_price,inventory_level,inventory_tracking";
             String url = baseAPIv3 + "/catalog/products?limit=50&page=" + page + "&include_fields=" + includeFields;
 
             HttpEntity<String> requestEntity = new HttpEntity<>("", getHeaders());
@@ -63,6 +65,26 @@ public class BigCommerceBaseService {
             return data.getData();
         } catch (Exception e){
             log.error("Failed to get product list.", e);
+        }
+        return null;
+    }
+
+
+    public BigCommerceVariant[] getVariants(String productId){
+        try {
+            String includeFields = "id,product_id,sku,inventory_level,option_values";
+            String url = baseAPIv3 + "/catalog/products/" + productId +"/variants?include_fields=" + includeFields;
+
+            HttpEntity<String> requestEntity = new HttpEntity<>("", getHeaders());
+
+            ResponseEntity<BigCommerceVariantData> dataResponse =
+                    restTemplate.exchange(url, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<BigCommerceVariantData>() { });
+
+            BigCommerceVariantData data = dataResponse.getBody();
+
+            return data.getData();
+        } catch (Exception e){
+            log.error("Failed to get variant list.", e);
         }
         return null;
     }

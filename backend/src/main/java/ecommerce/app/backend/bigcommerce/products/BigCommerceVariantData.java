@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class BigCommerceData {
+public class BigCommerceVariantData {
 
     @Getter @Setter
-    private BigCommerceProduct data [];
+    private BigCommerceVariant data [];
 }
