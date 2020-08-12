@@ -158,8 +158,11 @@ class ProductDetailDialog extends Component {
             detailedProduct.bigCommerceProduct.inventory_level = detailedProduct.inventoryLevel;
         if(detailedProduct.bigCommerceFSProduct !== null)
             detailedProduct.bigCommerceFSProduct.inventory_level = detailedProduct.inventoryLevel;
-        if(detailedProduct.vendHQProduct !== null)
-            detailedProduct.vendHQProduct.product_inventory.inventory_level = detailedProduct.inventoryLevel;
+        if(detailedProduct.vendHQProduct !== null){
+            if(detailedProduct.vendHQProduct.product_inventory !== null){
+                detailedProduct.vendHQProduct.product_inventory.inventory_level = detailedProduct.inventoryLevel;
+            }
+        }
 
         this.props.updateDetailedProduct(detailedProduct);
 
