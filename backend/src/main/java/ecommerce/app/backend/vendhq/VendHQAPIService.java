@@ -277,8 +277,8 @@ public class VendHQAPIService {
             if(product.getInventory() != null)
                 inventory = product.getInventory();
             else {
-                log.warn("Can not find product inventory. [productId:"+product.getId()+",sku:"+product.getSku()+"]");
-                return true;
+                log.error("Can not find product inventory. [productId:"+product.getId()+",sku:"+product.getSku()+"]");
+                return false;
             }
 
             inventory.setInventoryLevel(newQuantity);
