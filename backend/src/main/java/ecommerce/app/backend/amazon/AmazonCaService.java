@@ -82,7 +82,7 @@ public class AmazonCaService extends AmazonBaseService {
 
             int currentQuantity = amazonProduct.getQuantity();
             int newQuantity = currentQuantity + quantity;
-            if(overwrite == false){
+            if(overwrite == true){
                 newQuantity = currentQuantity;
             }
             if (newQuantity < 0) {
