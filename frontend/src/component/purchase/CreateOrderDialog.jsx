@@ -14,8 +14,10 @@ class CreateOrderDialog extends Component {
         this.resetInputs = this.resetInputs.bind(this);
         this.successHandler = this.successHandler.bind(this);
         this.errorHandler = this.errorHandler.bind(this);
-        this.getTodateAsStr = this.getTodateAsStr.bind(this);
+        //this.getTodateAsStr = this.getTodateAsStr.bind(this);
+
         let todateAsStr = this.getTodateAsStr();
+
         this.state = {
             supplier: "",
             createDate: todateAsStr,
@@ -55,7 +57,11 @@ class CreateOrderDialog extends Component {
     }
 
     getTodateAsStr(){
-        return "13/05/2020";
+        let d = new Date();
+        let day = d.getDate();
+        let month = d.getMonth() + 1;
+        let year = d.getFullYear();
+        return day + "/" + month + "/" + year;
     }
 
     render() {

@@ -28,9 +28,9 @@ public class BigCommerceFSAPIService extends BigCommerceBaseService {
                 return false;
 
             if(super.updatePrice(detailedProduct.getBigCommerceFSProduct(), productSku, costPrice, retailPrice, price) == true){
-                if(detailedProduct.getBigCommerceFSProduct()!= null && retailPrice != null){ // update base order price
+                if(detailedProduct.getBigCommerceFSProduct()!= null && price != null){ // update base order price
                     BaseProduct baseProduct = storeBean.getProductsMap().get(productSku);
-                    baseProduct.setBigCommerceFSPrice(Float.parseFloat(retailPrice));
+                    baseProduct.setBigCommerceFSPrice(Float.parseFloat(price));
                 }
                 return true;
             }
@@ -38,5 +38,14 @@ public class BigCommerceFSAPIService extends BigCommerceBaseService {
             log.error("Error:", e);
         }
         return false;
+    }
+
+    @Override
+    void updateBaseProduct(String sku, Integer quantity) {
+        BaseProduct baseProduct = storeBean.getProductsMap().get(sku);
+        if(baseProduct != null){
+            baseProduct.setBigCommerceFSInventory(quantity);
+        }
+
     }
 }

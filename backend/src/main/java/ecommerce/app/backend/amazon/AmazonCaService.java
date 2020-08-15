@@ -93,6 +93,10 @@ public class AmazonCaService extends AmazonBaseService {
             // just change it in memory
             amazonProduct.setQuantity(newQuantity);
 
+            // update in base product
+            BaseProduct baseProduct = storeBean.getProductsMap().get(productSku);
+            baseProduct.setAmazonCAInventory(newQuantity);
+
             // set product sku in update set to let listener change it
             storeBean.getAmazonCaQuantityUpdateSet().add(detailedProduct.getSku());
 

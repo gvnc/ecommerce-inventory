@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
@@ -302,6 +301,11 @@ public class VendHQAPIService {
             if(responseProduct == null){
                 log.error("Failed to change product inventory for vendhq. Returning response is null.");
                 return false;
+            }
+
+            BaseProduct baseProduct = storeBean.getProductsMap().get(product.getSku());
+            if(baseProduct != null){
+                baseProduct.setVendHQInventory(newQuantity);
             }
 
             log.info("Inventory change successful for vendhq. [productId:"+product.getId()+",sku:"+product.getSku()+",newQuantity:"+newQuantity+"]");

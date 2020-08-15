@@ -105,17 +105,17 @@ public class SyncProductsService {
         DetailedProduct detailedProduct;
         BaseProduct baseProduct = storeBean.getProductsMap().get(bigCommerceProduct.getSku());
         if (baseProduct != null) {
-            baseProduct.setBigCommercePrice(Float.parseFloat(bigCommerceProduct.getRetailPrice()));
             detailedProduct = storeBean.getDetailedProductsMap().get(bigCommerceProduct.getSku());
         } else {
             baseProduct = new BaseProduct(bigCommerceProduct.getSku(), bigCommerceProduct.getName());
-            baseProduct.setBigCommercePrice(Float.parseFloat(bigCommerceProduct.getRetailPrice()));
             storeBean.getProductsMap().put(bigCommerceProduct.getSku(), baseProduct);
             storeBean.getProductsList().add(baseProduct);
 
             detailedProduct = new DetailedProduct(bigCommerceProduct.getSku(), bigCommerceProduct.getName());
             storeBean.getDetailedProductsMap().put(bigCommerceProduct.getSku(), detailedProduct);
         }
+        baseProduct.setBigCommercePrice(Float.parseFloat(bigCommerceProduct.getRetailPrice()));
+        baseProduct.setBigCommerceInventory(bigCommerceProduct.getInventoryLevel());
         detailedProduct.setInventoryLevel(bigCommerceProduct.getInventoryLevel());
         detailedProduct.setBigCommerceProduct(bigCommerceProduct);
     }
@@ -179,18 +179,17 @@ public class SyncProductsService {
         DetailedProduct detailedProduct;
         BaseProduct baseProduct = storeBean.getProductsMap().get(bigCommerceProduct.getSku());
         if (baseProduct != null) {
-            baseProduct.setBigCommerceFSPrice(Float.parseFloat(bigCommerceProduct.getRetailPrice()));
             detailedProduct = storeBean.getDetailedProductsMap().get(bigCommerceProduct.getSku());
         } else {
             baseProduct = new BaseProduct(bigCommerceProduct.getSku(), bigCommerceProduct.getName());
-            baseProduct.setBigCommerceFSPrice(Float.parseFloat(bigCommerceProduct.getRetailPrice()));
-
             storeBean.getProductsMap().put(bigCommerceProduct.getSku(), baseProduct);
             storeBean.getProductsList().add(baseProduct);
 
             detailedProduct = new DetailedProduct(bigCommerceProduct.getSku(), bigCommerceProduct.getName());
             storeBean.getDetailedProductsMap().put(bigCommerceProduct.getSku(), detailedProduct);
         }
+        baseProduct.setBigCommerceFSPrice(Float.parseFloat(bigCommerceProduct.getRetailPrice()));
+        baseProduct.setBigCommerceFSInventory(bigCommerceProduct.getInventoryLevel());
         detailedProduct.setInventoryLevel(bigCommerceProduct.getInventoryLevel());
         detailedProduct.setBigCommerceFSProduct(bigCommerceProduct);
     }
@@ -231,16 +230,12 @@ public class SyncProductsService {
                     DetailedProduct detailedProduct;
                     BaseProduct baseProduct = storeBean.getProductsMap().get(vendHQProduct.getSku());
                     if (baseProduct != null) {
-                        baseProduct.setVendHQPrice(vendHQProduct.getPrice());
-
                         detailedProduct = storeBean.getDetailedProductsMap().get(vendHQProduct.getSku());
                         if(detailedProduct.getVendHQProduct() != null){
                             duplicates.add(vendHQProduct.getSku());
                         }
                     } else {
                         baseProduct = new BaseProduct(vendHQProduct.getSku(), vendHQProduct.getName());
-                        baseProduct.setVendHQPrice(vendHQProduct.getPrice());
-
                         storeBean.getProductsMap().put(vendHQProduct.getSku(), baseProduct);
                         storeBean.getProductsList().add(baseProduct);
 
@@ -248,8 +243,10 @@ public class SyncProductsService {
                         storeBean.getDetailedProductsMap().put(vendHQProduct.getSku(), detailedProduct);
                     }
                     if(inventory != null){
+                        baseProduct.setVendHQInventory(inventory.getInventoryLevel());
                         detailedProduct.setInventoryLevel(inventory.getInventoryLevel());
                     }
+                    baseProduct.setVendHQPrice(vendHQProduct.getPrice());
                     detailedProduct.setVendHQProduct(vendHQProduct);
                     productCounter++;
                 }
@@ -315,17 +312,17 @@ public class SyncProductsService {
                     DetailedProduct detailedProduct;
                     BaseProduct baseProduct = storeBean.getProductsMap().get(amazonProduct.getSku());
                     if (baseProduct != null) {
-                        baseProduct.setAmazonCAPrice(amazonProduct.getPrice());
                         detailedProduct = storeBean.getDetailedProductsMap().get(amazonProduct.getSku());
                     } else {
                         baseProduct = new BaseProduct(amazonProduct.getSku(), amazonProduct.getName());
-                        baseProduct.setAmazonCAPrice(amazonProduct.getPrice());
                         storeBean.getProductsMap().put(amazonProduct.getSku(), baseProduct);
                         storeBean.getProductsList().add(baseProduct);
 
                         detailedProduct = new DetailedProduct(amazonProduct.getSku(), amazonProduct.getName());
                         storeBean.getDetailedProductsMap().put(amazonProduct.getSku(), detailedProduct);
                     }
+                    baseProduct.setAmazonCAPrice(amazonProduct.getPrice());
+                    baseProduct.setAmazonCAInventory(amazonProduct.getQuantity());
                     detailedProduct.setInventoryLevel(amazonProduct.getQuantity());
                     detailedProduct.setAmazonCaProduct(amazonProduct);
                     productCounter++;
@@ -333,7 +330,6 @@ public class SyncProductsService {
                 storeBean.getSyncStatus().setAmazonCaStatus(SyncConstants.SYNC_COMPLETED);
             }
             storeBean.getSyncStatus().setAmazonCaLastUpdate(Utils.getNowAsString());
-
         } catch (Exception e) {
             storeBean.getSyncStatus().setAmazonCaStatus(SyncConstants.SYNC_FAILED);
             log.error("Failed to sync amazonca products", e);

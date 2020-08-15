@@ -1,5 +1,6 @@
 package ecommerce.app.backend.inventory;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -7,6 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+@Slf4j
 @Component
 public class TestProducts {
 
@@ -24,6 +26,7 @@ public class TestProducts {
 
     public boolean isAvailable(String productSku){
         if(testEnabled == true) {
+            log.warn("Test mode is enabled.");
             return testSkuSet.contains(productSku);
         }
         return true;

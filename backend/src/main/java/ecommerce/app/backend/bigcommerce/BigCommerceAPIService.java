@@ -28,9 +28,9 @@ public class BigCommerceAPIService extends BigCommerceBaseService {
                 return false;
 
             if(super.updatePrice(detailedProduct.getBigCommerceProduct(), productSku, costPrice, retailPrice, price) == true){
-                if(detailedProduct.getBigCommerceProduct() != null && retailPrice != null){ // update base order price
+                if(detailedProduct.getBigCommerceProduct() != null && price != null){ // update base order price
                     BaseProduct baseProduct = storeBean.getProductsMap().get(productSku);
-                    baseProduct.setBigCommercePrice(Float.parseFloat(retailPrice));
+                    baseProduct.setBigCommercePrice(Float.parseFloat(price));
                 }
                 return true;
             }
@@ -38,5 +38,14 @@ public class BigCommerceAPIService extends BigCommerceBaseService {
             log.error("Error:", e);
         }
         return false;
+    }
+
+    @Override
+    void updateBaseProduct(String sku, Integer quantity) {
+        BaseProduct baseProduct = storeBean.getProductsMap().get(sku);
+        if(baseProduct != null){
+            baseProduct.setBigCommerceInventory(quantity);
+        }
+
     }
 }

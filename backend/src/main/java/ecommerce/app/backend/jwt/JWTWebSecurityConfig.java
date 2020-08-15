@@ -81,8 +81,8 @@ public class JWTWebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.OPTIONS, "/**/**")
                 .and().ignoring()
                 .antMatchers(
-                    HttpMethod.GET,
-                    "/" //Other Stuff You want to Ignore
+                    HttpMethod.GET, //Other Stuff You want to Ignore
+                    "/" , "/login", "/status", "/products", "/purchaseOrders", "/inventoryCounts", "/orderMonitoring"
                 )
                 .and().ignoring()
                 .antMatchers("/isAppRunning") // check for app monitoring

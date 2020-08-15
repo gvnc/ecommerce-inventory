@@ -86,7 +86,7 @@ export const completeCommitPriceChange = (data) => {
     };
 };
 
-export const updateInventory = (productSku, inventory) => {
+export const updateInventory = (productSku, inventory, noFeedback) => {
     return (dispatch) => {
 
         let requestUrl = API_URL + "/products/" + productSku + "/updateInventory";
@@ -97,7 +97,8 @@ export const updateInventory = (productSku, inventory) => {
             })
             .then(response => {
                 if(response) {
-                    dispatch(completeUpdateInventory(response.data));
+                    if(noFeedback !== true)
+                        dispatch(completeUpdateInventory(response.data));
                 }
             })
     };

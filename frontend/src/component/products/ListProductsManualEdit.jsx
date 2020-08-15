@@ -37,13 +37,11 @@ class ListProducts extends Component {
     }
 
     render() {
-        let header = <div className="p-clearfix" style={{lineHeight:'1.87em'}}>Product List - Manual Edit Mode</div>;
-
         return (
             <div>
                 <Growl ref={(el) => this.growl = el} />
                 <div className="content-section implementation">
-                    <DataTable value={this.props.productList} paginator={true} rows={10}  header={header}
+                    <DataTable value={this.props.productList} paginator={true} rows={10}
                                selectionMode="single" selection={this.state.selectedProduct} onSelectionChange={e => this.setState({selectedProduct: e.value})}
                                onRowSelect={this.onProductSelect}
                                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"

@@ -2,6 +2,7 @@ package ecommerce.app.backend.bigcommerce;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import ecommerce.app.backend.StoreBean;
 import ecommerce.app.backend.bigcommerce.products.BigCommerceVariant;
 import ecommerce.app.backend.bigcommerce.products.BigCommerceVariantData;
 import ecommerce.app.backend.inventory.TestProducts;
@@ -19,7 +20,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
-public class BigCommerceBaseService {
+public abstract class BigCommerceBaseService {
 
     private static Logger log;
 
@@ -257,6 +258,7 @@ public class BigCommerceBaseService {
                 return false;
             }
             product.setInventoryLevel(newQuantity);
+            updateBaseProduct(product.getSku(), newQuantity);
 
             log.info("Inventory change successful for bigcommerce. [productId:"+product.getId()+",sku:"+product.getSku()+",newQuantity:"+newQuantity+"]");
             return true;
@@ -292,6 +294,7 @@ public class BigCommerceBaseService {
                 return false;
             }
             product.setInventoryLevel(newQuantity);
+            updateBaseProduct(product.getSku(), newQuantity);
 
             log.info("Variant inventory change successful for bigcommerce. [productId:"+product.getId()+",variantId:"+product.getVariantId()+",sku:"+product.getSku()+",newQuantity:"+newQuantity+"]");
             return true;
@@ -300,4 +303,6 @@ public class BigCommerceBaseService {
             return false;
         }
     }
+
+    abstract void updateBaseProduct(String sku, Integer quantity);
 }

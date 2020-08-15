@@ -23,6 +23,18 @@ public class BaseProduct {
     @Getter @Setter
     private Float amazonCAPrice;
 
+    @Getter @Setter
+    private Integer bigCommerceInventory;
+
+    @Getter @Setter
+    private Integer bigCommerceFSInventory;
+
+    @Getter @Setter
+    private Integer vendHQInventory;
+
+    @Getter @Setter
+    private Integer amazonCAInventory;
+
     public BaseProduct(String sku, String name) {
         this.sku = sku;
         this.name = name;

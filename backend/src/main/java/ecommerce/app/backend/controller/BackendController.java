@@ -1,18 +1,14 @@
 package ecommerce.app.backend.controller;
 
-import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import ecommerce.app.backend.StoreBean;
 import ecommerce.app.backend.amazon.AmazonCaService;
-import ecommerce.app.backend.amazon.products.AmazonProduct;
 import ecommerce.app.backend.bigcommerce.BigCommerceAPIService;
 import ecommerce.app.backend.bigcommerce.BigCommerceFSAPIService;
-import ecommerce.app.backend.bigcommerce.products.BigCommerceProduct;
 import ecommerce.app.backend.model.*;
 import ecommerce.app.backend.sync.SyncProductsService;
+import ecommerce.app.backend.util.Utils;
 import ecommerce.app.backend.vendhq.VendHQAPIService;
-import ecommerce.app.backend.vendhq.products.VendHQInventory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -98,13 +94,14 @@ public class BackendController {
         CommitPriceResult commitPriceResult = new CommitPriceResult();
         commitPriceResult.setFinalResult(OperationConstants.SUCCESS);
 
-        String marketPlace = propertyChanges.get("marketPlace") == null? null : propertyChanges.get("marketPlace").textValue();
+        String marketPlace = Utils.getStringFromNode(propertyChanges.get("marketPlace"));
+
         if(marketPlace != null){
             if(marketPlace.equals("BigCommerce")){
 
-                String newCostPrice = propertyChanges.get("bigCommerceCostPrice") == null? null : propertyChanges.get("bigCommerceCostPrice").textValue();
-                String newRetailPrice = propertyChanges.get("bigCommerceRetailPrice") == null? null : propertyChanges.get("bigCommerceRetailPrice").textValue();
-                String newPrice = propertyChanges.get("bigCommercePrice") == null? null : propertyChanges.get("bigCommercePrice").textValue();
+                String newCostPrice = Utils.getStringFromNode(propertyChanges.get("bigCommerceCostPrice"));
+                String newRetailPrice = Utils.getStringFromNode(propertyChanges.get("bigCommerceRetailPrice"));
+                String newPrice = Utils.getStringFromNode(propertyChanges.get("bigCommercePrice"));
 
                 // update bigcommerce product inventory
                 if(bigCommerceAPIService.updatePrice(productSku, newCostPrice, newRetailPrice, newPrice) == true){
@@ -130,7 +127,9 @@ public class BackendController {
                     commitPriceResult.setFinalResult(OperationConstants.FAIL);
                 }
             } else if (marketPlace.equals("Amazon")){
-                String newPrice = propertyChanges.get("amazonPrice") == null? null : propertyChanges.get("amazonPrice").textValue();
+
+                String newPrice = Utils.getStringFromNode(propertyChanges.get("amazonPrice"));
+
                 if(amazonCaService.updatePrice(productSku, newPrice) == true){
                     commitPriceResult.setAmazonCaPriceChange(OperationConstants.SUCCESS);
                 } else {
@@ -150,12 +149,8 @@ public class BackendController {
         InventoryUpdateResult inventoryUpdateResult = new InventoryUpdateResult();
         inventoryUpdateResult.setFinalResult(OperationConstants.SUCCESS);
 
-        int inventoryLevel = -1;
-        if(requestBody.get("inventory") instanceof TextNode){
-            inventoryLevel = Integer.parseInt(requestBody.get("inventory").textValue());
-        } else if(requestBody.get("inventory") instanceof IntNode){
-            inventoryLevel = requestBody.get("inventory").intValue();
-        } else {
+        int inventoryLevel = Utils.getIntFromNode(requestBody.get("inventory"));
+        if(inventoryLevel == -1) {
             inventoryUpdateResult.setFinalResult(OperationConstants.FAIL);
             return inventoryUpdateResult;
         }
