@@ -30,6 +30,7 @@ class OrderDetailsDialog extends Component {
         this.onEditorValueChange = this.onEditorValueChange.bind(this);
         this.draftInputTextEditor = this.draftInputTextEditor.bind(this);
         this.landedCostEditor = this.landedCostEditor.bind(this);
+        this.landedCostExEditor = this.landedCostExEditor.bind(this);
         this.deleteButtonBody = this.deleteButtonBody.bind(this);
         this.deleteProductFromList = this.deleteProductFromList.bind(this);
         this.submitPurchaseOrder = this.submitPurchaseOrder.bind(this);
@@ -210,8 +211,16 @@ class OrderDetailsDialog extends Component {
     }
 
     landedCostEditor(rowData, expensePerProduct) {
-        let landedPrice = Number(rowData.costPrice) + Number(expensePerProduct);
-        return <span>{landedPrice.toFixed(2)}</span>;
+        let landedCost = Number(rowData.costPrice) + Number(expensePerProduct);
+        return <span>{landedCost.toFixed(2)}</span>;
+    }
+
+    landedCostExEditor(rowData, expensePerProduct, exchangeRate) {
+        if(!exchangeRate || exchangeRate === "0"){
+            exchangeRate = 1;
+        }
+        let landedCostEx = Number(exchangeRate) * (Number(rowData.costPrice) + Number(expensePerProduct));
+        return <span>{landedCostEx.toFixed(2)}</span>;
     }
 
     deleteProductFromList(product){
@@ -265,9 +274,13 @@ class OrderDetailsDialog extends Component {
     render() {
         let totalExpenses = 0;
         let dutyRate = 0;
+        let exchangeRate = 0;
 
         if(this.props.order){
             dutyRate = this.calculateDuties();
+            if(this.props.order.exchangeRate !== null){
+                exchangeRate = this.props.order.exchangeRate;
+            }
             totalExpenses = totalExpenses + Number(this.props.order.salesTax);
             totalExpenses = totalExpenses + Number(this.props.order.brokerage);
             totalExpenses = totalExpenses - Number(this.props.order.discount);
@@ -286,7 +299,12 @@ class OrderDetailsDialog extends Component {
         if(totalProducts > 0)
             expensePerProduct = (totalExpenses / totalProducts).toFixed(2);
 
-        let orderTotal = (totalProductCost + totalExpenses).toFixed(2);;
+        let orderTotal = (totalProductCost + totalExpenses).toFixed(2);
+
+        let orderTotalEx = orderTotal;
+        if(exchangeRate && exchangeRate !== "0"){
+            orderTotalEx = (Number(exchangeRate) * (totalProductCost + totalExpenses)).toFixed(2);
+        }
 
         let orderStatus = this.props.order ? this.props.order.status : "";
         let draftOpts = { };
@@ -395,7 +413,8 @@ class OrderDetailsDialog extends Component {
                                         <Column bodyStyle={columnCss} header="Duty Rate %" style={{width:'100px'}} body={(rowData) => this.draftInputTextEditor(rowData, 'dutyRate')} />
                                         <Column bodyStyle={columnCss} header="Cost Price" style={{width:'100px'}} body={(rowData) => this.draftInputTextEditor(rowData, 'costPrice')} />
                                         <Column bodyStyle={columnCss} header="Ordered Quantity" style={{width:'100px'}} body={(rowData) => this.draftInputTextEditor(rowData, 'orderedQuantity')} />
-                                        <Column bodyStyle={columnCss} header="Landed Price" style={{width:'100px'}} body={(rowData) => this.landedCostEditor(rowData, expensePerProduct)} />
+                                        <Column bodyStyle={columnCss} header="Landed Cost" style={{width:'100px'}} body={(rowData) => this.landedCostEditor(rowData, expensePerProduct)} />
+                                        <Column bodyStyle={columnCss} header="Landed Cost Ex" style={{width:'100px'}} body={(rowData) => this.landedCostExEditor(rowData, expensePerProduct, exchangeRate)} />
                                         {
                                             orderStatus === "DRAFT" &&
                                             <Column body={this.deleteButtonBody} headerStyle={{width: '4em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}}   />
@@ -415,6 +434,11 @@ class OrderDetailsDialog extends Component {
                                         <div className="p-col-4">
                                             <Card>
                                                 <div className="p-grid p-fluid">
+                                                    <div className="p-col-6">Exchange Rate</div>
+                                                    <div className="p-col-6">
+                                                        <InputText id="exchangeRate" onChange={(e) => {this.props.updateSelectedPurchaseOrder(this.props.order.id, "exchangeRate", e.target.value)}}
+                                                                   value={this.props.order.exchangeRate} style={{width:'100px'}} {...draftOpts} keyfilter = {/^\d*\.?\d*$/} />
+                                                    </div>
                                                     <div className="p-col-6">Sales Tax</div>
                                                     <div className="p-col-6">
                                                         <InputText id="salesTax" onChange={(e) => {this.props.updateSelectedPurchaseOrder(this.props.order.id, "salesTax", e.target.value)}}
@@ -438,6 +462,8 @@ class OrderDetailsDialog extends Component {
                                                                    value={this.props.order.shipping} style={{width:'100px'}} {...draftOpts} keyfilter = {/^\d*\.?\d*$/}  /></div>
                                                     <div className="p-col-6 labelText">Order Total</div>
                                                     <div className="p-col-6 labelText">{orderTotal}</div>
+                                                    <div className="p-col-6 labelText">Order Total Ex</div>
+                                                    <div className="p-col-6 labelText">{orderTotalEx}</div>
                                                 </div>
                                             </Card>
                                         </div>

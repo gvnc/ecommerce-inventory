@@ -61,7 +61,7 @@ class PurchaseOrders extends Component {
     render() {
         let header = <div className="p-grid p-fluid">
             <div className="p-col-2">
-                <Button label="Create" icon="pi pi-check" onClick={this.createNewOrder}/>
+                <Button label="Create New" onClick={this.createNewOrder}/>
             </div>
             <div className="p-col-10">
                 <span>Purchase Orders</span>

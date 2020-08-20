@@ -46,4 +46,7 @@ public class PurchaseOrder {
 
     @Getter @Setter
     private Float orderTotal = 0F;
+
+    @Getter @Setter
+    private Float exchangeRate = 0F;
 }

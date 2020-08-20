@@ -21,6 +21,8 @@ class InstructorApp extends Component {
         if(jwtToken){
             const jwtTokenCreated = AuthenticationService.createJWTToken(jwtToken);
             AuthenticationService.setupAxiosInterceptors(jwtTokenCreated);
+            // TODO
+            // to remember login true on browser close - push that into browser storage too !! guvenc
         }
     }
 
