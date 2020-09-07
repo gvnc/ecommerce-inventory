@@ -22,7 +22,7 @@ import java.util.*;
 
 public abstract class BigCommerceBaseService {
 
-    private static Logger log;
+    private Logger log;
 
     private String baseAPIv3;
     private String baseAPIv2;

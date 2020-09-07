@@ -10,7 +10,9 @@ import ecommerce.app.backend.bigcommerce.BigCommerceFSAPIService;
 import ecommerce.app.backend.bigcommerce.order.BCOrder;
 import ecommerce.app.backend.bigcommerce.order.BCOrderProduct;
 import ecommerce.app.backend.bigcommerce.order.BCOrderStatuses;
+import ecommerce.app.backend.bigcommerce.products.BigCommerceProduct;
 import ecommerce.app.backend.model.BaseOrder;
+import ecommerce.app.backend.model.BaseProduct;
 import ecommerce.app.backend.model.DetailedProduct;
 import ecommerce.app.backend.vendhq.VendHQAPIService;
 import ecommerce.app.backend.vendhq.products.VendHQProduct;
@@ -111,6 +113,23 @@ public class OrderListener {
                     DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(product.getSku());
                     setOverallQuantity(detailedProduct, quantity);
 
+                    // update inventory level in memory for product in base market
+                    BigCommerceProduct bigCommerceProduct = detailedProduct.getBigCommerceProduct();
+                    if(bigCommerceProduct != null){
+                        int currentQuantity = bigCommerceProduct.getInventoryLevel();
+                        int newQuantity = currentQuantity + quantity;
+                        if (newQuantity < 0) {
+                            log.warn("There is no enough inventory in the bigcommerce store for sku " + product.getSku() + ". [currentQuantity:" + currentQuantity + ", demanded:" + quantity);
+                            log.warn("Set inventory to 0 for bigcommerce sku " + product.getSku());
+                            newQuantity = 0;
+                        }
+                        bigCommerceProduct.setInventoryLevel(newQuantity);
+                        BaseProduct baseProduct = storeBean.getProductsMap().get(product.getSku());
+                        if(baseProduct != null){
+                            baseProduct.setBigCommerceInventory(newQuantity);
+                        }
+                    }
+
                     // set quantity for other market places
                     vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), product.getSku(), quantity, false);
                     bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), product.getSku(), quantity, false);
@@ -161,6 +180,23 @@ public class OrderListener {
                     DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(product.getSku());
                     setOverallQuantity(detailedProduct, quantity);
 
+                    // update inventory level in memory for product in base market
+                    BigCommerceProduct bigCommerceProduct = detailedProduct.getBigCommerceFSProduct();
+                    if(bigCommerceProduct != null){
+                        int currentQuantity = bigCommerceProduct.getInventoryLevel();
+                        int newQuantity = currentQuantity + quantity;
+                        if (newQuantity < 0) {
+                            log.warn("There is no enough inventory in the bigcommerce-fs store for sku " + product.getSku() + ". [currentQuantity:" + currentQuantity + ", demanded:" + quantity);
+                            log.warn("Set inventory to 0 for bigcommerce-fs sku " + product.getSku());
+                            newQuantity = 0;
+                        }
+                        bigCommerceProduct.setInventoryLevel(newQuantity);
+                        BaseProduct baseProduct = storeBean.getProductsMap().get(product.getSku());
+                        if(baseProduct != null){
+                            baseProduct.setBigCommerceFSInventory(newQuantity);
+                        }
+                    }
+
                     // set quantity for other market places
                     vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), product.getSku(), quantity, false);
                     bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), product.getSku(), quantity, false);
@@ -210,6 +246,26 @@ public class OrderListener {
                     // set overall quantity
                     DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(sku);
                     setOverallQuantity(detailedProduct, quantity);
+
+                    // update inventory level in memory for product in base market
+                    VendHQProduct vendHQProduct = detailedProduct.getVendHQProduct();
+                    if(vendHQProduct != null){
+                        if(vendHQProduct.getInventory() != null) {
+                            int currentQuantity = vendHQProduct.getInventory().getInventoryLevel();
+                            int newQuantity = currentQuantity + quantity;
+                            if (newQuantity < 0) {
+                                log.warn("There is no enough inventory in the vendhq store for sku " +sku + ". [currentQuantity:" + currentQuantity + ", demanded:" + quantity);
+                                log.warn("Set inventory to 0 for vendhq sku " + sku);
+                                newQuantity = 0;
+                            }
+                            vendHQProduct.getInventory().setInventoryLevel(newQuantity);
+                            vendHQProduct.getInventory().setCount(newQuantity);
+                            BaseProduct baseProduct = storeBean.getProductsMap().get(sku);
+                            if(baseProduct != null){
+                                baseProduct.setVendHQInventory(newQuantity);
+                            }
+                        }
+                    }
 
                     // set quantity for other marketplaces
                     bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), sku, quantity, false);
@@ -267,6 +323,23 @@ public class OrderListener {
                     // set overall quantity
                     DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(sku);
                     setOverallQuantity(detailedProduct, quantity);
+
+                    // update inventory level in memory for product in base market
+                    AmazonProduct amazonProduct = detailedProduct.getAmazonCaProduct();
+                    if(amazonProduct != null){
+                        int currentQuantity = amazonProduct.getQuantity();
+                        int newQuantity = currentQuantity + quantity;
+                        if (newQuantity < 0) {
+                            log.warn("There is no enough inventory in the amazon-ca store for sku " + sku + ". [currentQuantity:" + currentQuantity + ", demanded:" + quantity);
+                            log.warn("Set inventory to 0 for amazon-ca sku " + sku);
+                            newQuantity = 0;
+                        }
+                        amazonProduct.setQuantity(newQuantity);
+                        BaseProduct baseProduct = storeBean.getProductsMap().get(sku);
+                        if(baseProduct != null){
+                            baseProduct.setAmazonCAInventory(newQuantity);
+                        }
+                    }
 
                     // update quantity for other market places
                     bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), sku, quantity, false);
