@@ -20,16 +20,26 @@ public class ProductGenerator {
         return bigCommerceProduct;
     }
 
-    public static VendHQProduct getVendHQProduct(String sku, String name, Integer inventory){
+    public static VendHQProduct getVendHQProduct(String productId, String sku, String name, Integer inventory){
         VendHQProduct vendHQProduct = new VendHQProduct();
         vendHQProduct.setSku(sku);
         vendHQProduct.setName(name);
+        vendHQProduct.setId(productId);
+        vendHQProduct.setActive(true);
 
         VendHQInventory vendHQInventory = new VendHQInventory();
         vendHQInventory.setInventoryLevel(inventory);
         vendHQProduct.setInventory(vendHQInventory);
 
         return vendHQProduct;
+    }
+
+    public static VendHQInventory getVendHQInventory(String productId, Integer inventory){
+        VendHQInventory vendHQInventory = new VendHQInventory();
+        vendHQInventory.setInventoryLevel(inventory);
+        vendHQInventory.setProductId(productId);
+
+        return vendHQInventory;
     }
 
     public static AmazonProduct getAmazonProduct(String sku, String name, Integer inventory){

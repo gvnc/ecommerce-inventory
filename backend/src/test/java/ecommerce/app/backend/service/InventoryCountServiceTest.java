@@ -77,7 +77,7 @@ public class InventoryCountServiceTest {
 
         DetailedProduct detailedProduct = new DetailedProduct(sku, productName);
         detailedProduct.setBigCommerceProduct(ProductGenerator.getBigCommerceProduct(sku, productName,inventory));
-        detailedProduct.setVendHQProduct(ProductGenerator.getVendHQProduct(sku, productName,inventory));
+        detailedProduct.setVendHQProduct(ProductGenerator.getVendHQProduct("1", sku, productName,inventory));
         detailedProduct.setAmazonCaProduct(ProductGenerator.getAmazonProduct(sku, productName,inventory));
         detailedProduct.setInventoryLevel(inventory);
         detailedProductMap.put(sku, detailedProduct);
