@@ -2,13 +2,13 @@ package ecommerce.app.backend.controller;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import ecommerce.app.backend.StoreBean;
-import ecommerce.app.backend.amazon.AmazonCaService;
-import ecommerce.app.backend.bigcommerce.BigCommerceAPIService;
-import ecommerce.app.backend.bigcommerce.BigCommerceFSAPIService;
+import ecommerce.app.backend.markets.amazon.AmazonCaService;
+import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
+import ecommerce.app.backend.markets.bigcommerce.BigCommerceFSAPIService;
 import ecommerce.app.backend.model.*;
-import ecommerce.app.backend.sync.SyncProductsService;
+import ecommerce.app.backend.service.SyncProductsService;
 import ecommerce.app.backend.util.Utils;
-import ecommerce.app.backend.vendhq.VendHQAPIService;
+import ecommerce.app.backend.markets.vendhq.VendHQAPIService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

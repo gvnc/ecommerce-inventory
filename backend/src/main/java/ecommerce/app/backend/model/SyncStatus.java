@@ -1,6 +1,6 @@
 package ecommerce.app.backend.model;
 
-import ecommerce.app.backend.sync.SyncConstants;
+import ecommerce.app.backend.service.constants.SyncConstants;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -16,10 +16,6 @@
 	<name>ecommerce-app-frontend</name>
 	<description>ecommerce app frontend</description>
 
-	<properties>
-		<java.version>1.8</java.version>
-	</properties>
-
 	<build>
 		<plugins>
 			<plugin>
