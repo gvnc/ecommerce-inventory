@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import ecommerce.app.backend.StoreBean;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
 import ecommerce.app.backend.markets.bigcommerce.order.BCOrder;
+import ecommerce.app.backend.markets.bigcommerce.order.BCOrderProduct;
 import ecommerce.app.backend.markets.bigcommerce.products.BigCommerceProduct;
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,10 +25,12 @@ public class BigCommerceServiceTest {
 
     private BigCommerceAPIService bigCommerceAPIService;
 
+    private StoreBean storeBean = new StoreBean();
+
     @Before
     public void configureStub(){
         bigCommerceAPIService = new BigCommerceAPIService("http://localhost:8900/bigcommerce", "testing", "testing");
-        ReflectionTestUtils.setField(bigCommerceAPIService, "storeBean", new StoreBean());
+        ReflectionTestUtils.setField(bigCommerceAPIService, "storeBean", storeBean);
 
         wireMockRule
                 .stubFor(WireMock.any(WireMock.urlPathEqualTo("/bigcommerce/v3/catalog/products"))
@@ -40,6 +43,12 @@ public class BigCommerceServiceTest {
                         .willReturn(WireMock.ok()
                                 .withHeader("Content-Type", "application/xml;charset=utf-8")
                                 .withBodyFile("bcOrdersResponse.xml")));
+
+        wireMockRule
+                .stubFor(WireMock.any(WireMock.urlPathEqualTo("/bigcommerce/v2/orders/10035/products"))
+                        .willReturn(WireMock.ok()
+                                .withHeader("Content-Type", "application/xml;charset=utf-8")
+                                .withBodyFile("bcOrderProductsResponse.xml")));
     }
 
     @Test
@@ -54,5 +63,12 @@ public class BigCommerceServiceTest {
         List<BCOrder> orders = bigCommerceAPIService.getOrders();
         Assert.assertNotNull(orders);
         Assert.assertTrue(orders.size() > 0);
+    }
+
+    @Test
+    public void getOrderProducts(){
+        List<BCOrderProduct> orderProducts = bigCommerceAPIService.getOrderProducts("10035");
+        Assert.assertNotNull(orderProducts);
+        Assert.assertTrue(orderProducts.size() > 0);
     }
 }
