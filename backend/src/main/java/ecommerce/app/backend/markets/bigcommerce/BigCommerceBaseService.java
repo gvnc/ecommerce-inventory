@@ -68,7 +68,6 @@ public abstract class BigCommerceBaseService {
         return null;
     }
 
-
     public BigCommerceVariant[] getVariants(String productId){
         try {
             String includeFields = "id,product_id,sku,inventory_level,option_values";

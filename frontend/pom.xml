@@ -16,78 +16,86 @@
 	<name>ecommerce-app-frontend</name>
 	<description>ecommerce app frontend</description>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.6.0</version>
-				<executions>
-					<execution>
-						<id>npm clean</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>clean</phase>
-						<configuration>
-							<executable>npm</executable>
-							<arguments>
-								<argument>run</argument>
-								<argument>cleanBuild</argument>
-							</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>npm install</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>compile</phase>
-						<configuration>
-							<executable>npm</executable>
-							<arguments>
-								<argument>install</argument>
-							</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>npm build</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>prepare-package</phase>
-						<configuration>
-							<executable>npm</executable>
-							<arguments>
-								<argument>run</argument>
-								<argument>build</argument>
-							</arguments>
-						</configuration>
-					</execution>
-				</executions>
-            </plugin>
-			
-            <plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-				<version>3.0.0</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <configuration>
-                            <target>
-                                <copy todir="../backend/target/classes/public">
-                                    <fileset dir="build"/>
-                                </copy>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-		</plugins>
-	</build>
 
+	<profiles>
+		<profile>
+			<id>prod</id>
+			<properties>
+				<activatedProfile>prod</activatedProfile>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.6.0</version>
+						<executions>
+							<execution>
+								<id>npm clean</id>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<phase>clean</phase>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>run</argument>
+										<argument>cleanBuild</argument>
+									</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>npm install</id>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<phase>compile</phase>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>install</argument>
+									</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>npm build</id>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<phase>prepare-package</phase>
+								<configuration>
+									<executable>npm</executable>
+									<arguments>
+										<argument>run</argument>
+										<argument>build</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>3.0.0</version>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<configuration>
+									<target>
+										<copy todir="../backend/target/classes/public">
+											<fileset dir="build"/>
+										</copy>
+									</target>
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

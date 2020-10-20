@@ -360,8 +360,8 @@ public class SyncProductsService {
             syncBigCommerce();
             syncBigCommerceFS();
             syncVendHQ();
-            syncAmazonUS();
             syncAmazonCA();
+            syncAmazonUS();
         }
     }
 }

@@ -3,10 +3,13 @@ package ecommerce.app.backend.service;
 import ecommerce.app.backend.StoreBean;
 import ecommerce.app.backend.markets.amazon.AmazonCaService;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
+import ecommerce.app.backend.markets.bigcommerce.BigCommerceFSAPIService;
 import ecommerce.app.backend.markets.bigcommerce.products.BigCommerceProduct;
 import ecommerce.app.backend.markets.vendhq.VendHQAPIService;
 import ecommerce.app.backend.markets.vendhq.products.*;
+import ecommerce.app.backend.service.constants.SyncConstants;
 import ecommerce.app.backend.service.utils.ProductGenerator;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,6 +26,9 @@ public class SyncProductsServiceTest {
     private BigCommerceAPIService bigCommerceAPIService;
 
     @Mock
+    private BigCommerceFSAPIService bigCommerceFSAPIService;
+
+    @Mock
     private VendHQAPIService vendHQAPIService;
 
     @Mock
@@ -31,12 +37,15 @@ public class SyncProductsServiceTest {
     @InjectMocks
     private SyncProductsService syncProductsService;
 
+    private StoreBean storeBean = new StoreBean();
+
     @Before
     public void configureMockData(){
         ReflectionTestUtils.setField(syncProductsService, "syncProductsEnabled", true);
-        ReflectionTestUtils.setField(syncProductsService, "storeBean", new StoreBean());
+        ReflectionTestUtils.setField(syncProductsService, "storeBean", storeBean);
         configureBCMockData();
         configureVendHQMockData();
+        configureAmazonCAMockData();
     }
 
     private void configureBCMockData(){
@@ -45,8 +54,12 @@ public class SyncProductsServiceTest {
         BigCommerceProduct[] products = new BigCommerceProduct[2];
         products[0] = p1;
         products[1] = p2;
+
         Mockito.when(bigCommerceAPIService.getProductList(1)).thenReturn(products);
         Mockito.when(bigCommerceAPIService.getProductList(2)).thenReturn(new BigCommerceProduct[0]);
+
+        Mockito.when(bigCommerceFSAPIService.getProductList(1)).thenReturn(products);
+        Mockito.when(bigCommerceFSAPIService.getProductList(2)).thenReturn(new BigCommerceProduct[0]);
     }
 
     private void configureVendHQMockData(){
@@ -74,8 +87,17 @@ public class SyncProductsServiceTest {
         Mockito.when(vendHQAPIService.getProductList(Mockito.anyLong())).thenReturn(vendHQProductsData);
     }
 
+    private void configureAmazonCAMockData(){
+        Mockito.when(amazonCaService.getProductList()).thenReturn(null);
+    }
+
     @Test
     public void syncAllMarketPlaces(){
         syncProductsService.syncAllMarketPlaces();
+
+        Assert.assertEquals(storeBean.getSyncStatus().getBigCommerceSyncStatus(), SyncConstants.SYNC_COMPLETED);
+        Assert.assertEquals(storeBean.getSyncStatus().getVendHQSyncStatus(), SyncConstants.SYNC_COMPLETED);
+        Assert.assertEquals(storeBean.getSyncStatus().getBigCommerceFSSyncStatus(), SyncConstants.SYNC_COMPLETED);
+        Assert.assertEquals(storeBean.getDetailedProductsMap().size(), 2);
     }
 }
