@@ -1,0 +1,35 @@
+#!/bin/bash
+
+echo "
+<html>
+<head>
+
+<style>
+#mytable {
+  font-family: 'Trebuchet MS', Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+}
+
+#mytable td, #mytable th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#mytable th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  color: #00001a;
+}
+
+#
+</style>
+
+</head>
+<body>
+<p><span style='color: #660000;'><em>This email is sent to let you know that defconsync.com is broken and not running.</em></span></p>
+<p><span style='color: #660000;'><em>Recovery scripts initiated immediately to start it again.</em></span></p>
+<p><span style='color: #660000;'><em>Please login to app to check if everything is ok.</em></span></p> 
+<br/><br/>
+
+</body>
+</html>"

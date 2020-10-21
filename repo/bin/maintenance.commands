@@ -1,0 +1,13 @@
+[defconsync@ip-198-12-253-249 ecommerce]$ free -m
+              total        used        free      shared  buff/cache   available
+Mem:           1837         861         232          24         743         805
+Swap:             0           0           0
+
+
+[defconsync@ip-198-12-253-249 ecommerce]$ cat /proc/meminfo
+MemTotal:        1882012 kB
+MemFree:          239196 kB
+MemAvailable:     825304 kB
+Buffers:            2088 kB
+Cached:           721540 kB
+

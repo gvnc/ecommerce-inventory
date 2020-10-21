@@ -1,0 +1,61 @@
+
+[root@ip-198-12-253-249 ~]# sudo docker exec -it ecom_mysql bash
+root@100fb1d68dfa:/#
+root@100fb1d68dfa:/#
+root@100fb1d68dfa:/# mysql -h 198.12.253.249 -u root -p
+mysql> use ecommerceapp;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+
+mysql> show columns from purchase_order;
++---------------+--------------+------+-----+---------+----------------+
+| Field         | Type         | Null | Key | Default | Extra          |
++---------------+--------------+------+-----+---------+----------------+
+| id            | int          | NO   | PRI | NULL    | auto_increment |
+| brokerage     | float        | YES  |     | NULL    |                |
+| create_date   | datetime     | YES  |     | NULL    |                |
+| created_by    | varchar(255) | YES  |     | NULL    |                |
+| discount      | float        | YES  |     | NULL    |                |
+| duties        | float        | YES  |     | NULL    |                |
+| order_total   | float        | YES  |     | NULL    |                |
+| sales_tax     | float        | YES  |     | NULL    |                |
+| shipping      | float        | YES  |     | NULL    |                |
+| status        | varchar(255) | YES  |     | NULL    |                |
+| supplier      | varchar(255) | YES  |     | NULL    |                |
+| exchange_rate | float        | YES  |     | NULL    |                |
++---------------+--------------+------+-----+---------+----------------+
+12 rows in set (0.01 sec)
+
+mysql> show columns from purchase_order_product;
++--------------------+--------------+------+-----+---------+----------------+
+| Field              | Type         | Null | Key | Default | Extra          |
++--------------------+--------------+------+-----+---------+----------------+
+| id                 | int          | NO   | PRI | NULL    | auto_increment |
+| cost_price         | float        | YES  |     | NULL    |                |
+| duty_rate          | int          | YES  |     | NULL    |                |
+| name               | varchar(255) | YES  |     | NULL    |                |
+| ordered_quantity   | int          | YES  |     | NULL    |                |
+| received_quantity  | int          | YES  |     | NULL    |                |
+| remaining_quantity | int          | YES  |     | NULL    |                |
+| sku                | varchar(255) | YES  |     | NULL    |                |
+| purchase_order_id  | int          | YES  | MUL | NULL    |                |
++--------------------+--------------+------+-----+---------+----------------+
+9 rows in set (0.00 sec)
+
+
+mysql> select id, sku from purchase_order_product where purchase_order_id = 27 and sku='09961004';
++-----+----------+
+| id  | sku      |
++-----+----------+
+| 323 | 09961004 |
++-----+----------+
+1 row in set (0.00 sec)
+
+mysql> update purchase_order_product set sku='9961004' where id=323;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql>
+

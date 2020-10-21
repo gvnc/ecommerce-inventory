@@ -1,0 +1,6 @@
+
+docker run --name ecom_mysql -p 3306:3306 -v /root/mysql/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=paspas -e MYSQL_DATABASE=ecommerceapp -d mysql
+
+docker start ecom_mysql
+
+docker ps
