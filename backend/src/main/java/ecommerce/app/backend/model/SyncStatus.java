@@ -38,4 +38,10 @@ public class SyncStatus {
 
     @Getter @Setter
     private String amazonCaLastUpdate = "";
+
+    @Getter @Setter
+    private String squareupSyncStatus = SyncConstants.SYNC_NA;
+
+    @Getter @Setter
+    private String squareupLastUpdate = "";
 }

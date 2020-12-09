@@ -4,6 +4,10 @@ import ecommerce.app.backend.StoreBean;
 import ecommerce.app.backend.markets.amazon.AmazonCaService;
 import ecommerce.app.backend.markets.amazon.products.AmazonProduct;
 import ecommerce.app.backend.markets.bigcommerce.products.BigCommerceVariant;
+import ecommerce.app.backend.markets.squareup.SquareAPIService;
+import ecommerce.app.backend.markets.squareup.inventory.SquareInventoryCount;
+import ecommerce.app.backend.markets.squareup.inventory.SquareInventoryCounts;
+import ecommerce.app.backend.markets.squareup.items.*;
 import ecommerce.app.backend.service.constants.SyncConstants;
 import ecommerce.app.backend.util.Utils;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
@@ -44,6 +48,9 @@ public class SyncProductsService {
 
     @Autowired
     private AmazonCaService amazonCaService;
+
+    @Autowired
+    private SquareAPIService squareAPIService;
 
     @Value("${sync.products.enabled}")
     private Boolean syncProductsEnabled;
@@ -339,12 +346,119 @@ public class SyncProductsService {
         log.info(productCounter + " products found in AmazonCA.");
     }
 
+
+    private void syncSquareup(){
+
+        Map<String, Integer> inventoryMap = getSquareInventory();
+
+        String cursor = "initial";
+        int productCounter = 0;
+
+        try {
+            log.info("Started to get products from Squareup");
+            storeBean.getSyncStatus().setSquareupSyncStatus(SyncConstants.SYNC_INPROGRESS);
+            while (cursor != null) {
+                SquareItems squareItems = squareAPIService.getProductList(cursor);
+                cursor = squareItems.getCursor();
+
+                if(squareItems == null || squareItems.getObjects() == null)
+                    break;
+
+                for(SquareItemObject squareItemObject: squareItems.getObjects()){
+                    SquareItemData itemData = squareItemObject.getItemData();
+                    if(itemData != null && itemData.getVariations() != null){
+                        if(itemData.getVariations().length > 1){
+                        //    log.info("have variants");
+                        }
+                        for(SquareItemVariation variation:itemData.getVariations()){
+                            SquareItemVariationData itemVariationData = variation.getItemVariationData();
+                            if(itemVariationData != null){
+                                String variationName = itemVariationData.getName();
+                                variationName = variationName.equals("Regular") ? itemData.getName() : itemData.getName() + " " + variationName;
+                              //  log.info("SKU:" + itemVariationData.getSku() + ", NAME:" + variationName);
+
+                                SquareProduct squareProduct = new SquareProduct();
+                                squareProduct.setVariationId(variation.getId());
+                                squareProduct.setItemId(itemVariationData.getItemId());
+                                squareProduct.setName(variationName);
+                                squareProduct.setSku(itemVariationData.getSku());
+                                squareProduct.setPrice(itemVariationData.getPriceMoney().getAmount());
+                                squareProduct.setInventory(0);
+
+                                DetailedProduct detailedProduct;
+                                BaseProduct baseProduct = storeBean.getProductsMap().get(itemVariationData.getSku());
+                                if (baseProduct != null) {
+                                    detailedProduct = storeBean.getDetailedProductsMap().get(itemVariationData.getSku());
+                                } else {
+                                    baseProduct = new BaseProduct(itemVariationData.getSku(), variationName);
+                                    storeBean.getProductsMap().put(itemVariationData.getSku(), baseProduct);
+                                    storeBean.getProductsList().add(baseProduct);
+
+                                    detailedProduct = new DetailedProduct(itemVariationData.getSku(), variationName);
+                                    storeBean.getDetailedProductsMap().put(itemVariationData.getSku(), detailedProduct);
+                                }
+
+                                Integer inventoryCount = inventoryMap.get(squareProduct.getVariationId());
+                                if(inventoryCount != null){
+                                    squareProduct.setInventory(inventoryCount);
+                                    baseProduct.setSquareInventory(inventoryCount);
+                                    detailedProduct.setInventoryLevel(inventoryCount);
+                                }
+
+                                baseProduct.setSquarePrice(squareProduct.getPrice());
+                                detailedProduct.setSquareProduct(squareProduct);
+                                productCounter++;
+                            }
+                        }
+                    }
+                }
+            }
+            storeBean.getSyncStatus().setSquareupSyncStatus(SyncConstants.SYNC_COMPLETED);
+            storeBean.getSyncStatus().setSquareupLastUpdate(Utils.getNowAsString());
+        } catch (Exception e) {
+            storeBean.getSyncStatus().setSquareupSyncStatus(SyncConstants.SYNC_FAILED);
+            log.error("Failed to sync squareup products", e);
+        }
+
+        log.info(productCounter + " products found in SquareUp.");
+    }
+
+    private Map<String, Integer> getSquareInventory(){
+
+        Map<String, Integer> inventoryMap = new HashMap<>();
+
+        String cursor = "initial";
+
+        try {
+            log.info("Started to get inventory from SquareUp");
+
+            while (cursor != null) {
+
+                SquareInventoryCounts squareInventoryCounts = squareAPIService.getInventoryList(cursor);
+                cursor = squareInventoryCounts.getCursor();
+
+                if(squareInventoryCounts == null || squareInventoryCounts.getCounts() == null)
+                    break;
+
+                for (SquareInventoryCount inventoryCount:squareInventoryCounts.getCounts()) {
+                    inventoryMap.put(inventoryCount.getCatalogObjectId(), inventoryCount.getQuantity());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to get squareup inventory list", e);
+        }
+
+        log.info("Inventory list retrieve completed for SquareUp.");
+        return inventoryMap;
+    }
+
     private void setSyncStatusIntoPending(){
         storeBean.getSyncStatus().setBigCommerceFSSyncStatus(SyncConstants.SYNC_INPROGRESS);
         storeBean.getSyncStatus().setBigCommerceSyncStatus(SyncConstants.SYNC_INPROGRESS);
         storeBean.getSyncStatus().setVendHQSyncStatus(SyncConstants.SYNC_INPROGRESS);
         storeBean.getSyncStatus().setAmazonUsStatus(SyncConstants.SYNC_INPROGRESS);
         storeBean.getSyncStatus().setAmazonCaStatus(SyncConstants.SYNC_INPROGRESS);
+        storeBean.getSyncStatus().setSquareupSyncStatus(SyncConstants.SYNC_INPROGRESS);
     }
 
     private void resetStore(){
@@ -357,11 +471,15 @@ public class SyncProductsService {
         if(syncProductsEnabled == true) {
             this.setSyncStatusIntoPending();
             this.resetStore();
+            /*
             syncBigCommerce();
             syncBigCommerceFS();
             syncVendHQ();
             syncAmazonCA();
             syncAmazonUS();
+
+             */
+            syncSquareup();
         }
     }
 }

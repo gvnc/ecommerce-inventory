@@ -2,6 +2,7 @@ package ecommerce.app.backend.model;
 
 import ecommerce.app.backend.markets.amazon.products.AmazonProduct;
 import ecommerce.app.backend.markets.bigcommerce.products.BigCommerceProduct;
+import ecommerce.app.backend.markets.squareup.items.SquareProduct;
 import ecommerce.app.backend.markets.vendhq.products.VendHQProduct;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,6 +32,9 @@ public class DetailedProduct {
 
     @Getter @Setter
     private AmazonProduct amazonUsProduct;
+
+    @Getter @Setter
+    private SquareProduct squareProduct;
 
     public DetailedProduct(String sku, String name) {
         this.sku = sku;

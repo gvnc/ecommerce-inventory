@@ -16,6 +16,7 @@ import java.util.TimeZone;
 public class Utils {
 
     private final static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm", Locale.CANADA);
+    private final static SimpleDateFormat squareupDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.CANADA);
 
     @Getter
     private final static TimeZone timezone = TimeZone.getTimeZone("GMT-4");
@@ -28,6 +29,11 @@ public class Utils {
     public static String getDateAsString(Date date){
         simpleDateFormat.setTimeZone(Utils.timezone);
         return simpleDateFormat.format(date);
+    }
+
+    public static String getNowAsSquareupString(){
+        squareupDateFormat.setTimeZone(Utils.timezone);
+        return squareupDateFormat.format(new Date());
     }
 
     public static String computeContentMD5Header(String content) {

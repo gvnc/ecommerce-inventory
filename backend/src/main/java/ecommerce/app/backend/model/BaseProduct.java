@@ -24,6 +24,9 @@ public class BaseProduct {
     private Float amazonCAPrice;
 
     @Getter @Setter
+    private Float squarePrice;
+
+    @Getter @Setter
     private Integer bigCommerceInventory;
 
     @Getter @Setter
@@ -34,6 +37,9 @@ public class BaseProduct {
 
     @Getter @Setter
     private Integer amazonCAInventory;
+
+    @Getter @Setter
+    private Integer squareInventory;
 
     public BaseProduct(String sku, String name) {
         this.sku = sku;
