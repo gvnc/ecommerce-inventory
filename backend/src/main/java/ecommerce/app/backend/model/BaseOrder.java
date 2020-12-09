@@ -38,4 +38,13 @@ public class BaseOrder {
         this.status = status;
         this.dateModified = Utils.getDateAsString(modifiedDate);
     }
+
+
+    public BaseOrder(String marketPlace, String orderId, Float totalPrice, String modifiedDate, String status) {
+        this.marketPlace = marketPlace;
+        this.orderId = orderId;
+        this.totalPrice = totalPrice;
+        this.status = status;
+        this.dateModified = modifiedDate; // this is GMT+0 date - should be converted to canada timezone
+    }
 }

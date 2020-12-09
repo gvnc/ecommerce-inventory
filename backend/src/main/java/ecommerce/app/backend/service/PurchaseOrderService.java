@@ -4,6 +4,7 @@ import ecommerce.app.backend.StoreBean;
 import ecommerce.app.backend.markets.amazon.AmazonCaService;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceFSAPIService;
+import ecommerce.app.backend.markets.squareup.SquareAPIService;
 import ecommerce.app.backend.model.DetailedProduct;
 import ecommerce.app.backend.model.PurchaseOrderRequest;
 import ecommerce.app.backend.repository.PurchaseOrderProductRepository;
@@ -42,6 +43,9 @@ public class PurchaseOrderService {
 
     @Autowired
     private AmazonCaService amazonCaService;
+
+    @Autowired
+    private SquareAPIService squareAPIService;
 
     @Autowired
     private StoreBean storeBean;
@@ -207,6 +211,7 @@ public class PurchaseOrderService {
             bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), sku, quantity, false);
             bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), sku, quantity, false);
             amazonCaService.updateInventory(sku, quantity, false);
+            squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), sku, quantity, false);
 
             // set received and remaining quantity in purchase order product
             purchaseOrderProduct.setReceivedQuantity(purchaseOrderProduct.getReceivedQuantity() + quantity);

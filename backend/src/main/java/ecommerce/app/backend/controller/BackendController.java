@@ -5,6 +5,7 @@ import ecommerce.app.backend.StoreBean;
 import ecommerce.app.backend.markets.amazon.AmazonCaService;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceFSAPIService;
+import ecommerce.app.backend.markets.squareup.SquareAPIService;
 import ecommerce.app.backend.model.*;
 import ecommerce.app.backend.service.SyncProductsService;
 import ecommerce.app.backend.util.Utils;
@@ -34,6 +35,9 @@ public class BackendController {
 
     @Autowired
     private AmazonCaService amazonCaService;
+
+    @Autowired
+    private SquareAPIService squareAPIService;
 
     @Autowired
     private SyncProductsService syncProductsService;
@@ -126,6 +130,14 @@ public class BackendController {
                     commitPriceResult.setVendhqPriceChange(OperationConstants.FAIL);
                     commitPriceResult.setFinalResult(OperationConstants.FAIL);
                 }
+
+                // update squareup product inventory
+                if(squareAPIService.updatePrice(productSku, newRetailPrice) == true){
+                    commitPriceResult.setVendhqPriceChange(OperationConstants.SUCCESS);
+                } else {
+                    commitPriceResult.setVendhqPriceChange(OperationConstants.FAIL);
+                    commitPriceResult.setFinalResult(OperationConstants.FAIL);
+                }
             } else if (marketPlace.equals("Amazon")){
 
                 String newPrice = Utils.getStringFromNode(propertyChanges.get("amazonPrice"));
@@ -186,6 +198,14 @@ public class BackendController {
             detailedProduct.setInventoryLevel(inventoryLevel);
         } else {
             inventoryUpdateResult.setAmazonCaInventoryUpdate(OperationConstants.FAIL);
+            inventoryUpdateResult.setFinalResult(OperationConstants.FAIL);
+        }
+
+        if(squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), productSku, inventoryLevel, true)  == true){
+            inventoryUpdateResult.setVendhqInventoryUpdate(OperationConstants.SUCCESS);
+            detailedProduct.setInventoryLevel(inventoryLevel);
+        } else {
+            inventoryUpdateResult.setVendhqInventoryUpdate(OperationConstants.FAIL);
             inventoryUpdateResult.setFinalResult(OperationConstants.FAIL);
         }
 

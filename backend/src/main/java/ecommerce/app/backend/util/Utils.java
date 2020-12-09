@@ -3,7 +3,6 @@ package ecommerce.app.backend.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
 import lombok.Getter;
 
 import java.security.DigestInputStream;
@@ -37,6 +36,11 @@ public class Utils {
     public static String getNowAsSquareupString(){
         squareupDateFormat.setTimeZone(Utils.gwTimezone);
         return squareupDateFormat.format(new Date());
+    }
+
+    public static String getDateAsSquareupString(Date date){
+        squareupDateFormat.setTimeZone(Utils.gwTimezone);
+        return squareupDateFormat.format(date);
     }
 
     public static String computeContentMD5Header(String content) {

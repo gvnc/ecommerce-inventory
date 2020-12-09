@@ -18,4 +18,7 @@ public class LatestOrderInfo {
 
     @Getter @Setter
     private Date amazonCaLastUpdate;
+
+    @Getter @Setter
+    private Date squareLastModifiedDate;
 }

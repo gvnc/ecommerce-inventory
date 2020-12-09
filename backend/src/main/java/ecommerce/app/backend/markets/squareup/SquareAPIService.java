@@ -9,11 +9,10 @@ import ecommerce.app.backend.markets.squareup.inventory.ChangeInventory;
 import ecommerce.app.backend.markets.squareup.inventory.ChangeInventoryBody;
 import ecommerce.app.backend.markets.squareup.inventory.ChangePhysicalCount;
 import ecommerce.app.backend.markets.squareup.inventory.SquareInventoryCounts;
-import ecommerce.app.backend.markets.squareup.items.ChangePriceBody;
-import ecommerce.app.backend.markets.squareup.items.SquareItemVariation;
-import ecommerce.app.backend.markets.squareup.items.SquareItemVariationObject;
-import ecommerce.app.backend.markets.squareup.items.SquareItems;
+import ecommerce.app.backend.markets.squareup.items.*;
 import ecommerce.app.backend.markets.squareup.orders.SquareOrders;
+import ecommerce.app.backend.model.BaseProduct;
+import ecommerce.app.backend.model.DetailedProduct;
 import ecommerce.app.backend.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +25,7 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.UUID;
 
 @Slf4j
@@ -116,18 +116,50 @@ public class SquareAPIService {
         return null;
     }
 
-    public boolean updateInventory(String variationId, Integer newAmount){
+    public boolean updateProductQuantity(SquareProduct product, String sku, Integer amount, Boolean overwrite){
+        log.info("Inventory update requested for squareup product. [sku:" + sku + ",amount:" + amount + "]");
+        if(testProducts.isAvailable(sku)){
+            if(product == null){
+                log.warn("Product can not be found with sku " + sku);
+                return false;
+            }
+
+            int newQuantity = amount;
+            if(overwrite == false) {
+                int currentQuantity = 0;
+                if(product != null)
+                    currentQuantity = product.getInventory();
+
+                newQuantity = currentQuantity + amount;
+                if (newQuantity < 0) {
+                    log.warn("There is no enough inventory in the squareup store for sku " + sku + ". [currentQuantity:" + currentQuantity + ", demanded:" + amount + "]");
+                    log.warn("Set inventory to 0 for sku " + sku);
+                    newQuantity = 0;
+                }
+            }
+            return updateInventory(product, newQuantity);
+        }
+        return true;
+    }
+
+    public boolean updateInventory(SquareProduct product, Integer newQuantity){
         try {
             String url = apiPath + "/inventory/batch-change";
 
-            ChangeInventoryBody requestBody = getInventoryUpdateBody(variationId, newAmount);
+            ChangeInventoryBody requestBody = getInventoryUpdateBody(product.getVariationId(), newQuantity);
             HttpEntity requestEntity = new HttpEntity(requestBody, getHeaders());
 
             ResponseEntity<SquareInventoryCounts> dataResponse =
                     restTemplate.exchange(url, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<SquareInventoryCounts>() { });
 
             SquareInventoryCounts counts = dataResponse.getBody();
-            if(counts != null && counts.getCounts() != null){
+
+            if(counts != null && counts.getCounts() != null){ // update successful, so update inmemory objects
+                product.setInventory(newQuantity);
+                BaseProduct baseProduct = storeBean.getProductsMap().get(product.getSku());
+                if(baseProduct != null){
+                    baseProduct.setSquareInventory(newQuantity);
+                }
                 return true;
             }
         } catch (Exception e){
@@ -156,7 +188,7 @@ public class SquareAPIService {
         return changeInventoryBody;
     }
 
-    public SquareItemVariationObject getProductById(String variationId){
+    public SquareItemVariation getProductById(String variationId){
         try {
             String url = apiPath + "/catalog/object/" + variationId;
 
@@ -165,18 +197,20 @@ public class SquareAPIService {
             ResponseEntity<SquareItemVariationObject> dataResponse =
                     restTemplate.exchange(url, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<SquareItemVariationObject>() { });
 
-            return dataResponse.getBody();
+            SquareItemVariationObject squareItemVariationObject = dataResponse.getBody();
+            if(squareItemVariationObject != null)
+                return squareItemVariationObject.getObject();
         } catch (Exception e){
             log.error("Failed to get product by variation id.", e);
         }
         return null;
     }
 
-    public SquareOrders getOrders(String updateDate){
+    public SquareOrders getOrders(Date updateDate){
         try {
             String url = apiPath + "/orders/search";
-
-            String requestBody = getOrderRequestBody(updateDate);
+            String updateDateStr = Utils.getDateAsSquareupString(updateDate);
+            String requestBody = getOrderRequestBody(updateDateStr);
             HttpEntity requestEntity = new HttpEntity(requestBody, getHeaders());
 
             ResponseEntity<SquareOrders> dataResponse =
@@ -215,31 +249,41 @@ public class SquareAPIService {
                 "  }";
     }
 
-    public SquareItemVariationObject updatePrice(String variationId, Float newPrice){
+    public boolean updatePrice(String productSku, String newPrice){
         try {
             String url = apiPath + "/catalog/object";
 
-            SquareItemVariationObject variationObject = getProductById(variationId);
-            SquareItemVariation itemVariation = variationObject.getObject();
+            DetailedProduct product = storeBean.getDetailedProductsMap().get(productSku);
+            if(product == null || product.getSquareProduct() == null){
+                throw new Exception("Squareup product can not be found in memory.");
+            }
+
+            String variationId = product.getSquareProduct().getVariationId();
+            SquareItemVariation itemVariation = getProductById(variationId);
             if(itemVariation.getItemVariationData().getPriceMoney() == null)
                 throw new Exception("Price money is missing.");
 
-            itemVariation.getItemVariationData().getPriceMoney().setAmount(newPrice);
+            itemVariation.getItemVariationData().getPriceMoney().setAmount(Float.parseFloat(newPrice));
 
             ChangePriceBody changePriceBody = new ChangePriceBody();
             changePriceBody.setObject(itemVariation);
             changePriceBody.setIdempotencyKey(UUID.randomUUID().toString());
 
-            HttpEntity requestEntity = new HttpEntity("", getHeaders());
+            HttpEntity requestEntity = new HttpEntity(changePriceBody, getHeaders());
 
-            ResponseEntity<SquareItemVariationObject> dataResponse =
-                    restTemplate.exchange(url, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<SquareItemVariationObject>() { });
+            ResponseEntity<ChangePriceResponse> dataResponse =
+                    restTemplate.exchange(url, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<ChangePriceResponse>() { });
 
-            return dataResponse.getBody();
+            if(dataResponse.getBody() != null){
+                product.getSquareProduct().setPrice(Float.parseFloat(newPrice));
+                BaseProduct baseProduct = storeBean.getProductsMap().get(productSku);
+                baseProduct.setSquarePrice(Float.parseFloat(newPrice));
+                return true;
+            }
         } catch (Exception e){
             log.error("Failed to get update by variation id.", e);
         }
-        return null;
+        return false;
     }
 
 }

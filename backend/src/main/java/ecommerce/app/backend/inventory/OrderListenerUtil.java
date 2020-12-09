@@ -16,6 +16,8 @@ public class OrderListenerUtil {
         info.setBcOrderLastModifiedDate(new Date());
         info.setBcFsOrderLastModifiedDate(new Date());
         info.setAmazonCaLastUpdate(new Date());
+        info.setSquareLastModifiedDate(new Date());
+
         return info;
     }
 
@@ -30,6 +32,8 @@ public class OrderListenerUtil {
                 latestOrderInfo.setBcFsOrderLastModifiedDate(new Date());
             if(latestOrderInfo.getAmazonCaLastUpdate() == null)
                 latestOrderInfo.setAmazonCaLastUpdate(new Date());
+            if(latestOrderInfo.getSquareLastModifiedDate() == null)
+                latestOrderInfo.setSquareLastModifiedDate(new Date());
             return latestOrderInfo;
         } catch (IOException e) {
             log.error("Can not read latest order info from file. " + filePath, e);

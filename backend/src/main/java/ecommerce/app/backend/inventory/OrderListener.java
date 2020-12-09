@@ -11,14 +11,20 @@ import ecommerce.app.backend.markets.bigcommerce.order.BCOrder;
 import ecommerce.app.backend.markets.bigcommerce.order.BCOrderProduct;
 import ecommerce.app.backend.markets.bigcommerce.order.BCOrderStatuses;
 import ecommerce.app.backend.markets.bigcommerce.products.BigCommerceProduct;
-import ecommerce.app.backend.model.BaseOrder;
-import ecommerce.app.backend.model.BaseProduct;
-import ecommerce.app.backend.model.DetailedProduct;
+import ecommerce.app.backend.markets.squareup.SquareAPIService;
+import ecommerce.app.backend.markets.squareup.items.SquareItemVariation;
+import ecommerce.app.backend.markets.squareup.items.SquareProduct;
+import ecommerce.app.backend.markets.squareup.orders.SquareLineItem;
+import ecommerce.app.backend.markets.squareup.orders.SquareOrder;
+import ecommerce.app.backend.markets.squareup.orders.SquareOrders;
 import ecommerce.app.backend.markets.vendhq.VendHQAPIService;
 import ecommerce.app.backend.markets.vendhq.products.VendHQProduct;
 import ecommerce.app.backend.markets.vendhq.sales.VendHQSale;
 import ecommerce.app.backend.markets.vendhq.sales.VendHQSalesProduct;
 import ecommerce.app.backend.markets.vendhq.sales.VendHQSalesStatuses;
+import ecommerce.app.backend.model.BaseOrder;
+import ecommerce.app.backend.model.BaseProduct;
+import ecommerce.app.backend.model.DetailedProduct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,6 +53,9 @@ public class OrderListener {
     private AmazonCaService amazonCaService;
 
     @Autowired
+    private SquareAPIService squareAPIService;
+
+    @Autowired
     private StoreBean storeBean;
 
     @Value("${order.listener.enabled}")
@@ -69,6 +78,7 @@ public class OrderListener {
             listenVendHQSales();
             listenBigCommerceFSOrders();
             listenAmazonCAOrders();
+            listenSquareupOrders();
             OrderListenerUtil.saveLatestOrderInfo(orderListenerDataFile, latestOrderInfo);
             log.info("Order listener ended running.");
         }
@@ -134,6 +144,7 @@ public class OrderListener {
                     vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), product.getSku(), quantity, false);
                     bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), product.getSku(), quantity, false);
                     amazonCaService.updateInventory(product.getSku(), quantity, false);
+                    squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), product.getSku(), quantity, false);
                 }
             }
         }catch (Exception e){
@@ -201,6 +212,7 @@ public class OrderListener {
                     vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), product.getSku(), quantity, false);
                     bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), product.getSku(), quantity, false);
                     amazonCaService.updateInventory(product.getSku(), quantity, false);
+                    squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), product.getSku(), quantity, false);
                 }
             }
         }catch (Exception e){
@@ -271,6 +283,7 @@ public class OrderListener {
                     bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), sku, quantity, false);
                     bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), sku, quantity, false);
                     amazonCaService.updateInventory(sku, quantity, false);
+                    squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), sku, quantity, false);
                 }
             }
         }catch (Exception e){
@@ -345,10 +358,83 @@ public class OrderListener {
                     bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), sku, quantity, false);
                     bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), sku, quantity, false);
                     vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), sku, quantity, false);
+                    squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), sku, quantity, false);
                 }
             }
         }catch (Exception e){
             log.error("Failed to update inventory after an order received in amazon ca .[OrderId:" + amazonOrderId + "]", e);
+        }
+    }
+
+    public void listenSquareupOrders(){
+        log.info("Started to check squareup sales.");
+        try {
+            // first get orders
+            SquareOrders orders = squareAPIService.getOrders(latestOrderInfo.getSquareLastModifiedDate());
+
+            // and second set last update date
+            latestOrderInfo.setSquareLastModifiedDate(new Date());
+
+            if(orders != null && orders.getOrders() != null){
+                for(SquareOrder squareOrder:orders.getOrders()){
+                    log.info("An order is captured for SquareUp. [orderId:" + squareOrder.getId() + ",status:" + squareOrder.getState() + "]");
+                    BaseOrder baseOrder = new BaseOrder("SquareUp", squareOrder.getId(), squareOrder.getTotalMoney().getAmount(), squareOrder.getUpdatedAt(), squareOrder.getState());
+
+                    storeBean.getOrderStatusChanges().add(0,baseOrder);
+                    updateInventoriesBySquareUp(squareOrder.getId(), squareOrder.getLineItems());
+
+                    log.info("Order handling completed for SquareUp. [orderId:" + squareOrder.getId() + ",status:" + squareOrder.getState() + "]");
+
+                }
+            }
+        }catch (Exception e){
+            log.error("SquareUp listener failed.", e);
+        }
+    }
+
+    private void updateInventoriesBySquareUp(String orderId, SquareLineItem[] items){
+        log.info("Update inventories after a change in squareup.[orderId:" + orderId + "]");
+        try {
+            if(items != null){
+                for(SquareLineItem item:items){
+                    SquareItemVariation itemVariation = squareAPIService.getProductById(item.getCatalogObjectId());
+
+                    String sku = itemVariation.getItemVariationData().getSku();
+
+                    int quantity = Integer.parseInt(item.getQuantity()) * -1;
+
+                    // set overall quantity
+                    DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(sku);
+                    setOverallQuantity(detailedProduct, quantity);
+
+                    // update inventory level in memory for product in base market
+                    SquareProduct squareProduct = detailedProduct.getSquareProduct();
+                    if(squareProduct != null){
+                        if(squareProduct.getInventory() != null) {
+                            int currentQuantity = squareProduct.getInventory();
+                            int newQuantity = currentQuantity + quantity;
+                            if (newQuantity < 0) {
+                                log.warn("There is no enough inventory in the squareup store for sku " +sku + ". [currentQuantity:" + currentQuantity + ", demanded:" + quantity);
+                                log.warn("Set inventory to 0 for squareup sku " + sku);
+                                newQuantity = 0;
+                            }
+                            squareProduct.setInventory(newQuantity);
+                            BaseProduct baseProduct = storeBean.getProductsMap().get(sku);
+                            if(baseProduct != null){
+                                baseProduct.setSquareInventory(newQuantity);
+                            }
+                        }
+                    }
+
+                    // set quantity for other marketplaces
+                    vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), sku, quantity, false);
+                    bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), sku, quantity, false);
+                    bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), sku, quantity, false);
+                    amazonCaService.updateInventory(sku, quantity, false);
+                }
+            }
+        }catch (Exception e){
+            log.error("Failed to update inventory after a change in squareup.[orderId:" + orderId + "]", e);
         }
     }
 
