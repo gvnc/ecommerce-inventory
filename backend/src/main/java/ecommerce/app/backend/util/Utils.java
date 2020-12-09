@@ -21,6 +21,9 @@ public class Utils {
     @Getter
     private final static TimeZone timezone = TimeZone.getTimeZone("GMT-4");
 
+    @Getter
+    private final static TimeZone gwTimezone = TimeZone.getTimeZone("GMT+0");
+
     public static String getNowAsString(){
         simpleDateFormat.setTimeZone(Utils.timezone);
         return simpleDateFormat.format(new Date());
@@ -32,7 +35,7 @@ public class Utils {
     }
 
     public static String getNowAsSquareupString(){
-        squareupDateFormat.setTimeZone(Utils.timezone);
+        squareupDateFormat.setTimeZone(Utils.gwTimezone);
         return squareupDateFormat.format(new Date());
     }
 
