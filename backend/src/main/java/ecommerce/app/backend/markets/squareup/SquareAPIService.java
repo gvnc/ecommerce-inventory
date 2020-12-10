@@ -162,6 +162,7 @@ public class SquareAPIService {
 
     public boolean updateInventory(SquareProduct product, Integer newQuantity){
         try {
+            log.info("Inventory update requested for squareup product. [sku:" + product.getSku() + ",amount:" + newQuantity + "]");
             String url = apiPath + "/inventory/batch-change";
 
             ChangeInventoryBody requestBody = getInventoryUpdateBody(product.getVariationId(), newQuantity);
@@ -173,6 +174,7 @@ public class SquareAPIService {
             SquareInventoryCounts counts = dataResponse.getBody();
 
             if(counts != null && counts.getCounts() != null){ // update successful, so update inmemory objects
+                log.info("Inventory update successful for squareup product. [sku:" + product.getSku() + ",amount:" + newQuantity + "]");
                 product.setInventory(newQuantity);
                 BaseProduct baseProduct = storeBean.getProductsMap().get(product.getSku());
                 if(baseProduct != null){
@@ -295,6 +297,7 @@ public class SquareAPIService {
                     restTemplate.exchange(url, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<ChangePriceResponse>() { });
 
             if(dataResponse.getBody() != null){
+                log.info("Price change successful for squareup. [product:"+productSku+",price:"+newPrice+"]");
                 product.getSquareProduct().setPrice(Float.parseFloat(newPrice));
                 BaseProduct baseProduct = storeBean.getProductsMap().get(productSku);
                 baseProduct.setSquarePrice(Float.parseFloat(newPrice));

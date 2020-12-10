@@ -80,6 +80,11 @@ public class Utils {
     }
 
     public static Long dollarToCents(String dollarValue) {
+        Double centsz = Double.parseDouble(dollarValue) * 100;
+        return centsz.longValue();
+    }
+
+    public static Long dollarToCents2(String dollarValue) {
         Float floatValue = Float.parseFloat(dollarValue);
         Float cents = floatValue * 100;
         return cents.longValue();
