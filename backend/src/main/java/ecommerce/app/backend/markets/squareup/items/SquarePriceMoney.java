@@ -5,7 +5,7 @@ import lombok.Setter;
 
 public class SquarePriceMoney {
     @Getter @Setter
-    private Float amount;
+    private Long amount;
 
     @Getter @Setter
     private String currency;

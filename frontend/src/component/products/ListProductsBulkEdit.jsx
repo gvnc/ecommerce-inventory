@@ -51,6 +51,8 @@ class ListProductsBulkEdit extends Component {
             baseProduct.bigCommerceFSPrice = newValue;
         if(baseProduct.vendHQPrice !== null)
             baseProduct.vendHQPrice = newValue;
+        if(baseProduct.squarePrice !== null)
+            baseProduct.squarePrice = newValue;
     }
 
     syncAmazonPrice(baseProduct, newValue){
@@ -67,13 +69,15 @@ class ListProductsBulkEdit extends Component {
             baseProduct.vendHQInventory = newValue;
         if(baseProduct.amazonCAInventory !== null)
             baseProduct.amazonCAInventory = newValue;
+        if(baseProduct.squareInventory !== null)
+            baseProduct.squareInventory = newValue;
     }
 
     /* Row Editing */
     onEditorValueChangeForRowEditing(baseProduct, field, value) {
         var floatRegexPattern = /^\d*(\.\d*)?$/;
         if(value === "" || floatRegexPattern.test(value)){
-            if(field === "bigCommercePrice" || field === "bigCommerceFSPrice" || field === "vendHQPrice"){
+            if(field === "bigCommercePrice" || field === "bigCommerceFSPrice" || field === "vendHQPrice" || field === "squarePrice"){
                 this.syncBigCommercePrice(baseProduct, value);
             } else if(field === "amazonCAPrice"){
                 this.syncAmazonPrice(baseProduct, value);
@@ -82,7 +86,7 @@ class ListProductsBulkEdit extends Component {
         }
         var intRegexPattern = /^\d*?$/;
         if(value === "" || intRegexPattern.test(value)) {
-            if (field === "bigCommerceInventory" || field === "bigCommerceFSInventory" || field === "vendHQInventory" || field === "amazonCAInventory") {
+            if (field === "bigCommerceInventory" || field === "bigCommerceFSInventory" || field === "vendHQInventory" || field === "amazonCAInventory" || field === "squareInventory") {
                 this.syncInventoryForAll(baseProduct, value);
                 this.props.updateBaseProductPrice(baseProduct);
             }
@@ -92,7 +96,8 @@ class ListProductsBulkEdit extends Component {
     editorForRowEditing(props, field) {
         if(field === "price"){
             return <div className="p-grid p-dir-col">
-                { this.renderSingleColumn(props, "vendHQPrice")}
+                {/* this.renderSingleColumn(props, "vendHQPrice")*/}
+                { this.renderSingleColumn(props, "squarePrice")}
                 { this.renderSingleColumn(props, "bigCommercePrice")}
                 { this.renderSingleColumn(props, "bigCommerceFSPrice")}
                 { this.renderSingleColumn(props, "amazonCAPrice")}
@@ -100,7 +105,8 @@ class ListProductsBulkEdit extends Component {
         }
         if(field === "inventory"){
             return <div className="p-grid p-dir-col">
-                { this.renderSingleColumn(props, "vendHQInventory")}
+                {/* this.renderSingleColumn(props, "vendHQInventory")*/}
+                { this.renderSingleColumn(props, "squareInventory")}
                 { this.renderSingleColumn(props, "bigCommerceInventory")}
                 { this.renderSingleColumn(props, "bigCommerceFSInventory")}
                 { this.renderSingleColumn(props, "amazonCAInventory")}
@@ -136,11 +142,13 @@ class ListProductsBulkEdit extends Component {
     onRowEditorValidator(rowData) {
         let isValid = true;
         isValid = isValid && this.isPriceValid(rowData["vendHQPrice"]);
+        isValid = isValid && this.isPriceValid(rowData["squarePrice"]);
         isValid = isValid && this.isPriceValid(rowData["bigCommercePrice"]);
         isValid = isValid && this.isPriceValid(rowData["bigCommerceFSPrice"]);
         isValid = isValid && this.isPriceValid(rowData["amazonCAPrice"]);
 
         isValid = isValid && this.isInventoryValid(rowData["vendHQInventory"]);
+        isValid = isValid && this.isInventoryValid(rowData["squareInventory"]);
         isValid = isValid && this.isInventoryValid(rowData["bigCommerceInventory"]);
         isValid = isValid && this.isInventoryValid(rowData["bigCommerceFSInventory"]);
         isValid = isValid && this.isInventoryValid(rowData["amazonCAInventory"]);
@@ -165,6 +173,8 @@ class ListProductsBulkEdit extends Component {
         let bigCommercePrice = null;
         if(baseProduct.vendHQPrice){
             bigCommercePrice = baseProduct.vendHQPrice;
+        } else if(baseProduct.squarePrice){
+            bigCommercePrice = baseProduct.squarePrice;
         } else if(baseProduct.bigCommercePrice){
             bigCommercePrice = baseProduct.bigCommercePrice;
         } else if(baseProduct.bigCommerceFSPrice){
@@ -197,6 +207,8 @@ class ListProductsBulkEdit extends Component {
         let inventoryLevel = null;
         if(baseProduct.vendHQInventory){
             inventoryLevel = baseProduct.vendHQInventory;
+        } else if(baseProduct.squareInventory){
+            inventoryLevel = baseProduct.squareInventory;
         } else if(baseProduct.bigCommerceInventory){
             inventoryLevel = baseProduct.bigCommerceInventory;
         } else if(baseProduct.bigCommerceFSInventory){
@@ -223,7 +235,8 @@ class ListProductsBulkEdit extends Component {
 
     priceFieldRender(rowData){
         return  <div className="p-grid p-dir-col">
-                    {this.singleFieldRender(rowData, "vendHQPrice")}
+                    {/*this.singleFieldRender(rowData, "vendHQPrice")*/}
+                    {this.singleFieldRender(rowData, "squarePrice")}
                     {this.singleFieldRender(rowData, "bigCommercePrice")}
                     {this.singleFieldRender(rowData, "bigCommerceFSPrice")}
                     {this.singleFieldRender(rowData, "amazonCAPrice")}
@@ -232,7 +245,8 @@ class ListProductsBulkEdit extends Component {
 
     inventoryFieldRender(rowData){
         return  <div className="p-grid p-dir-col">
-                    {this.singleFieldRender(rowData, "vendHQInventory")}
+                    {/*this.singleFieldRender(rowData, "vendHQInventory")*/}
+                    {this.singleFieldRender(rowData, "squareInventory")}
                     {this.singleFieldRender(rowData, "bigCommerceInventory")}
                     {this.singleFieldRender(rowData, "bigCommerceFSInventory")}
                     {this.singleFieldRender(rowData, "amazonCAInventory")}
@@ -249,7 +263,8 @@ class ListProductsBulkEdit extends Component {
 
     marketPlaceRender(){
         return  <div className="p-grid p-dir-col">
-                    <div className="p-col">VendHQ</div>
+            {/*<div className="p-col">VendHQ</div>*/}
+                    <div className="p-col">SquareUp</div>
                     <div className="p-col">BigComm.</div>
                     <div className="p-col">BigComm.FS</div>
                     <div className="p-col">Amazon CA</div>

@@ -16,6 +16,9 @@ public class CommitPriceResult {
     private String vendhqPriceChange = OperationConstants.NA;
 
     @Getter @Setter
+    private String squarePriceChange = OperationConstants.NA;
+
+    @Getter @Setter
     private String amazonUsPriceChange = OperationConstants.NA;
 
     @Getter @Setter

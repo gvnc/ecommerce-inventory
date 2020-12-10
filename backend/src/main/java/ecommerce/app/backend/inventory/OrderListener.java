@@ -25,6 +25,7 @@ import ecommerce.app.backend.markets.vendhq.sales.VendHQSalesStatuses;
 import ecommerce.app.backend.model.BaseOrder;
 import ecommerce.app.backend.model.BaseProduct;
 import ecommerce.app.backend.model.DetailedProduct;
+import ecommerce.app.backend.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -75,7 +76,7 @@ public class OrderListener {
             // TODO if sync is in progress do nothing !!
             log.info("Order listener started to run.");
             listenBigCommerceOrders();
-            listenVendHQSales();
+            // listenVendHQSales(); // remove comment out to enable vendhq
             listenBigCommerceFSOrders();
             listenAmazonCAOrders();
             listenSquareupOrders();
@@ -378,7 +379,9 @@ public class OrderListener {
             if(orders != null && orders.getOrders() != null){
                 for(SquareOrder squareOrder:orders.getOrders()){
                     log.info("An order is captured for SquareUp. [orderId:" + squareOrder.getId() + ",status:" + squareOrder.getState() + "]");
-                    BaseOrder baseOrder = new BaseOrder("SquareUp", squareOrder.getId(), squareOrder.getTotalMoney().getAmount(), squareOrder.getUpdatedAt(), squareOrder.getState());
+
+                    Float totalMoney = Utils.centsToDollar(squareOrder.getTotalMoney().getAmount());
+                    BaseOrder baseOrder = new BaseOrder("SquareUp", squareOrder.getId(), totalMoney, squareOrder.getUpdatedAt(), squareOrder.getState());
 
                     storeBean.getOrderStatusChanges().add(0,baseOrder);
                     updateInventoriesBySquareUp(squareOrder.getId(), squareOrder.getLineItems());

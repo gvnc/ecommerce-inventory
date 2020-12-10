@@ -13,20 +13,23 @@ import ecommerce.app.backend.markets.squareup.items.*;
 import ecommerce.app.backend.markets.squareup.orders.SquareOrders;
 import ecommerce.app.backend.model.BaseProduct;
 import ecommerce.app.backend.model.DetailedProduct;
+import ecommerce.app.backend.util.LoggingInterceptor;
 import ecommerce.app.backend.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.http.client.BufferingClientHttpRequestFactory;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -41,7 +44,7 @@ public class SquareAPIService {
     private int readTimeout = 30000;
     private int connectionTimeout = 60000;
 
-    private RestTemplate restTemplate = new RestTemplate();
+    private RestTemplate restTemplate;
 
     @Autowired
     private StoreBean storeBean;
@@ -54,7 +57,22 @@ public class SquareAPIService {
         this.apiPath = apipath;
         this.locationId = locationId;
         this.authorizationToken = "Bearer " + token;
+/*
+        SimpleClientHttpRequestFactory rf = new SimpleClientHttpRequestFactory();
+        rf.setReadTimeout(readTimeout);
+        rf.setConnectTimeout(connectionTimeout);
+        ClientHttpRequestFactory factory = new BufferingClientHttpRequestFactory(rf);
+        restTemplate = new RestTemplate(factory);
 
+        List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
+        if (CollectionUtils.isEmpty(interceptors)) {
+            interceptors = new ArrayList<>();
+        }
+        interceptors.add(new LoggingInterceptor());
+        restTemplate.setInterceptors(interceptors);
+*/
+
+        restTemplate = new RestTemplate();
         SimpleClientHttpRequestFactory rf = (SimpleClientHttpRequestFactory) restTemplate.getRequestFactory();
         rf.setReadTimeout(readTimeout);
         rf.setConnectTimeout(connectionTimeout);
@@ -251,6 +269,7 @@ public class SquareAPIService {
 
     public boolean updatePrice(String productSku, String newPrice){
         try {
+            log.info("Price change request for squareup. [product:"+productSku+",price:"+newPrice+"]");
             String url = apiPath + "/catalog/object";
 
             DetailedProduct product = storeBean.getDetailedProductsMap().get(productSku);
@@ -263,7 +282,8 @@ public class SquareAPIService {
             if(itemVariation.getItemVariationData().getPriceMoney() == null)
                 throw new Exception("Price money is missing.");
 
-            itemVariation.getItemVariationData().getPriceMoney().setAmount(Float.parseFloat(newPrice));
+            Long newPriceLong = Utils.dollarToCents(newPrice);
+            itemVariation.getItemVariationData().getPriceMoney().setAmount(newPriceLong);
 
             ChangePriceBody changePriceBody = new ChangePriceBody();
             changePriceBody.setObject(itemVariation);
@@ -281,7 +301,7 @@ public class SquareAPIService {
                 return true;
             }
         } catch (Exception e){
-            log.error("Failed to get update by variation id.", e);
+            log.error("Failed to get update price.", e);
         }
         return false;
     }

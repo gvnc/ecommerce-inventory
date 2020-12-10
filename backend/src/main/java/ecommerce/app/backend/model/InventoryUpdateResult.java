@@ -16,6 +16,9 @@ public class InventoryUpdateResult {
     private String vendhqInventoryUpdate = OperationConstants.NA;
 
     @Getter @Setter
+    private String squareInventoryUpdate = OperationConstants.NA;
+
+    @Getter @Setter
     private String amazonUsInventoryUpdate = OperationConstants.NA;
 
     @Getter @Setter

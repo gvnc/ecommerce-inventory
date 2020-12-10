@@ -10,7 +10,14 @@ public class SquareItemVariation {
     private String id;
 
     @Getter @Setter
-    private Integer version;
+    private String type;
+
+    @Getter @Setter
+    private Long version;
+
+    @Getter @Setter
+    @JsonProperty("is_deleted")
+    private Boolean isDeleted;
 
     @Getter @Setter
     @JsonProperty("present_at_all_locations")
@@ -19,10 +26,6 @@ public class SquareItemVariation {
     @Getter @Setter
     @JsonProperty("present_at_location_ids")
     private String[] presentAtLocationIds;
-
-    @Getter @Setter
-    @JsonProperty("is_deleted")
-    private Boolean isDeleted;
 
     @Getter @Setter
     @JsonProperty("item_variation_data")

@@ -17,7 +17,7 @@ public class SquareItemVariationData {
     private String sku;
 
     @Getter @Setter
-    private String ordinal;
+    private Integer ordinal;
 
     @Getter @Setter
     @JsonProperty("pricing_type")
@@ -29,5 +29,5 @@ public class SquareItemVariationData {
 
     @Getter @Setter
     @JsonProperty("location_overrides")
-    private SquareLocationOverrides locationOverrides;
+    private SquareLocationOverrides[] locationOverrides;
 }

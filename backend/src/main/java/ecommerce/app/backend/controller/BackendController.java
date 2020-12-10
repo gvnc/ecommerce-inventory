@@ -124,6 +124,7 @@ public class BackendController {
                 }
 
                 // update vendhq product inventory
+                /* // remove comment out to enable vendhq
                 if(vendHQAPIService.updatePrice(productSku, newCostPrice, newRetailPrice) == true){
                     commitPriceResult.setVendhqPriceChange(OperationConstants.SUCCESS);
                 } else {
@@ -131,11 +132,13 @@ public class BackendController {
                     commitPriceResult.setFinalResult(OperationConstants.FAIL);
                 }
 
+                 */
+
                 // update squareup product inventory
                 if(squareAPIService.updatePrice(productSku, newRetailPrice) == true){
-                    commitPriceResult.setVendhqPriceChange(OperationConstants.SUCCESS);
+                    commitPriceResult.setSquarePriceChange(OperationConstants.SUCCESS);
                 } else {
-                    commitPriceResult.setVendhqPriceChange(OperationConstants.FAIL);
+                    commitPriceResult.setSquarePriceChange(OperationConstants.FAIL);
                     commitPriceResult.setFinalResult(OperationConstants.FAIL);
                 }
             } else if (marketPlace.equals("Amazon")){
@@ -185,6 +188,8 @@ public class BackendController {
             inventoryUpdateResult.setFinalResult(OperationConstants.FAIL);
         }
 
+        // remove comment out to enable vendhq
+        /*
         if(vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), productSku, inventoryLevel, true)  == true){
             inventoryUpdateResult.setVendhqInventoryUpdate(OperationConstants.SUCCESS);
             detailedProduct.setInventoryLevel(inventoryLevel);
@@ -192,6 +197,7 @@ public class BackendController {
             inventoryUpdateResult.setVendhqInventoryUpdate(OperationConstants.FAIL);
             inventoryUpdateResult.setFinalResult(OperationConstants.FAIL);
         }
+         */
 
         if(amazonCaService.updateInventory(productSku, inventoryLevel, true)  == true){
             inventoryUpdateResult.setAmazonCaInventoryUpdate(OperationConstants.SUCCESS);
@@ -202,10 +208,10 @@ public class BackendController {
         }
 
         if(squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), productSku, inventoryLevel, true)  == true){
-            inventoryUpdateResult.setVendhqInventoryUpdate(OperationConstants.SUCCESS);
+            inventoryUpdateResult.setSquareInventoryUpdate(OperationConstants.SUCCESS);
             detailedProduct.setInventoryLevel(inventoryLevel);
         } else {
-            inventoryUpdateResult.setVendhqInventoryUpdate(OperationConstants.FAIL);
+            inventoryUpdateResult.setSquareInventoryUpdate(OperationConstants.FAIL);
             inventoryUpdateResult.setFinalResult(OperationConstants.FAIL);
         }
 

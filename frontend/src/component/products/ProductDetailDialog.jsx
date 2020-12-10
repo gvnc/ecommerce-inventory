@@ -8,6 +8,7 @@ import VendHQProductCard from "./VendHQProductCard";
 import AmazonProductCard from "./AmazonProductCard";
 import InventoryUpdate from "./InventoryUpdate";
 import {TabView,TabPanel} from 'primereact/tabview';
+import SquareProductCard from "./SquareProductCard";
 
 class ProductDetailDialog extends Component {
 
@@ -37,6 +38,7 @@ class ProductDetailDialog extends Component {
             let bigCommerceProduct = detailedProduct.bigCommerceProduct;
             let bigCommerceFsProduct = detailedProduct.bigCommerceFSProduct;
             let vendHQProduct = detailedProduct.vendHQProduct;
+            let squareProduct = detailedProduct.squareProduct;
 
             // use product price parameters in redux store to request the backend
             // locale store does not work for some reason
@@ -59,6 +61,11 @@ class ProductDetailDialog extends Component {
                 priceParameters = {
                     "bigCommerceRetailPrice" : vendHQProduct.price_including_tax,
                     "bigCommerceCostPrice" : vendHQProduct.supply_price,
+                    "marketPlace" : marketPlace
+                };
+            } else if(squareProduct !== undefined && squareProduct !== null){
+                priceParameters = {
+                    "bigCommerceRetailPrice" : squareProduct.price,
                     "marketPlace" : marketPlace
                 };
             }
@@ -112,6 +119,9 @@ class ProductDetailDialog extends Component {
 
             if(detailedProduct.vendHQProduct !== null)
                 detailedProduct.vendHQProduct.price_including_tax = value;
+
+            if(detailedProduct.squareProduct !== null)
+                detailedProduct.squareProduct.price = value;
         }
         if(property === "bigCommerceCostPrice"){
             if(detailedProduct.bigCommerceProduct !== null)
@@ -146,7 +156,10 @@ class ProductDetailDialog extends Component {
         let messages = [];
         messages.push({life:6000, severity: result.bigCommerceInventoryUpdate, summary: "BigCommerce", detail: this.getDetailMessageForInventory(result.bigCommerceInventoryUpdate)});
         messages.push({life:6000, severity: result.bigCommerceFSInventoryUpdate, summary: "BigCommerce FS", detail: this.getDetailMessageForInventory(result.bigCommerceFSInventoryUpdate)});
-        messages.push({life:6000, severity: result.vendhqInventoryUpdate, summary: "VendHQ", detail: this.getDetailMessageForInventory(result.vendhqInventoryUpdate)});
+        messages.push({life:6000, severity: result.squareInventoryUpdate, summary: "SquareUp", detail: this.getDetailMessageForInventory(result.squareInventoryUpdate)});
+
+        // remove comment out to enable vendhq
+       // messages.push({life:6000, severity: result.vendhqInventoryUpdate, summary: "VendHQ", detail: this.getDetailMessageForInventory(result.vendhqInventoryUpdate)});
         messages.push({life:6000, severity: result.amazonUsInventoryUpdate, summary: "Amazon Us", detail: this.getDetailMessageForInventory(result.amazonUsInventoryUpdate)});
         messages.push({life:6000, severity: result.amazonCaInventoryUpdate, summary: "Amazon Ca", detail: this.getDetailMessageForInventory(result.amazonCaInventoryUpdate)});
 
@@ -162,6 +175,9 @@ class ProductDetailDialog extends Component {
             if(detailedProduct.vendHQProduct.product_inventory !== null){
                 detailedProduct.vendHQProduct.product_inventory.inventory_level = detailedProduct.inventoryLevel;
             }
+        }
+        if(detailedProduct.squareProduct !== null){
+            detailedProduct.squareProduct.inventory = detailedProduct.inventoryLevel;
         }
 
         this.props.updateDetailedProduct(detailedProduct);
@@ -179,7 +195,10 @@ class ProductDetailDialog extends Component {
         let messages = [];
         messages.push({life:6000, severity: result.bigCommercePriceChange, summary: "BigCommerce", detail: this.getDetailMessage(result.bigCommercePriceChange)});
         messages.push({life:6000, severity: result.bigCommerceFSPriceChange, summary: "BigCommerce FS", detail: this.getDetailMessage(result.bigCommerceFSPriceChange)});
-        messages.push({life:6000, severity: result.vendhqPriceChange, summary: "VendHQ", detail: this.getDetailMessage(result.vendhqPriceChange)});
+        messages.push({life:6000, severity: result.squarePriceChange, summary: "SquareUp", detail: this.getDetailMessage(result.squarePriceChange)});
+
+        // remove comment out to enable vendhq
+        //messages.push({life:6000, severity: result.vendhqPriceChange, summary: "VendHQ", detail: this.getDetailMessage(result.vendhqPriceChange)});
         messages.push({life:6000, severity: result.amazonUsPriceChange, summary: "Amazon Us", detail: this.getDetailMessage(result.amazonUsPriceChange)});
         messages.push({life:6000, severity: result.amazonCaPriceChange, summary: "Amazon Ca", detail: this.getDetailMessage(result.amazonCaPriceChange)});
 
@@ -243,11 +262,16 @@ class ProductDetailDialog extends Component {
                             <div className="p-col-4">
                                 <BigCommerceProductCard title="BigCommerce" product={this.props.detailedProduct.bigCommerceProduct} updateProperty={this.updateProperty} />
                             </div>
+                            {/* // remove comment out to enable vendhq
                             <div className="p-col-4">
                                 <VendHQProductCard product={this.props.detailedProduct.vendHQProduct} updateProperty={this.updateProperty} />
                             </div>
+                            */}
                             <div className="p-col-4">
                                 <BigCommerceProductCard title="BigCommerce FS" product={this.props.detailedProduct.bigCommerceFSProduct} updateProperty={this.updateProperty} />
+                            </div>
+                            <div className="p-col-4">
+                                <SquareProductCard product={this.props.detailedProduct.squareProduct} updateProperty={this.updateProperty} />
                             </div>
                         </div>
                     </TabPanel>

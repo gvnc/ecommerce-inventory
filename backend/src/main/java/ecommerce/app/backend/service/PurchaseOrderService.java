@@ -207,7 +207,8 @@ public class PurchaseOrderService {
             detailedProduct.setInventoryLevel(newQuantity);
 
             // set quantities for each market place
-            vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), sku, quantity, false);
+            // remove comment out to enable vendhq
+            // vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), sku, quantity, false);
             bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), sku, quantity, false);
             bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), sku, quantity, false);
             amazonCaService.updateInventory(sku, quantity, false);

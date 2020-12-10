@@ -14,6 +14,7 @@ public class ChangePhysicalCount {
     private String state = "IN_STOCK";
 
     @Getter @Setter
+    @JsonProperty("location_id")
     private String locationId;
 
     @Getter @Setter

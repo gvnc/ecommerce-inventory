@@ -35,6 +35,9 @@ import java.util.Map;
 public class SyncProductsService {
 
     @Autowired
+    private ScriptService scriptService;
+
+    @Autowired
     private StoreBean storeBean;
 
     @Autowired
@@ -367,9 +370,6 @@ public class SyncProductsService {
                 for(SquareItemObject squareItemObject: squareItems.getObjects()){
                     SquareItemData itemData = squareItemObject.getItemData();
                     if(itemData != null && itemData.getVariations() != null){
-                        if(itemData.getVariations().length > 1){
-                        //    log.info("have variants");
-                        }
                         for(SquareItemVariation variation:itemData.getVariations()){
                             SquareItemVariationData itemVariationData = variation.getItemVariationData();
                             if(itemVariationData != null){
@@ -382,7 +382,7 @@ public class SyncProductsService {
                                 squareProduct.setItemId(itemVariationData.getItemId());
                                 squareProduct.setName(variationName);
                                 squareProduct.setSku(itemVariationData.getSku());
-                                squareProduct.setPrice(itemVariationData.getPriceMoney().getAmount());
+                                squareProduct.setPrice(Utils.centsToDollar(itemVariationData.getPriceMoney().getAmount()));
                                 squareProduct.setInventory(0);
 
                                 DetailedProduct detailedProduct;
@@ -401,9 +401,9 @@ public class SyncProductsService {
                                 Integer inventoryCount = inventoryMap.get(squareProduct.getVariationId());
                                 if(inventoryCount != null){
                                     squareProduct.setInventory(inventoryCount);
-                                    baseProduct.setSquareInventory(inventoryCount);
-                                    detailedProduct.setInventoryLevel(inventoryCount);
                                 }
+                                baseProduct.setSquareInventory(squareProduct.getInventory());
+                                detailedProduct.setInventoryLevel(squareProduct.getInventory());
 
                                 baseProduct.setSquarePrice(squareProduct.getPrice());
                                 detailedProduct.setSquareProduct(squareProduct);
@@ -471,15 +471,22 @@ public class SyncProductsService {
         if(syncProductsEnabled == true) {
             this.setSyncStatusIntoPending();
             this.resetStore();
-            /*
+
+            // syncVendHQ(); // remove comment out to enable vendhq
+
+            syncSquareup();
             syncBigCommerce();
             syncBigCommerceFS();
-            syncVendHQ();
             syncAmazonCA();
-            syncAmazonUS();
+            //syncAmazonUS();
+
+            /*
+            // this was a one-time sync operation, if required again, open it and run again.
+            if(1 == 1){
+                scriptService.syncSquareInventory();
+            }
 
              */
-            syncSquareup();
         }
     }
 }
