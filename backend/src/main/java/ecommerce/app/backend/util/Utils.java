@@ -8,21 +8,34 @@ import lombok.Getter;
 
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.StringTokenizer;
 import java.util.TimeZone;
 
 public class Utils {
 
     private final static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm", Locale.CANADA);
     private final static SimpleDateFormat squareupDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.CANADA);
+    private final static SimpleDateFormat dateOnlyFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     @Getter
     private final static TimeZone timezone = TimeZone.getTimeZone("GMT-4");
 
     @Getter
     private final static TimeZone gwTimezone = TimeZone.getTimeZone("GMT+0");
+
+    public static Date getDateFromString(String date) {
+        try {
+            StringTokenizer tokenizer = new StringTokenizer(date, "T");
+            String onlyDate = tokenizer.nextToken();
+            return dateOnlyFormat.parse(onlyDate);
+        } catch (ParseException e) {
+            return null;
+        }
+    }
 
     public static String getNowAsString() {
         simpleDateFormat.setTimeZone(Utils.timezone);

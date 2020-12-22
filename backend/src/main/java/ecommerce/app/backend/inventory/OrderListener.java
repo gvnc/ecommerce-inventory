@@ -22,10 +22,13 @@ import ecommerce.app.backend.markets.vendhq.products.VendHQProduct;
 import ecommerce.app.backend.markets.vendhq.sales.VendHQSale;
 import ecommerce.app.backend.markets.vendhq.sales.VendHQSalesProduct;
 import ecommerce.app.backend.markets.vendhq.sales.VendHQSalesStatuses;
-import ecommerce.app.backend.model.BaseOrder;
 import ecommerce.app.backend.model.BaseProduct;
 import ecommerce.app.backend.model.DetailedProduct;
+import ecommerce.app.backend.repository.model.BaseOrder;
+import ecommerce.app.backend.service.OrderService;
 import ecommerce.app.backend.util.Utils;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,6 +62,9 @@ public class OrderListener {
     @Autowired
     private StoreBean storeBean;
 
+    @Autowired
+    private OrderService orderService;
+
     @Value("${order.listener.enabled}")
     private Boolean orderListenerEnabled;
 
@@ -72,8 +78,7 @@ public class OrderListener {
     @Scheduled(fixedDelayString = "${order.listener.delay}")
     public void listenInventoryChanges(){
 
-        if(orderListenerEnabled == true){
-            // TODO if sync is in progress do nothing !!
+        if(orderListenerEnabled == true && storeBean.getOrderListenerAllowed() == true){
             log.info("Order listener started to run.");
             listenBigCommerceOrders();
             listenVendHQSales();
@@ -93,14 +98,13 @@ public class OrderListener {
                 for(BCOrder order :ordersList){
                     if(order.getModifiedDate().after(latestOrderInfo.getBcOrderLastModifiedDate())){
                         log.info("An order event is captured for BigCommerce. [orderId:" + order.getId() + ",status:" + order.getStatus() + "]");
-                        BaseOrder baseOrder = new BaseOrder("BigCommerce", order.getId(), order.getTotalIncludingTax(), order.getModifiedDate(), order.getStatus());
-                        storeBean.getOrderStatusChanges().add(0,baseOrder);
-                        if(order.getStatus().equals(BCOrderStatuses.AWAITING_FULFILLMENT)){
-                            updateInventoriesByBigCommerce(order.getId(), InventoryChange.DECREASE);
-                        } else if (order.getStatus().equals(BCOrderStatuses.CANCELLED) ||
+                        if(order.getStatus().equals(BCOrderStatuses.AWAITING_FULFILLMENT)){ // new sales
+                            BaseOrder baseOrder = orderService.saveOrder("BigCommerce", order.getId(), order.getTotalIncludingTax(), order.getModifiedDate(), order.getStatus());
+                            updateInventoriesByBigCommerce(order.getId(), baseOrder, InventoryChange.DECREASE);
+                        } else if (order.getStatus().equals(BCOrderStatuses.CANCELLED) || // return to store
                                 order.getStatus().equals(BCOrderStatuses.DECLINED) ||
                                 order.getStatus().equals(BCOrderStatuses.REFUNDED)){
-                            updateInventoriesByBigCommerce(order.getId(), InventoryChange.INCREASE);
+                            updateInventoriesByBigCommerce(order.getId(), null, InventoryChange.INCREASE);
                         }
                         log.info("Order handling completed for BigCommerce. [orderId:" + order.getId() + ",status:" + order.getStatus() + "]");
                     }
@@ -112,12 +116,15 @@ public class OrderListener {
         }
     }
 
-    private void updateInventoriesByBigCommerce(String orderId, Integer changeType){
+    private void updateInventoriesByBigCommerce(String orderId, BaseOrder baseOrder, Integer changeType){
         log.info("Update inventories after a change in bigcommerce.[orderId:" + orderId + "]");
         try {
             List<BCOrderProduct> productList = bigCommerceAPIService.getOrderProducts(orderId);
             if(productList != null){
                 for(BCOrderProduct product:productList){
+                    if(baseOrder != null){
+                        orderService.saveOrderItem(product.getSku(), product.getName(), product.getQuantity(), baseOrder);
+                    }
                     int quantity = product.getQuantity() * changeType;
 
                     // set overall quantity
@@ -161,14 +168,13 @@ public class OrderListener {
                 for(BCOrder order :ordersList){
                     if(order.getModifiedDate().after(latestOrderInfo.getBcFsOrderLastModifiedDate())){
                         log.info("An order event is captured for BigCommerceFS. [orderId:" + order.getId() + ",status:" + order.getStatus() + "]");
-                        BaseOrder baseOrder = new BaseOrder("BigCommerceFS", order.getId(), order.getTotalIncludingTax(), order.getModifiedDate(), order.getStatus());
-                        storeBean.getOrderStatusChanges().add(0,baseOrder);
-                        if(order.getStatus().equals(BCOrderStatuses.AWAITING_FULFILLMENT)){
-                            updateInventoriesByBigCommerceFS(order.getId(), InventoryChange.DECREASE);
-                        } else if (order.getStatus().equals(BCOrderStatuses.CANCELLED) ||
+                        if(order.getStatus().equals(BCOrderStatuses.AWAITING_FULFILLMENT)){ // new sale
+                            BaseOrder baseOrder = orderService.saveOrder("BigCommerceFS", order.getId(), order.getTotalIncludingTax(), order.getModifiedDate(), order.getStatus());
+                            updateInventoriesByBigCommerceFS(order.getId(), baseOrder, InventoryChange.DECREASE);
+                        } else if (order.getStatus().equals(BCOrderStatuses.CANCELLED) || // returned to store
                                 order.getStatus().equals(BCOrderStatuses.DECLINED) ||
                                 order.getStatus().equals(BCOrderStatuses.REFUNDED)){
-                            updateInventoriesByBigCommerceFS(order.getId(), InventoryChange.INCREASE);
+                            updateInventoriesByBigCommerceFS(order.getId(), null, InventoryChange.INCREASE);
                         }
                         log.info("Order handling completed for BigCommerceFS. [orderId:" + order.getId() + ",status:" + order.getStatus() + "]");
                     }
@@ -180,12 +186,15 @@ public class OrderListener {
         }
     }
 
-    private void updateInventoriesByBigCommerceFS(String orderId, Integer changeType){
+    private void updateInventoriesByBigCommerceFS(String orderId, BaseOrder baseOrder, Integer changeType){
         log.info("Update inventories after a change in bigcommerce fs.[orderId:" + orderId + "]");
         try {
             List<BCOrderProduct> productList = bigCommerceFSAPIService.getOrderProducts(orderId);
             if(productList != null){
                 for(BCOrderProduct product:productList){
+                    if(baseOrder != null){
+                        orderService.saveOrderItem(product.getSku(), product.getName(), product.getQuantity(), baseOrder);
+                    }
                     int quantity = product.getQuantity() * changeType;
 
                     // set overall quantity
@@ -229,11 +238,9 @@ public class OrderListener {
                 for(VendHQSale sale:salesList){
                     if(sale.getVersion() > latestOrderInfo.getVendMaxVersion()){
                         log.info("A sales event is captured for VendHQ. [saleId:" + sale.getId() + ",status:" + sale.getStatus() + "]");
-                        BaseOrder baseOrder = new BaseOrder("VendHQ", sale.getId(), sale.getTotalPrice(), sale.getUpdatedAt(), sale.getStatus());
-
-                        storeBean.getOrderStatusChanges().add(0,baseOrder);
                         if(sale.getStatus().equals(VendHQSalesStatuses.CLOSED)){
-                            updateInventoriesByVendHQ(sale.getId(), sale.getProducts());
+                            BaseOrder baseOrder = orderService.saveOrder("VendHQ", sale.getId(), sale.getTotalPrice(), sale.getUpdatedAt(), sale.getStatus());
+                            updateInventoriesByVendHQ(sale.getId(), baseOrder, sale.getProducts());
                         }
                         log.info("Order handling completed for VendHQ. [saleId:" + sale.getId() + ",status:" + sale.getStatus() + "]");
                     }
@@ -245,7 +252,7 @@ public class OrderListener {
         }
     }
 
-    private void updateInventoriesByVendHQ(String saleId, VendHQSalesProduct[] products){
+    private void updateInventoriesByVendHQ(String saleId, BaseOrder baseOrder, VendHQSalesProduct[] products){
         log.info("Update inventories after a change in vendhq.[saleId:" + saleId + "]");
         try {
             if(products != null){
@@ -254,6 +261,11 @@ public class OrderListener {
                     // TODO - change this to api 2.0
                     VendHQProduct vendProduct = vendHQAPIService.getProductById(salesProduct.getProductId());
                     String sku = vendProduct.getSku();
+
+                    if(baseOrder != null){
+                        orderService.saveOrderItem(vendProduct.getSku(), vendProduct.getName(), salesProduct.getQuantity(), baseOrder);
+                    }
+
                     int quantity = salesProduct.getQuantity() * -1;
 
                     // set overall quantity
@@ -310,12 +322,10 @@ public class OrderListener {
                         orderTotal = amazonOrder.getOrderTotal().getAmount();
                     }
 
-                    BaseOrder baseOrder = new BaseOrder("AmazonCA", amazonOrder.getAmazonOrderId(), orderTotal,
-                            amazonOrder.getLastUpdateDate().toGregorianCalendar().getTime(), amazonOrder.getOrderStatus());
-
-                    storeBean.getOrderStatusChanges().add(0,baseOrder);
                     if(amazonOrder.getOrderStatus().equals("Unshipped")) {
-                        updateInventoriesByAmazonCA(amazonOrder.getAmazonOrderId());
+                        BaseOrder baseOrder = orderService.saveOrder("AmazonCA", amazonOrder.getAmazonOrderId(), orderTotal,
+                                amazonOrder.getLastUpdateDate().toGregorianCalendar().getTime(), amazonOrder.getOrderStatus());
+                        updateInventoriesByAmazonCA(amazonOrder.getAmazonOrderId(), baseOrder);
                     }
                 }
             }
@@ -324,12 +334,15 @@ public class OrderListener {
         }
     }
 
-    private void updateInventoriesByAmazonCA(String amazonOrderId){
+    private void updateInventoriesByAmazonCA(String amazonOrderId, BaseOrder baseOrder){
         log.info("Update inventory after an order received in amazon ca .[OrderId:" + amazonOrderId + "]");
         try {
             List<OrderItem> orderItemList = amazonCaService.getOrderItems(amazonOrderId);
             if(orderItemList != null){
                 for(OrderItem orderItem: orderItemList){
+                    if(baseOrder != null){
+                        orderService.saveOrderItem(orderItem.getSellerSKU(), orderItem.getTitle(), orderItem.getQuantityOrdered(), baseOrder);
+                    }
                     String sku = orderItem.getSellerSKU();
                     Integer quantity = orderItem.getQuantityOrdered();
                     quantity = quantity * -1;
@@ -381,10 +394,8 @@ public class OrderListener {
                     log.info("An order is captured for SquareUp. [orderId:" + squareOrder.getId() + ",status:" + squareOrder.getState() + "]");
 
                     Float totalMoney = Utils.centsToDollar(squareOrder.getTotalMoney().getAmount());
-                    BaseOrder baseOrder = new BaseOrder("SquareUp", squareOrder.getId(), totalMoney, squareOrder.getUpdatedAt(), squareOrder.getState());
-
-                    storeBean.getOrderStatusChanges().add(0,baseOrder);
-                    updateInventoriesBySquareUp(squareOrder.getId(), squareOrder.getLineItems());
+                    BaseOrder baseOrder = orderService.saveOrder("SquareUp", squareOrder.getId(), totalMoney, squareOrder.getUpdatedAt(), squareOrder.getState());
+                    updateInventoriesBySquareUp(squareOrder.getId(), baseOrder, squareOrder.getLineItems());
 
                     log.info("Order handling completed for SquareUp. [orderId:" + squareOrder.getId() + ",status:" + squareOrder.getState() + "]");
 
@@ -395,13 +406,16 @@ public class OrderListener {
         }
     }
 
-    private void updateInventoriesBySquareUp(String orderId, SquareLineItem[] items){
+    private void updateInventoriesBySquareUp(String orderId, BaseOrder baseOrder, SquareLineItem[] items){
         log.info("Update inventories after a change in squareup.[orderId:" + orderId + "]");
         try {
             if(items != null){
                 for(SquareLineItem item:items){
                     SquareItemVariation itemVariation = squareAPIService.getProductById(item.getCatalogObjectId());
-
+                    if(baseOrder != null){
+                        orderService.saveOrderItem(itemVariation.getItemVariationData().getSku(), itemVariation.getItemVariationData().getName(),
+                                Integer.parseInt(item.getQuantity()), baseOrder);
+                    }
                     String sku = itemVariation.getItemVariationData().getSku();
 
                     int quantity = Integer.parseInt(item.getQuantity()) * -1;

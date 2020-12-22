@@ -3,23 +3,23 @@ package ecommerce.app.backend.service;
 import ecommerce.app.backend.StoreBean;
 import ecommerce.app.backend.markets.amazon.AmazonCaService;
 import ecommerce.app.backend.markets.amazon.products.AmazonProduct;
+import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
+import ecommerce.app.backend.markets.bigcommerce.BigCommerceFSAPIService;
+import ecommerce.app.backend.markets.bigcommerce.products.BigCommerceProduct;
 import ecommerce.app.backend.markets.bigcommerce.products.BigCommerceVariant;
 import ecommerce.app.backend.markets.squareup.SquareAPIService;
 import ecommerce.app.backend.markets.squareup.inventory.SquareInventoryCount;
 import ecommerce.app.backend.markets.squareup.inventory.SquareInventoryCounts;
 import ecommerce.app.backend.markets.squareup.items.*;
-import ecommerce.app.backend.service.constants.SyncConstants;
-import ecommerce.app.backend.util.Utils;
-import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
-import ecommerce.app.backend.markets.bigcommerce.BigCommerceFSAPIService;
-import ecommerce.app.backend.markets.bigcommerce.products.BigCommerceProduct;
-import ecommerce.app.backend.model.BaseProduct;
-import ecommerce.app.backend.model.DetailedProduct;
 import ecommerce.app.backend.markets.vendhq.VendHQAPIService;
 import ecommerce.app.backend.markets.vendhq.products.VendHQInventory;
 import ecommerce.app.backend.markets.vendhq.products.VendHQInventoryData;
 import ecommerce.app.backend.markets.vendhq.products.VendHQProduct;
 import ecommerce.app.backend.markets.vendhq.products.VendHQProductsData;
+import ecommerce.app.backend.model.BaseProduct;
+import ecommerce.app.backend.model.DetailedProduct;
+import ecommerce.app.backend.service.constants.SyncConstants;
+import ecommerce.app.backend.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -468,16 +468,17 @@ public class SyncProductsService {
     }
 
     public void syncAllMarketPlaces(){
+        storeBean.setOrderListenerAllowed(false);
         if(syncProductsEnabled == true) {
             this.setSyncStatusIntoPending();
             this.resetStore();
 
             syncVendHQ();
-            // syncSquareup(); // remove comment out to enable square
             syncBigCommerce();
             syncBigCommerceFS();
             syncAmazonCA();
             //syncAmazonUS();
+            // syncSquareup(); // remove comment out to enable square
 
             /*
             // this was a one-time sync operation, if required again, open it and run again.
@@ -494,5 +495,6 @@ public class SyncProductsService {
 
            */
         }
+        storeBean.setOrderListenerAllowed(true);
     }
 }

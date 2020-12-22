@@ -1,6 +1,5 @@
 package ecommerce.app.backend;
 
-import ecommerce.app.backend.model.BaseOrder;
 import ecommerce.app.backend.model.BaseProduct;
 import ecommerce.app.backend.model.DetailedProduct;
 import ecommerce.app.backend.model.SyncStatus;
@@ -23,9 +22,6 @@ public class StoreBean {
     private Map<String, DetailedProduct> detailedProductsMap = new HashMap();
 
     @Getter @Setter
-    private List<BaseOrder> orderStatusChanges = new ArrayList();
-
-    @Getter @Setter
     private SyncStatus syncStatus = new SyncStatus();
 
     @Getter @Setter
@@ -39,4 +35,7 @@ public class StoreBean {
 
     @Getter @Setter
     private Set<String> amazonUsPriceUpdateSet = new HashSet<>();
+
+    @Getter @Setter
+    private Boolean orderListenerAllowed = false;
 }

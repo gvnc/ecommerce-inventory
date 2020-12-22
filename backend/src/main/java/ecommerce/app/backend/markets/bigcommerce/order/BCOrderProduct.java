@@ -13,5 +13,8 @@ public class BCOrderProduct {
     private String sku;
 
     @Getter @Setter
+    private String name;
+
+    @Getter @Setter
     private Integer quantity;
 }

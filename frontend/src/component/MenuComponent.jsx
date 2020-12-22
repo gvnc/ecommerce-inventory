@@ -17,7 +17,7 @@ class MenuComponent extends Component {
                             <li><Link className="nav-link" to="/products">Products</Link></li>
                             <li><Link className="nav-link" to="/inventoryCounts">Inventory Count</Link></li>
                             <li><Link className="nav-link" to="/purchaseOrders">Purchase Orders</Link></li>
-                            <li><Link className="nav-link" to="/orderMonitoring">Order Monitoring</Link></li>
+                            <li><Link className="nav-link" to="/salesReport">Sales Report</Link></li>
                         </ul>
                     }
                     <ul className="navbar-nav navbar-collapse justify-content-end">

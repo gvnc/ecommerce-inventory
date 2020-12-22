@@ -7,6 +7,8 @@ import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceFSAPIService;
 import ecommerce.app.backend.markets.squareup.SquareAPIService;
 import ecommerce.app.backend.model.*;
+import ecommerce.app.backend.repository.model.BaseOrder;
+import ecommerce.app.backend.service.OrderService;
 import ecommerce.app.backend.service.SyncProductsService;
 import ecommerce.app.backend.util.Utils;
 import ecommerce.app.backend.markets.vendhq.VendHQAPIService;
@@ -42,6 +44,9 @@ public class BackendController {
     @Autowired
     private SyncProductsService syncProductsService;
 
+    @Autowired
+    private OrderService orderService;
+
     @GetMapping("/isAppRunning")
     public Boolean isAppRunning() {
         return true;
@@ -60,7 +65,7 @@ public class BackendController {
 
     @GetMapping("/getOrders")
     public List<BaseOrder> getOrders() {
-        return storeBean.getOrderStatusChanges();
+        return orderService.getOrdersFor3MonthsBack();
     }
 
     @GetMapping("/products/list")
