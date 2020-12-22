@@ -62,13 +62,11 @@ class MarketPlaceSyncStatus extends Component {
                             <div className="p-col">{this.getIconImage(syncResult.bigCommerceFSSyncStatus)} {syncResult.bigCommerceFSSyncStatus}</div>
                             <div className="p-col">{syncResult.bigCommerceFSLastUpdate}</div>
                         </div>
-                        {/*
                         <div className="p-grid p-fluid">
                             <div className="p-col">Vend HQ</div>
                             <div className="p-col">{this.getIconImage(syncResult.vendHQSyncStatus)} {syncResult.vendHQSyncStatus}</div>
                             <div className="p-col">{syncResult.vendHQLastUpdate}</div>
                         </div>
-                        */}
                         {/*
                         <div className="p-grid p-fluid">
                             <div className="p-col">Amazon US</div>
@@ -81,11 +79,15 @@ class MarketPlaceSyncStatus extends Component {
                             <div className="p-col">{this.getIconImage(syncResult.amazonCaStatus)} {syncResult.amazonCaStatus}</div>
                             <div className="p-col">{syncResult.amazonCaLastUpdate}</div>
                         </div>
+                        { // remove comment out to enable square
+                            /*
                         <div className="p-grid p-fluid">
                             <div className="p-col">SquareUp</div>
                             <div className="p-col">{this.getIconImage(syncResult.squareupSyncStatus)} {syncResult.squareupSyncStatus}</div>
                             <div className="p-col">{syncResult.squareupLastUpdate}</div>
                         </div>
+                             */
+                        }
                     </Card>
                 </div>
             </div>

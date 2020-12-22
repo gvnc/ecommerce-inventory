@@ -75,8 +75,9 @@ class InventoryCountReview extends Component {
                                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" >
                                     <Column field="sku" header="Product SKU" sortable={true} filter={true} filterPlaceholder="search sku" filterMatchMode="contains" />
                                     <Column field="name" header="Product Name" sortable={true} filter={true} filterPlaceholder="search product" filterMatchMode="contains" />
-                                    {/*<Column header="VendHQ Quantity" field="vendhqQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/> */}
-                                    <Column header="SquareUp Quantity" field="squareQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/>
+                                    <Column header="VendHQ Quantity" field="vendhqQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/>
+                                    {/* // remove comment out to enable square
+                                    <Column header="SquareUp Quantity" field="squareQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/> */}
                                     <Column header="BC Quantity" field="bigcommerceQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/>
                                     <Column header="BC-FS Quantity" field="bigcommerceFSQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/>
                                     <Column header="Amazon CA Quantity" field="amazonCAQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/>
@@ -89,8 +90,9 @@ class InventoryCountReview extends Component {
                                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" >
                                     <Column field="sku" header="Product SKU" sortable={true} filter={true} filterPlaceholder="search sku" filterMatchMode="contains" />
                                     <Column field="name" header="Product Name" sortable={true} filter={true} filterPlaceholder="search product" filterMatchMode="contains" />
-                                    {/*<Column header="VendHQ Quantity" field="vendhqQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/> */}
-                                    <Column header="SquareUp Quantity" field="squareQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/>
+                                    <Column header="VendHQ Quantity" field="vendhqQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/>
+                                    {/* // remove comment out to enable square
+                                    <Column header="SquareUp Quantity" field="squareQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/> */}
                                     <Column header="BC Quantity" field="bigcommerceQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/>
                                     <Column header="BC-FS Quantity" field="bigcommerceFSQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/>
                                     <Column header="Amazon CA Quantity" field="amazonCAQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/>
@@ -103,8 +105,9 @@ class InventoryCountReview extends Component {
                                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" >
                                     <Column field="sku" header="Product SKU" sortable={true} filter={true} filterPlaceholder="search sku" filterMatchMode="contains" />
                                     <Column field="name" header="Product Name" sortable={true} filter={true} filterPlaceholder="search product" filterMatchMode="contains" />
-                                    {/*<Column header="VendHQ Quantity" field="vendhqQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/> */}
-                                    <Column header="SquareUp Quantity" field="squareQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/>
+                                    <Column header="VendHQ Quantity" field="vendhqQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/>
+                                    {/* // remove comment out to enable square
+                                    <Column header="SquareUp Quantity" field="squareQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/> */}
                                     <Column header="BC Quantity" field="bigcommerceQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/>
                                     <Column header="BC-FS Quantity" field="bigcommerceFSQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/>
                                     <Column header="Amazon CA Quantity" field="amazonCAQuantity" style={{height: '3.5em', 'textAlign': 'center'}}/>

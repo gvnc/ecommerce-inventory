@@ -76,10 +76,10 @@ public class OrderListener {
             // TODO if sync is in progress do nothing !!
             log.info("Order listener started to run.");
             listenBigCommerceOrders();
-            // listenVendHQSales(); // remove comment out to enable vendhq
+            listenVendHQSales();
             listenBigCommerceFSOrders();
             listenAmazonCAOrders();
-            listenSquareupOrders();
+            //listenSquareupOrders(); // remove comment out to enable vendhq
             OrderListenerUtil.saveLatestOrderInfo(orderListenerDataFile, latestOrderInfo);
             log.info("Order listener ended running.");
         }

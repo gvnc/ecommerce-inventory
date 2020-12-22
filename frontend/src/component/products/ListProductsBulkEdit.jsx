@@ -96,8 +96,10 @@ class ListProductsBulkEdit extends Component {
     editorForRowEditing(props, field) {
         if(field === "price"){
             return <div className="p-grid p-dir-col">
-                {/* this.renderSingleColumn(props, "vendHQPrice")*/}
-                { this.renderSingleColumn(props, "squarePrice")}
+                { this.renderSingleColumn(props, "vendHQPrice")}
+                { /* // remove comment out to enable square
+                this.renderSingleColumn(props, "squarePrice")
+                */}
                 { this.renderSingleColumn(props, "bigCommercePrice")}
                 { this.renderSingleColumn(props, "bigCommerceFSPrice")}
                 { this.renderSingleColumn(props, "amazonCAPrice")}
@@ -105,8 +107,10 @@ class ListProductsBulkEdit extends Component {
         }
         if(field === "inventory"){
             return <div className="p-grid p-dir-col">
-                {/* this.renderSingleColumn(props, "vendHQInventory")*/}
-                { this.renderSingleColumn(props, "squareInventory")}
+                { this.renderSingleColumn(props, "vendHQInventory")}
+                { /* // remove comment out to enable square
+                 this.renderSingleColumn(props, "squareInventory")
+                 */}
                 { this.renderSingleColumn(props, "bigCommerceInventory")}
                 { this.renderSingleColumn(props, "bigCommerceFSInventory")}
                 { this.renderSingleColumn(props, "amazonCAInventory")}
@@ -235,8 +239,10 @@ class ListProductsBulkEdit extends Component {
 
     priceFieldRender(rowData){
         return  <div className="p-grid p-dir-col">
-                    {/*this.singleFieldRender(rowData, "vendHQPrice")*/}
-                    {this.singleFieldRender(rowData, "squarePrice")}
+                    {this.singleFieldRender(rowData, "vendHQPrice")}
+                    {  /* // remove comment out to enable square
+                    this.singleFieldRender(rowData, "squarePrice")
+                    */}
                     {this.singleFieldRender(rowData, "bigCommercePrice")}
                     {this.singleFieldRender(rowData, "bigCommerceFSPrice")}
                     {this.singleFieldRender(rowData, "amazonCAPrice")}
@@ -245,8 +251,9 @@ class ListProductsBulkEdit extends Component {
 
     inventoryFieldRender(rowData){
         return  <div className="p-grid p-dir-col">
-                    {/*this.singleFieldRender(rowData, "vendHQInventory")*/}
-                    {this.singleFieldRender(rowData, "squareInventory")}
+                    {this.singleFieldRender(rowData, "vendHQInventory")}
+                    { /* // remove comment out to enable square
+                    this.singleFieldRender(rowData, "squareInventory")*/}
                     {this.singleFieldRender(rowData, "bigCommerceInventory")}
                     {this.singleFieldRender(rowData, "bigCommerceFSInventory")}
                     {this.singleFieldRender(rowData, "amazonCAInventory")}
@@ -263,8 +270,9 @@ class ListProductsBulkEdit extends Component {
 
     marketPlaceRender(){
         return  <div className="p-grid p-dir-col">
-            {/*<div className="p-col">VendHQ</div>*/}
-                    <div className="p-col">SquareUp</div>
+                    <div className="p-col">VendHQ</div>
+            {/* // remove comment out to enable square
+            <div className="p-col">SquareUp</div> */}
                     <div className="p-col">BigComm.</div>
                     <div className="p-col">BigComm.FS</div>
                     <div className="p-col">Amazon CA</div>

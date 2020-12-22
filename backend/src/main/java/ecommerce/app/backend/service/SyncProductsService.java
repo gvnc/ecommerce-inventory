@@ -472,9 +472,8 @@ public class SyncProductsService {
             this.setSyncStatusIntoPending();
             this.resetStore();
 
-            // syncVendHQ(); // remove comment out to enable vendhq
-
-            syncSquareup();
+            syncVendHQ();
+            // syncSquareup(); // remove comment out to enable square
             syncBigCommerce();
             syncBigCommerceFS();
             syncAmazonCA();
@@ -487,6 +486,13 @@ public class SyncProductsService {
             }
 
              */
+
+            // this was a one-time sync operation, if required again, open it and run again.
+          /*  if(1 == 1){
+                scriptService.syncVendInventory();
+            }
+
+           */
         }
     }
 }
