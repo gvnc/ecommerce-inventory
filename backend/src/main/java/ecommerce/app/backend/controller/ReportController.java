@@ -1,14 +1,12 @@
 package ecommerce.app.backend.controller;
 
+import ecommerce.app.backend.repository.model.SalesHistory;
 import ecommerce.app.backend.repository.model.SalesReport;
 import ecommerce.app.backend.service.ReportService;
 import ecommerce.app.backend.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
@@ -29,4 +27,8 @@ public class ReportController {
         return reportService.getSalesReport(start, end);
     }
 
+    @GetMapping("/sales/{productSku}")
+    public List<SalesHistory> getSalesByProductSku(@PathVariable String productSku) {
+        return reportService.getSalesByProductSku(productSku);
+    }
 }

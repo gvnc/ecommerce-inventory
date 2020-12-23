@@ -394,15 +394,11 @@ class OrderDetailsDialog extends Component {
                                                 <InputText id="supplier" onChange={(e) => {this.props.updateSelectedPurchaseOrder(this.props.order.id, "supplier", e.target.value)}}
                                                            value={this.props.order.supplier} style={{width:'200px'}} {...draftOpts} />
                                             </div>
-                                            {
-                                                orderStatus !== 'DRAFT' &&
-                                                <div className="p-col-2 labelText">
-                                                    <PDFDownloadLink document={<PDFDocument order={this.props.order} orderProducts={this.props.orderProducts} />} fileName="PurchaseOrder.pdf">
-                                                        {({ blob, url, loading, error }) => (loading ? 'Loading document...' : 'Download PDF')}
-                                                    </PDFDownloadLink>
-                                                </div>
-                                            }
-
+                                            <div className="p-col-2 labelText">
+                                                <PDFDownloadLink document={<PDFDocument order={this.props.order} orderProducts={this.props.orderProducts} />} fileName="PurchaseOrder.pdf">
+                                                    {({ blob, url, loading, error }) => (loading ? 'Loading document...' : 'Download PDF')}
+                                                </PDFDownloadLink>
+                                            </div>
                                         </div>
                                     </Fieldset>
                                 </div>

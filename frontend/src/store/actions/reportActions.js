@@ -2,8 +2,6 @@ import {API_URL} from '../../apiConfig';
 import axios from 'axios';
 
 export const getReport = (startDate, endDate) => {
-    console.log("startDate " + JSON.stringify(startDate));
-    console.log("startDate " + startDate + " endDate " + endDate)
     let requestUrl = API_URL + "/report/sales";
     let requestConfig = {
         params:{
@@ -12,4 +10,9 @@ export const getReport = (startDate, endDate) => {
         }
     }
     return axios.get(requestUrl, requestConfig);
+}
+
+export const getReportBySku = (productSku) => {
+    let requestUrl = API_URL + "/report/sales/" + productSku;
+    return axios.get(requestUrl);
 }

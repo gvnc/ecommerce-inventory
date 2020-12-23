@@ -1,11 +1,12 @@
 import React, { Component } from 'react'
-import { connect } from "react-redux";
 import {DataTable} from "primereact/datatable";
 import {Column} from "primereact/column";
 import {Calendar} from 'primereact/calendar';
 import {Button} from "primereact/button";
 
 import { getReport} from "../../store/actions/reportActions";
+import {PDFDownloadLink} from "@react-pdf/renderer";
+import SalesReportPDFDocument from "./SalesReportPDFDocument";
 
 class SalesReport extends Component {
 
@@ -34,6 +35,10 @@ class SalesReport extends Component {
     }
 
     render() {
+        if(this.state.resultList)
+            console.log(this.state.resultList.length);
+        console.dir(this.state.startDate);
+
         return (
             <div className="content-section implementation" style={{margin:'30px'}}>
 
@@ -55,6 +60,17 @@ class SalesReport extends Component {
                     <div className="p-field p-col-2">
                         <Button label="Get Report" icon="pi pi-search"  onClick={this.submitReport}/>
                     </div>
+                    {
+                        this.state.resultList && this.state.resultList.length > 0 &&
+
+                        <div className="p-field p-col-2">
+                            <PDFDownloadLink
+                                    document={<SalesReportPDFDocument startDate={this.state.startDate} endDate={this.state.endDate} reportList={this.state.resultList} />}
+                                    fileName="SalesReport.pdf">
+                                {({blob, url, loading, error}) => (loading ? 'Loading document...' : 'Download Report')}
+                            </PDFDownloadLink>
+                        </div>
+                    }
                 </div>
                 {
                     this.state.resultList &&
@@ -80,7 +96,7 @@ const header = <div className="p-clearfix" style={{lineHeight:'1.87em'}}>Sales R
 const componentCss={
     skuCol:{
         height:'3.5em',
-        width:'150px'
+        width:'200px'
     },
     nameCol:{
         height:'3.5em',
@@ -88,21 +104,9 @@ const componentCss={
     },
     quantityCol:{
         height:'3.5em',
-        width:'125px',
+        width:'200px',
         textAlign:'center'
     }
 }
 
-const mapStateToProps = state => {
-    return {
-        //orders: state.syncMarkets.orders
-    };
-};
-
-const mapDispatchToProps = dispatch => {
-    return {
-        //getOrders: () => dispatch(getOrders())
-    };
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(SalesReport);
+export default SalesReport;

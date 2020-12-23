@@ -9,6 +9,7 @@ import AmazonProductCard from "./AmazonProductCard";
 import InventoryUpdate from "./InventoryUpdate";
 import {TabView,TabPanel} from 'primereact/tabview';
 import SquareProductCard from "./SquareProductCard";
+import ProductSaleHistory from "./ProductSaleHistory";
 
 class ProductDetailDialog extends Component {
 
@@ -255,7 +256,8 @@ class ProductDetailDialog extends Component {
         return (
             <Dialog visible={this.props.visibleProperty} maximized={true} header={dialogHeader} modal={true}
                     footer={dialogFooter} onHide={this.props.onHideEvent}>
-                <TabView activeIndex={this.state.activeIndex} onTabChange={(e) => this.setState({activeIndex: e.index})}>
+                <TabView activeIndex={this.state.activeIndex} style={{width:'1200px'}}
+                         onTabChange={(e) => this.setState({activeIndex: e.index})}>
                     <TabPanel header="BC-Vend">
                         <div className="p-grid">
                             <div className="p-col-4">
@@ -290,6 +292,9 @@ class ProductDetailDialog extends Component {
                             </div>
                             <div className="p-col-2"></div>
                         </div>
+                    </TabPanel>
+                    <TabPanel header="Sales History">
+                        <ProductSaleHistory productSku={this.props.detailedProduct.sku} />
                     </TabPanel>
                 </TabView>
             </Dialog>
