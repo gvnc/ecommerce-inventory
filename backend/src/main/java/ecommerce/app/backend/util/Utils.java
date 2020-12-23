@@ -19,7 +19,7 @@ public class Utils {
 
     private final static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm", Locale.CANADA);
     private final static SimpleDateFormat squareupDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.CANADA);
-    private final static SimpleDateFormat dateOnlyFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private final static SimpleDateFormat dateOnlyFormat = new SimpleDateFormat("M/d/yyyy", Locale.UK);
 
     @Getter
     private final static TimeZone timezone = TimeZone.getTimeZone("GMT-4");
@@ -29,9 +29,7 @@ public class Utils {
 
     public static Date getDateFromString(String date) {
         try {
-            StringTokenizer tokenizer = new StringTokenizer(date, "T");
-            String onlyDate = tokenizer.nextToken();
-            return dateOnlyFormat.parse(onlyDate);
+            return dateOnlyFormat.parse(date);
         } catch (ParseException e) {
             return null;
         }

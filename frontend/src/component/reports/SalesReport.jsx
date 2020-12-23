@@ -22,7 +22,10 @@ class SalesReport extends Component {
     }
 
     submitReport(){
-        getReport(this.state.startDate, this.state.endDate)
+        if(this.state.startDate === null || this.state.endDate === null)
+            return;
+
+        getReport(this.state.startDate.toLocaleDateString(), this.state.endDate.toLocaleDateString())
             .catch(err => {
                 console.log("error:" + err);
             })
@@ -35,10 +38,17 @@ class SalesReport extends Component {
     }
 
     render() {
-        if(this.state.resultList)
-            console.log(this.state.resultList.length);
-        console.dir(this.state.startDate);
+/*
+        if(this.state.startDate != null){
+            console.dir(this.state.startDate);
+            console.log(this.state.startDate.toDateString());
+            console.log(this.state.startDate.toLocaleDateString());
+            console.log(this.state.startDate.toLocaleString());
+            console.log(this.state.startDate.toGMTString());
+            console.log(this.state.startDate.getDay().toString());
+        }
 
+ */
         return (
             <div className="content-section implementation" style={{margin:'30px'}}>
 

@@ -20,11 +20,14 @@ public class ReportController {
     @Autowired
     private ReportService reportService;
 
+    private final Long oneDay = 24 * 60 * 60 * 1000L;
+
     @GetMapping("/sales")
     public List<SalesReport> getSales(String startDate, String endDate) {
         Date start = Utils.getDateFromString(startDate);
         Date end = Utils.getDateFromString(endDate);
-        return reportService.getSalesReport(start, end);
+        Date newEndDate = new Date(end.getTime() + oneDay);
+        return reportService.getSalesReport(start, newEndDate);
     }
 
     @GetMapping("/sales/{productSku}")
