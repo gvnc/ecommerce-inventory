@@ -9,6 +9,8 @@ export default class PDFDocument extends Component {
     constructor() {
         super();
         this.formattedDate = this.formattedDate.bind(this);
+        this.handleCostPrice = this.handleCostPrice.bind(this);
+        this.handleAmount = this.handleAmount.bind(this);
     }
 
     formattedDate() {
@@ -18,6 +20,14 @@ export default class PDFDocument extends Component {
             + date.slice(5, 7) + '/'
             + date.slice(0, 4);
         return nDate;
+    }
+
+    handleCostPrice(costPrice){
+        return "$" + Number(costPrice).toFixed(2);
+    }
+
+    handleAmount(orderedQuantity, costPrice){
+        return "$" + (Number(orderedQuantity) * Number(costPrice)).toFixed(2);
     }
 
     render(){
@@ -105,8 +115,8 @@ export default class PDFDocument extends Component {
                         <TableBody>
                             <DataTableCell style={styles.tableCellData} weighting={0.55} getContent={(p) => <View><Text>{p.name}</Text><Text>(SKU:{p.sku})</Text></View>}/>
                             <DataTableCell style={{...styles.tableCellData, alignItems: 'center'}} weighting={0.15} getContent={(p) => p.orderedQuantity}/>
-                            <DataTableCell style={{...styles.tableCellData, alignItems: 'flex-end'}} weighting={0.15} getContent={(p) => "$" + p.costPrice.toFixed(2)}/>
-                            <DataTableCell style={{...styles.tableCellData, alignItems: 'flex-end'}} weighting={0.15} getContent={(p) => "$" + (Number(p.orderedQuantity) * Number(p.costPrice)).toFixed(2)}/>
+                            <DataTableCell style={{...styles.tableCellData, alignItems: 'flex-end'}} weighting={0.15} getContent={(p) => this.handleCostPrice(p.costPrice)}/>
+                            <DataTableCell style={{...styles.tableCellData, alignItems: 'flex-end'}} weighting={0.15} getContent={(p) => this.handleAmount(p.orderedQuantity, p.costPrice)}/>
                         </TableBody>
                     </Table>
                 </View>
@@ -117,7 +127,7 @@ export default class PDFDocument extends Component {
                         <View style={styles.expenseSectionView1} >
                             <View style={styles.expenseSectionView2} >
                                 <Text style={styles.orderInfoHeader} >Sales Tax</Text>
-                                <Text style={styles.orderInfoData} >${this.props.order.salesTax.toFixed(2)}</Text>
+                                <Text style={styles.orderInfoData} >${Number(this.props.order.salesTax).toFixed(2)}</Text>
                             </View>
                         </View>
                     </View>
@@ -129,7 +139,7 @@ export default class PDFDocument extends Component {
                         <View style={styles.expenseSectionView1} >
                             <View style={styles.expenseSectionView2} >
                                 <Text style={styles.orderInfoHeader} >Brokerage</Text>
-                                <Text style={styles.orderInfoData} >${this.props.order.brokerage.toFixed(2)}</Text>
+                                <Text style={styles.orderInfoData} >${Number(this.props.order.brokerage).toFixed(2)}</Text>
                             </View>
                         </View>
                     </View>
@@ -141,7 +151,7 @@ export default class PDFDocument extends Component {
                         <View style={styles.expenseSectionView1} >
                             <View style={styles.expenseSectionView2} >
                                 <Text style={styles.orderInfoHeader} >Discount</Text>
-                                <Text style={styles.orderInfoData} >${this.props.order.discount.toFixed(2)}</Text>
+                                <Text style={styles.orderInfoData} >${Number(this.props.order.discount).toFixed(2)}</Text>
                             </View>
                         </View>
                     </View>
@@ -153,7 +163,7 @@ export default class PDFDocument extends Component {
                         <View style={styles.expenseSectionView1} >
                             <View style={styles.expenseSectionView2} >
                                 <Text style={styles.orderInfoHeader} >Duties</Text>
-                                <Text style={styles.orderInfoData} >${this.props.order.duties.toFixed(2)}</Text>
+                                <Text style={styles.orderInfoData} >${Number(this.props.order.duties).toFixed(2)}</Text>
                             </View>
                         </View>
                     </View>
@@ -165,7 +175,7 @@ export default class PDFDocument extends Component {
                         <View style={styles.expenseSectionView1} >
                             <View style={styles.expenseSectionView2} >
                                 <Text style={styles.orderInfoHeader} >Shipping</Text>
-                                <Text style={styles.orderInfoData} >${this.props.order.shipping.toFixed(2)}</Text>
+                                <Text style={styles.orderInfoData} >${Number(this.props.order.shipping).toFixed(2)}</Text>
                             </View>
                         </View>
                     </View>
