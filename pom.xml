@@ -13,7 +13,7 @@
 	</parent>
 	
 	<groupId>ecommerce.app</groupId>
-	<artifactId>project</artifactId>
+	<artifactId>ecom-inventory</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>ecommerce-app-project</name>
