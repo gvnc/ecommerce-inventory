@@ -40,14 +40,24 @@ export default class PDFDocument extends Component {
         let address3 = "Toronto, ON M2H 2N5";
         let address4 = "CANADA";
 
+        let totalDuties = 0;
+        if(this.props.orderProducts){
+            this.props.orderProducts.forEach(function(p){
+                let calculatedDutyRate = ( Number(p.orderedQuantity) * Number(p.costPrice) * Number(p.dutyRate)) / 100;
+                totalDuties = totalDuties + calculatedDutyRate;
+            });
+        }
+
         let totalExpenses = 0;
         if(this.props.order){
             totalExpenses = totalExpenses + Number(this.props.order.salesTax);
             totalExpenses = totalExpenses + Number(this.props.order.brokerage);
             totalExpenses = totalExpenses - Number(this.props.order.discount);
-            totalExpenses = totalExpenses + Number(this.props.order.duties);
+            totalExpenses = totalExpenses + totalDuties;
             totalExpenses = totalExpenses + Number(this.props.order.shipping);
+            console.log("euh " + this.props.order.duties);
         }
+
         let totalProductCost = 0;
         if(this.props.orderProducts){
             this.props.orderProducts.forEach(function(p){
@@ -121,7 +131,7 @@ export default class PDFDocument extends Component {
                     </Table>
                 </View>
                 {
-                    this.props.order.salesTax > 0 &&
+                    Number(this.props.order.salesTax) > 0 &&
 
                     <View style={styles.expenseSection}>
                         <View style={styles.expenseSectionView1} >
@@ -133,7 +143,7 @@ export default class PDFDocument extends Component {
                     </View>
                 }
                 {
-                    this.props.order.brokerage > 0 &&
+                    Number(this.props.order.brokerage) > 0 &&
 
                     <View style={styles.expenseSection}>
                         <View style={styles.expenseSectionView1} >
@@ -145,7 +155,7 @@ export default class PDFDocument extends Component {
                     </View>
                 }
                 {
-                    this.props.order.discount > 0 &&
+                    Number(this.props.order.discount) > 0 &&
 
                     <View style={styles.expenseSection}>
                         <View style={styles.expenseSectionView1} >
@@ -157,7 +167,7 @@ export default class PDFDocument extends Component {
                     </View>
                 }
                 {
-                    this.props.order.duties > 0 &&
+                    Number(this.props.order.duties) > 0 &&
 
                     <View style={styles.expenseSection}>
                         <View style={styles.expenseSectionView1} >
@@ -169,7 +179,7 @@ export default class PDFDocument extends Component {
                     </View>
                 }
                 {
-                    this.props.order.shipping > 0 &&
+                    Number(this.props.order.shipping) > 0 &&
 
                     <View style={styles.expenseSection}>
                         <View style={styles.expenseSectionView1} >

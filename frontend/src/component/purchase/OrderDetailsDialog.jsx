@@ -161,6 +161,7 @@ class OrderDetailsDialog extends Component {
                 totalDuties = totalDuties + calculatedDutyRate;
             });
         }
+        // dont enable this it causes a loop in render
         //this.props.updateSelectedPurchaseOrder(this.props.order.id, "duties", totalDuties.toFixed(2));
         return totalDuties.toFixed(2);
     }
