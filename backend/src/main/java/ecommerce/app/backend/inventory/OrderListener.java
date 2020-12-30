@@ -26,6 +26,7 @@ import ecommerce.app.backend.model.BaseProduct;
 import ecommerce.app.backend.model.DetailedProduct;
 import ecommerce.app.backend.repository.model.BaseOrder;
 import ecommerce.app.backend.service.OrderService;
+import ecommerce.app.backend.service.constants.OrderTypeConstants;
 import ecommerce.app.backend.util.Utils;
 import lombok.Getter;
 import lombok.Setter;
@@ -104,7 +105,8 @@ public class OrderListener {
                         } else if (order.getStatus().equals(BCOrderStatuses.CANCELLED) || // return to store
                                 order.getStatus().equals(BCOrderStatuses.DECLINED) ||
                                 order.getStatus().equals(BCOrderStatuses.REFUNDED)){
-                            updateInventoriesByBigCommerce(order.getId(), null, InventoryChange.INCREASE);
+                            BaseOrder baseOrder = orderService.saveOrder("BigCommerce", order.getId(), order.getTotalIncludingTax(), order.getModifiedDate(), order.getStatus(), OrderTypeConstants.REFUND);
+                            updateInventoriesByBigCommerce(order.getId(), baseOrder, InventoryChange.INCREASE);
                         }
                         log.info("Order handling completed for BigCommerce. [orderId:" + order.getId() + ",status:" + order.getStatus() + "]");
                     }
@@ -174,7 +176,8 @@ public class OrderListener {
                         } else if (order.getStatus().equals(BCOrderStatuses.CANCELLED) || // returned to store
                                 order.getStatus().equals(BCOrderStatuses.DECLINED) ||
                                 order.getStatus().equals(BCOrderStatuses.REFUNDED)){
-                            updateInventoriesByBigCommerceFS(order.getId(), null, InventoryChange.INCREASE);
+                            BaseOrder baseOrder = orderService.saveOrder("BigCommerceFS", order.getId(), order.getTotalIncludingTax(), order.getModifiedDate(), order.getStatus(), OrderTypeConstants.REFUND);
+                            updateInventoriesByBigCommerceFS(order.getId(), baseOrder, InventoryChange.INCREASE);
                         }
                         log.info("Order handling completed for BigCommerceFS. [orderId:" + order.getId() + ",status:" + order.getStatus() + "]");
                     }

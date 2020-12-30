@@ -477,7 +477,8 @@ public class SyncProductsService {
             syncBigCommerce();
             syncBigCommerceFS();
             syncAmazonCA();
-            //syncAmazonUS();
+
+            //syncAmazonUS(); // not implemented yet
             // syncSquareup(); // remove comment out to enable square
 
             /*

@@ -4,13 +4,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import ecommerce.app.backend.model.PurchaseOrderRequest;
+import ecommerce.app.backend.repository.model.BaseOrder;
 import ecommerce.app.backend.repository.model.PurchaseOrder;
 import ecommerce.app.backend.repository.model.PurchaseOrderProduct;
+import ecommerce.app.backend.service.OrderService;
 import ecommerce.app.backend.service.PurchaseOrderService;
+import ecommerce.app.backend.service.constants.OrderTypeConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -21,6 +25,9 @@ public class PurchaseOrderController {
 
     @Autowired
     private PurchaseOrderService purchaseOrderService;
+
+    @Autowired
+    private OrderService orderService;
 
     @GetMapping("/orders")
     public List<PurchaseOrder> getPurchaseOrders() {
@@ -79,12 +86,19 @@ public class PurchaseOrderController {
             // get products first
             List<PurchaseOrderProduct> productList = purchaseOrderService.getPurchaseOrderProducts(orderId);
 
+            // get or save baseOrder to hold inventory movement
+            BaseOrder baseOrder = orderService.saveOrder(OrderTypeConstants.PURCHASE_ORDER, orderId.toString(), 0F, new Date(), "Active", OrderTypeConstants.PURCHASE_ORDER);
+
             // set received products
             ArrayNode receiveArrayNode = requestBody.withArray("receiveList");
             for(JsonNode receiveNode:receiveArrayNode){
                 String sku = receiveNode.get("sku").textValue();
                 Integer receivedQuantity = receiveNode.get("receivedQuantity").asInt();
                 purchaseOrderService.updateSkuInventoryByPO(productList, sku, receivedQuantity);
+
+                PurchaseOrderProduct pop = productList.stream().filter(purchaseOrderProduct -> purchaseOrderProduct.getSku().equals(sku)).findFirst().orElse(null);
+                String productName = pop != null ? pop.getName() : "Product Name Unknown";
+                orderService.saveOrderItem(sku, productName, receivedQuantity, baseOrder);
             }
 
             // set purchase order status

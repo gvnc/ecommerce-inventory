@@ -24,6 +24,9 @@ public class BaseOrder {
     private String orderId;
 
     @Getter @Setter
+    private String orderType;
+
+    @Getter @Setter
     private Float totalPrice;
 
     @Getter @Setter

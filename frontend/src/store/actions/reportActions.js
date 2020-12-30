@@ -13,6 +13,6 @@ export const getReport = (startDate, endDate) => {
 }
 
 export const getReportBySku = (productSku) => {
-    let requestUrl = API_URL + "/report/sales/" + productSku;
+    let requestUrl = API_URL + "/report/inventory/" + productSku;
     return axios.get(requestUrl);
 }

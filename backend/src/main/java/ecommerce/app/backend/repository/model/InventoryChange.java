@@ -1,12 +1,14 @@
 package ecommerce.app.backend.repository.model;
 
-public interface SalesHistory {
+public interface InventoryChange {
 
     String getInsertDate();
 
     String getMarketPlace();
 
     Integer getQuantity();
+
+    String getOrderType();
 
     default String getLogDate(){
         String insertDate = getInsertDate();

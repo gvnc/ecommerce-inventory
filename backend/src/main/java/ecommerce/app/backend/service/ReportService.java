@@ -1,7 +1,7 @@
 package ecommerce.app.backend.service;
 
 import ecommerce.app.backend.repository.BaseOrderItemRepository;
-import ecommerce.app.backend.repository.model.SalesHistory;
+import ecommerce.app.backend.repository.model.InventoryChange;
 import ecommerce.app.backend.repository.model.SalesReport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,8 +19,8 @@ public class ReportService {
         return baseOrderItemRepository.quantitySumByDate(startDate, endDate);
     }
 
-    public List<SalesHistory> getSalesByProductSku(String productSku){
-        return baseOrderItemRepository.getSalesByProductSku(productSku);
+    public List<InventoryChange> getnventoryChangesByProductSku(String productSku){
+        return baseOrderItemRepository.getnventoryChangesByProductSku(productSku);
     }
 
 }

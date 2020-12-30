@@ -293,7 +293,7 @@ class ProductDetailDialog extends Component {
                             <div className="p-col-2"></div>
                         </div>
                     </TabPanel>
-                    <TabPanel header="Sales History">
+                    <TabPanel header="Inventory Changes">
                         <ProductSaleHistory productSku={this.props.detailedProduct.sku} />
                     </TabPanel>
                 </TabView>

@@ -6,6 +6,7 @@ import ecommerce.app.backend.repository.BaseOrderRepository;
 import ecommerce.app.backend.repository.model.BaseOrder;
 import ecommerce.app.backend.repository.model.BaseOrderItem;
 import ecommerce.app.backend.repository.model.BaseOrderProduct;
+import ecommerce.app.backend.service.constants.OrderTypeConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,13 +28,22 @@ public class OrderService {
     private BaseOrderProductRepository baseOrderProductRepository;
 
     public BaseOrder saveOrder(String marketPlace, String orderId, Float totalPrice, Date modifiedDate, String status) {
+        return saveOrder(marketPlace, orderId, totalPrice, modifiedDate, status, OrderTypeConstants.SALE);
+    }
+
+    public BaseOrder saveOrder(String marketPlace, String orderId, Float totalPrice, Date modifiedDate, String status, String orderType) {
         try {
-            BaseOrder baseOrder = new BaseOrder();
+            BaseOrder baseOrder = baseOrderRepository.findOneByOrderId(orderId);
+            if(baseOrder != null)
+                return baseOrder;
+
+            baseOrder = new BaseOrder();
             baseOrder.setOrderId(orderId);
             baseOrder.setMarketPlace(marketPlace);
             baseOrder.setStatus(status);
             baseOrder.setInsertDate(modifiedDate);
             baseOrder.setTotalPrice(totalPrice);
+            baseOrder.setOrderType(orderType);
 
             return baseOrderRepository.save(baseOrder);
         } catch (Exception e){

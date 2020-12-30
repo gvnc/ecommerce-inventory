@@ -1,7 +1,7 @@
 package ecommerce.app.backend.repository;
 
 import ecommerce.app.backend.repository.model.BaseOrderItem;
-import ecommerce.app.backend.repository.model.SalesHistory;
+import ecommerce.app.backend.repository.model.InventoryChange;
 import ecommerce.app.backend.repository.model.SalesReport;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -13,12 +13,13 @@ public interface BaseOrderItemRepository extends CrudRepository<BaseOrderItem, I
 
     @Query("select bop.productName as productName, sum(boi.quantity) as quantity, boi.sku as sku " +
             "from BaseOrderItem as boi join BaseOrderProduct as bop on boi.sku=bop.sku " +
-            "where boi.quantity>0 and boi.insertDate >= ?1 and boi.insertDate <= ?2 group by boi.sku")
+            "join BaseOrder as bo on boi.baseOrder = bo " +
+            "where bo.orderType='Sale' and boi.quantity>0 and boi.insertDate >= ?1 and boi.insertDate <= ?2 group by boi.sku")
     List<SalesReport> quantitySumByDate(Date startDate, Date endDate);
 
 
-    @Query("select bo.marketPlace as marketPlace, boi.quantity as quantity, boi.insertDate as insertDate " +
+    @Query("select bo.marketPlace as marketPlace, boi.quantity as quantity, boi.insertDate as insertDate, bo.orderType as orderType " +
             "from BaseOrderItem as boi join BaseOrder as bo on boi.baseOrder = bo " +
             "where boi.sku = ?1 order by boi.insertDate desc")
-    List<SalesHistory> getSalesByProductSku(String productSku);
+    List<InventoryChange> getnventoryChangesByProductSku(String productSku);
 }

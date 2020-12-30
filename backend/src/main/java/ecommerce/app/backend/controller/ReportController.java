@@ -1,6 +1,6 @@
 package ecommerce.app.backend.controller;
 
-import ecommerce.app.backend.repository.model.SalesHistory;
+import ecommerce.app.backend.repository.model.InventoryChange;
 import ecommerce.app.backend.repository.model.SalesReport;
 import ecommerce.app.backend.service.ReportService;
 import ecommerce.app.backend.util.Utils;
@@ -30,8 +30,8 @@ public class ReportController {
         return reportService.getSalesReport(start, newEndDate);
     }
 
-    @GetMapping("/sales/{productSku}")
-    public List<SalesHistory> getSalesByProductSku(@PathVariable String productSku) {
-        return reportService.getSalesByProductSku(productSku);
+    @GetMapping("/inventory/{productSku}")
+    public List<InventoryChange> getnventoryChangesByProductSku(@PathVariable String productSku) {
+        return reportService.getnventoryChangesByProductSku(productSku);
     }
 }
