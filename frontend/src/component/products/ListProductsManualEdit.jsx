@@ -41,7 +41,7 @@ class ListProducts extends Component {
             <div>
                 <Growl ref={(el) => this.growl = el} />
                 <div className="content-section implementation">
-                    <DataTable value={this.props.productList} paginator={true} rows={10}
+                    <DataTable value={this.props.productList} paginator={true} rows={20}
                                selectionMode="single" selection={this.state.selectedProduct} onSelectionChange={e => this.setState({selectedProduct: e.value})}
                                onRowSelect={this.onProductSelect}
                                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"

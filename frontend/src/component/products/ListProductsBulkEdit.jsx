@@ -285,7 +285,7 @@ class ListProductsBulkEdit extends Component {
                 <Growl ref={(el) => this.growl = el} />
                 <div className="content-section implementation">
                     <DataTable value={this.props.productList} editMode="row"
-                               paginator={true} rows={5}
+                               paginator={true} rows={20}
                                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
                                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
                                rowEditorValidator={this.onRowEditorValidator}
