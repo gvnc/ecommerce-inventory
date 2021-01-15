@@ -7,8 +7,10 @@ import ecommerce.app.backend.markets.bigcommerce.BigCommerceFSAPIService;
 import ecommerce.app.backend.markets.squareup.SquareAPIService;
 import ecommerce.app.backend.model.DetailedProduct;
 import ecommerce.app.backend.model.PurchaseOrderRequest;
+import ecommerce.app.backend.repository.AverageCostViewRepository;
 import ecommerce.app.backend.repository.PurchaseOrderProductRepository;
 import ecommerce.app.backend.repository.PurchaseOrderRepository;
+import ecommerce.app.backend.repository.model.AverageCostView;
 import ecommerce.app.backend.repository.model.PurchaseOrder;
 import ecommerce.app.backend.repository.model.PurchaseOrderProduct;
 import ecommerce.app.backend.service.constants.PurchaseOrderConstants;
@@ -25,6 +27,9 @@ import java.util.List;
 @Slf4j
 @Service
 public class PurchaseOrderService {
+
+    @Autowired
+    private AverageCostViewRepository averageCostViewRepository;
 
     @Autowired
     private PurchaseOrderRepository purchaseOrderRepository;
@@ -236,5 +241,9 @@ public class PurchaseOrderService {
             }
         }
         return purchaseOrder;
+    }
+
+    public AverageCostView getAverageCostView(String sku){
+        return averageCostViewRepository.findById(sku).orElse(null);
     }
 }

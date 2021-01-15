@@ -55,10 +55,22 @@ public class SyncProductsService {
     @Autowired
     private SquareAPIService squareAPIService;
 
-    @Value("${sync.products.enabled}")
-    private Boolean syncProductsEnabled;
+    @Value("${sync.bigcommerce.enabled}")
+    private Boolean syncBigCommerceEnabled;
+
+    @Value("${sync.bigcommercefs.enabled}")
+    private Boolean syncBigCommerceFsEnabled;
+
+    @Value("${sync.vendhq.enabled}")
+    private Boolean syncVendHQEnabled;
+
+    @Value("${sync.amazonca.enabled}")
+    private Boolean syncAmazonCAEnabled;
 
     private void syncBigCommerce() {
+
+        if(!syncBigCommerceEnabled)
+            return;
 
         int page = 1;
         int productCounter = 0;
@@ -127,11 +139,15 @@ public class SyncProductsService {
         }
         baseProduct.setBigCommercePrice(Float.parseFloat(bigCommerceProduct.getRetailPrice()));
         baseProduct.setBigCommerceInventory(bigCommerceProduct.getInventoryLevel());
+        baseProduct.setSupplierCode(bigCommerceProduct.getSupplierCode());
         detailedProduct.setInventoryLevel(bigCommerceProduct.getInventoryLevel());
         detailedProduct.setBigCommerceProduct(bigCommerceProduct);
     }
 
     private void syncBigCommerceFS() {
+
+        if(!syncBigCommerceFsEnabled)
+            return;
 
         int page = 1;
         int productCounter = 0;
@@ -201,11 +217,15 @@ public class SyncProductsService {
         }
         baseProduct.setBigCommerceFSPrice(Float.parseFloat(bigCommerceProduct.getRetailPrice()));
         baseProduct.setBigCommerceFSInventory(bigCommerceProduct.getInventoryLevel());
+        baseProduct.setSupplierCode(bigCommerceProduct.getSupplierCode());
         detailedProduct.setInventoryLevel(bigCommerceProduct.getInventoryLevel());
         detailedProduct.setBigCommerceFSProduct(bigCommerceProduct);
     }
 
     private void syncVendHQ(){
+
+        if(!syncVendHQEnabled)
+            return;
 
         Map<String, VendHQInventory> inventoryMap = getVendHQInventory();
 
@@ -310,6 +330,10 @@ public class SyncProductsService {
     }
 
     private void syncAmazonCA(){
+
+        if(!syncAmazonCAEnabled)
+            return;
+
         int productCounter = 0;
         try {
             log.info("Started to get products from AmazonCA");
@@ -469,33 +493,32 @@ public class SyncProductsService {
 
     public void syncAllMarketPlaces(){
         storeBean.setOrderListenerAllowed(false);
-        if(syncProductsEnabled == true) {
-            this.setSyncStatusIntoPending();
-            this.resetStore();
 
-            syncVendHQ();
-            syncBigCommerce();
-            syncBigCommerceFS();
-            syncAmazonCA();
+        this.setSyncStatusIntoPending();
+        this.resetStore();
 
-            //syncAmazonUS(); // not implemented yet
-            // syncSquareup(); // remove comment out to enable square
+        syncVendHQ();
+        syncBigCommerce();
+        syncBigCommerceFS();
+        syncAmazonCA();
 
-            /*
-            // this was a one-time sync operation, if required again, open it and run again.
-            if(1 == 1){
-                scriptService.syncSquareInventory();
-            }
+        //syncAmazonUS(); // not implemented yet
+        // syncSquareup(); // remove comment out to enable square
 
-             */
-
-            // this was a one-time sync operation, if required again, open it and run again.
-          /*  if(1 == 1){
-                scriptService.syncVendInventory();
-            }
-
-           */
+        /*
+        // this was a one-time sync operation, if required again, open it and run again.
+        if(1 == 1){
+            scriptService.syncSquareInventory();
         }
+
+         */
+
+        // this was a one-time sync operation, if required again, open it and run again.
+      /*  if(1 == 1){
+            scriptService.syncVendInventory();
+        }
+
+       */
         storeBean.setOrderListenerAllowed(true);
     }
 }

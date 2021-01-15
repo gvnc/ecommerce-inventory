@@ -346,7 +346,7 @@ class OrderDetailsDialog extends Component {
                                 <Button label="Close" icon="pi pi-times" onClick={this.hideDialog} />
                             </div>;
 
-        let columnCss = {whiteSpace: 'nowrap', textAlign:'center'};
+        let columnCss = {whiteSpace: 'normal', textAlign:'center'};
 
         let productsDialogHeader =
                     <div className="p-grid p-fluid">
@@ -377,7 +377,7 @@ class OrderDetailsDialog extends Component {
                     footer={dialogFooter} onHide={this.hideDialog} showHeader={false} >
                 {
                     this.props.order &&
-                        <div className="container" style={{width:'1200px'}}>
+                        <div className="container" style={{width:'1400px'}}>
                             <div className="p-grid p-fluid container">
                                 <div className="p-col-12">
                                     <Fieldset legend="Order Details">
@@ -405,7 +405,8 @@ class OrderDetailsDialog extends Component {
                                 </div>
                                 <div className="p-col-12">
                                     <DataTable value={this.props.orderProducts} paginator={false} header={productsDialogHeader} editable={true}>
-                                        <Column bodyStyle={columnCss} field="sku" header="SKU" style={{width:'170px'}}/>
+                                        <Column bodyStyle={columnCss} field="sku" header="SKU" style={{width:'140px'}}/>
+                                        <Column bodyStyle={columnCss} field="supplierCode" header="Supplier Code" style={{width:'140px'}}/>
                                         <Column bodyStyle={columnCss} field="name" header="Name"/>
                                         <Column bodyStyle={columnCss} header="Duty Rate %" style={{width:'100px'}} body={(rowData) => this.draftInputTextEditor(rowData, 'dutyRate')} />
                                         <Column bodyStyle={columnCss} header="Cost Price" style={{width:'100px'}} body={(rowData) => this.draftInputTextEditor(rowData, 'costPrice')} />
@@ -451,7 +452,7 @@ class OrderDetailsDialog extends Component {
                                                                    value={this.props.order.discount} style={{width:'100px'}} {...draftOpts} keyfilter = {/^\d*\.?\d*$/}  /></div>
                                                     <div className="p-col-6">Duties</div>
                                                     <div className="p-col-6">
-                                                        <InputText id="duties" readonly={true} onChange={(e) => {this.props.updateSelectedPurchaseOrder(this.props.order.id, "duties", e.target.value)}}
+                                                        <InputText id="duties" readOnly onChange={(e) => {this.props.updateSelectedPurchaseOrder(this.props.order.id, "duties", e.target.value)}}
                                                                    value={dutyRate} style={{width:'100px'}} {...draftOpts} keyfilter = {/^\d*\.?\d*$/} /></div>
                                                     <div className="p-col-6">Shipping</div>
                                                     <div className="p-col-6">

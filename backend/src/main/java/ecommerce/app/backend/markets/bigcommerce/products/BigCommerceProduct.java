@@ -47,6 +47,10 @@ public class BigCommerceProduct implements Cloneable{
     @JsonProperty("inventory_tracking")
     private String inventoryTracking;
 
+    @Getter @Setter
+    @JsonProperty("mpn")
+    private String supplierCode;
+
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }

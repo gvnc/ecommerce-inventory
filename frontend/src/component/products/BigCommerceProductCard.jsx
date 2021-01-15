@@ -52,6 +52,11 @@ class BigCommerceProductCard extends Component {
                         <InputText id="price" onChange={(e) => {this.props.updateProperty('bigCommercePrice', e.target.value)}}
                                    value={bigCommerce.price} style={{width:'75px'}} keyfilter = {/^\d*\.?\d*$/} />
                     </div>
+
+                    <div className="p-col-6 productProperty" style={{padding:'.75em'}}><label>Supplier Code</label></div>
+                    <div className="p-col-6" style={{padding:'.75em'}}>
+                        {bigCommerce.mpn}
+                    </div>
                 </div>;
         }
 

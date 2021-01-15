@@ -26,7 +26,7 @@ class ProductDetailDialog extends Component {
     }
 
     componentDidMount() {
-        //console.log("component did mount");
+        console.log("component did mount");
     }
 
     save() {
@@ -248,7 +248,7 @@ class ProductDetailDialog extends Component {
             //return <div/>;
         }
 
-        let dialogFooter =  <InventoryUpdate save={this.save} updateInventoryEvent={this.updateInventoryEvent}
+        let dialogFooter =  <InventoryUpdate save={this.save} updateInventoryEvent={this.updateInventoryEvent} averageCost={this.props.detailedProduct.averageCost}
                                              updateProperty={this.updateProperty} inventoryLevel={this.props.detailedProduct.inventoryLevel}
                                              updateInventoryInProgress={this.state.updateInventoryInProgress}
                                              savePriceInProgress={this.state.savePriceInProgress}/>;

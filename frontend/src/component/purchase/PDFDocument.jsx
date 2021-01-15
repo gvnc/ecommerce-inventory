@@ -55,7 +55,6 @@ export default class PDFDocument extends Component {
             totalExpenses = totalExpenses - Number(this.props.order.discount);
             totalExpenses = totalExpenses + totalDuties;
             totalExpenses = totalExpenses + Number(this.props.order.shipping);
-            console.log("euh " + this.props.order.duties);
         }
 
         let totalProductCost = 0;
@@ -123,7 +122,8 @@ export default class PDFDocument extends Component {
                             <TableCell style={styles.tableCellData} weighting={0.15}>Amount</TableCell>
                         </TableHeader>
                         <TableBody>
-                            <DataTableCell style={styles.tableCellData} weighting={0.55} getContent={(p) => <View><Text>{p.name}</Text><Text>(SKU:{p.sku})</Text></View>}/>
+                            <DataTableCell style={styles.tableCellData} weighting={0.55}
+                                           getContent={(p) => (<View><Text>{p.name}</Text><Text>(SKU:{p.sku})</Text>{ p.supplierCode && p.supplierCode !== "" ? <Text>(Supplier Code:{p.supplierCode})</Text> : <Text></Text>}</View>)}/>
                             <DataTableCell style={{...styles.tableCellData, alignItems: 'center'}} weighting={0.15} getContent={(p) => p.orderedQuantity}/>
                             <DataTableCell style={{...styles.tableCellData, alignItems: 'flex-end'}} weighting={0.15} getContent={(p) => this.handleCostPrice(p.costPrice)}/>
                             <DataTableCell style={{...styles.tableCellData, alignItems: 'flex-end'}} weighting={0.15} getContent={(p) => this.handleAmount(p.orderedQuantity, p.costPrice)}/>

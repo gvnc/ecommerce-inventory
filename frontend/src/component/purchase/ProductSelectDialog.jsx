@@ -58,9 +58,14 @@ class ProductSelectDialog extends Component {
         else if(inventoryProduct.vendHQProduct !== null)
             costPrice = inventoryProduct.vendHQProduct.supply_price;
 
+        let supplierCode = "";
+        if(inventoryProduct.bigCommerceProduct != null)
+            supplierCode = inventoryProduct.bigCommerceProduct.mpn;
+
         return {
             sku: inventoryProduct.sku,
             name: inventoryProduct.name,
+            supplierCode: supplierCode,
             costPrice: costPrice,
             orderedQuantity: 0,
             receivedQuantity: 0,
@@ -128,6 +133,7 @@ class ProductSelectDialog extends Component {
                     <Column selectionMode="multiple" style={{width:'3em'}}/>
                     <Column field="sku" header="Product SKU" filter={true} filterPlaceholder="search sku" filterMatchMode="contains" style={{width:'170px'}} />
                     <Column field="name" header="Product Name" filter={true} filterPlaceholder="search product" filterMatchMode="contains" />
+                    <Column field="supplierCode" header="Supplier Code" filter={true} filterPlaceholder="search supplier" filterMatchMode="contains" />
                     <Column body={this.addButtonBody} headerStyle={{width: '4em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}} />
                 </DataTable>
             </Dialog>

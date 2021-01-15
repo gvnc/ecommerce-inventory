@@ -19,6 +19,9 @@ public class DetailedProduct {
     private Integer inventoryLevel = 0;
 
     @Getter @Setter
+    private Float averageCost;
+
+    @Getter @Setter
     private BigCommerceProduct bigCommerceFSProduct;
 
     @Getter @Setter

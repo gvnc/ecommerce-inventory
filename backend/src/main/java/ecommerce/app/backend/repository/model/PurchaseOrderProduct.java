@@ -19,6 +19,9 @@ public class PurchaseOrderProduct {
     private String sku;
 
     @Getter @Setter
+    private String supplierCode;
+
+    @Getter @Setter
     private Float costPrice;
 
     @Getter @Setter

@@ -7,8 +7,10 @@ import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceFSAPIService;
 import ecommerce.app.backend.markets.squareup.SquareAPIService;
 import ecommerce.app.backend.model.*;
+import ecommerce.app.backend.repository.model.AverageCostView;
 import ecommerce.app.backend.repository.model.BaseOrder;
 import ecommerce.app.backend.service.OrderService;
+import ecommerce.app.backend.service.PurchaseOrderService;
 import ecommerce.app.backend.service.SyncProductsService;
 import ecommerce.app.backend.util.Utils;
 import ecommerce.app.backend.markets.vendhq.VendHQAPIService;
@@ -47,6 +49,9 @@ public class BackendController {
     @Autowired
     private OrderService orderService;
 
+    @Autowired
+    private PurchaseOrderService purchaseOrderService;
+
     @GetMapping("/isAppRunning")
     public Boolean isAppRunning() {
         return true;
@@ -75,8 +80,12 @@ public class BackendController {
 
     @GetMapping("/products/{productSku}")
     public DetailedProduct getDetailedProduct(@PathVariable String productSku) {
-        // became same method with below after deleting instant inventory queries
-        return storeBean.getDetailedProductsMap().get(productSku);
+        DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(productSku);
+        detailedProduct.setAverageCost(0F);
+        AverageCostView averageCostView = purchaseOrderService.getAverageCostView(productSku);
+        if(averageCostView != null)
+            detailedProduct.setAverageCost(averageCostView.getAverageCost());
+        return detailedProduct;
     }
 
     @GetMapping("/products/minimum/{productSku}")
@@ -223,5 +232,10 @@ public class BackendController {
          */
 
         return inventoryUpdateResult;
+    }
+
+    @GetMapping("/products/{productSku}/averageCost")
+    public AverageCostView getAverageCostView(@PathVariable String productSku){
+        return purchaseOrderService.getAverageCostView(productSku);
     }
 }

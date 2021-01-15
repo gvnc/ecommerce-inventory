@@ -51,7 +51,7 @@ public abstract class BigCommerceBaseService {
 
     public BigCommerceProduct[] getProductList(int page){
         try {
-            String includeFields = "id,name,sku,is_visible,price,cost_price,retail_price,sale_price,inventory_level,inventory_tracking";
+            String includeFields = "id,name,sku,is_visible,price,cost_price,retail_price,sale_price,inventory_level,inventory_tracking,mpn";
             String url = baseAPIv3 + "/catalog/products?limit=50&page=" + page + "&include_fields=" + includeFields;
 
             HttpEntity<String> requestEntity = new HttpEntity<>("", getHeaders());

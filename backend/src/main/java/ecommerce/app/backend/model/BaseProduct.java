@@ -41,6 +41,9 @@ public class BaseProduct {
     @Getter @Setter
     private Integer squareInventory;
 
+    @Getter @Setter
+    private String supplierCode;
+
     public BaseProduct(String sku, String name) {
         this.sku = sku;
         this.name = name;
