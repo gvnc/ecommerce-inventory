@@ -230,7 +230,7 @@ public abstract class BigCommerceBaseService {
         return true;
     }
 
-    public boolean updateInventory(BigCommerceProduct product, Integer newQuantity){
+    private boolean updateInventory(BigCommerceProduct product, Integer newQuantity){
         try {
             log.info("Inventory change request for bigcommerce. [productId:"+product.getId()+",sku:"+product.getSku()+",newQuantity:"+newQuantity+"]");
 

@@ -12,6 +12,8 @@ import {
 import {API_URL} from '../../apiConfig';
 import axios from 'axios'
 
+import {updateProductList} from "./productActions";
+
 export const getInventoryCounts = () => {
 
     return (dispatch) => {
@@ -238,14 +240,16 @@ export const reviewInventoryCount = (inventoryCountId, successHandler) => {
 export const updateInventoryCount = (inventoryCountId, successHandler) => {
 
     return (dispatch) => {
-        let requestUrl = API_URL + "/inventoryCount/review/" + inventoryCountId;
+        let requestUrl = API_URL + "/inventoryCount/update/start/" + inventoryCountId;
+        dispatch(setInventoryCountStatus(inventoryCountId, "INVENTORY_UPDATE_INPROGRESS"));
         axios.post(requestUrl, null)
             .catch(err => {
                 console.log("error:" + err);
             })
             .then(response => {
                 if(response) {
-                    dispatch(setInventoryCountStatus(inventoryCountId, "REVIEW"));
+                    dispatch(setInventoryCountStatus(inventoryCountId, "INVENTORY_UPDATE_COMPLETED"));
+                    dispatch(updateProductList([]));
                     successHandler();
                 }
             })

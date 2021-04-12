@@ -93,8 +93,8 @@ class EditInventoryCountDialog extends Component {
 
     render() {
         let dialogFooter =  <div className="ui-dialog-buttonpane p-clearfix">
-            <Button label="Save" icon="pi pi-check" onClick={this.save}/>
-            <Button label="Start" icon="pi pi-check" onClick={this.start}/>
+            <Button label="Save" icon="pi pi-save" onClick={this.save}/>
+            <Button label="Start" icon="pi pi-play" onClick={this.start}/>
         </div>;
 
         //console.log("of " + JSON.stringify(this.props.inventoryCount));

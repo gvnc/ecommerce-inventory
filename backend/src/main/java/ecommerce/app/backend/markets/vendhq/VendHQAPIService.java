@@ -265,7 +265,7 @@ public class VendHQAPIService {
         return true;
     }
 
-    public boolean updateInventory(VendHQProduct product, Integer newQuantity){
+    private boolean updateInventory(VendHQProduct product, Integer newQuantity){
 
         try {
             log.info("Inventory change request for vendhq. [productId:"+product.getId()+",sku:"+product.getSku()+",newQuantity:"+newQuantity+"]");

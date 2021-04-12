@@ -68,7 +68,7 @@ class InventoryCounts extends Component {
     render() {
         let header = <div className="p-grid p-fluid">
             <div className="p-col-2">
-                <Button label="Create" icon="pi pi-check" onClick={this.createNew}/>
+                <Button label="Create" icon="pi pi-sign-in" onClick={this.createNew}/>
             </div>
             <div className="p-col-10">
                 <span>Inventory Counts</span>

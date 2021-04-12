@@ -63,4 +63,12 @@ public class InventoryCountController {
         else
             return OperationConstants.FAIL;
     }
+
+    @PostMapping("/update/start/{id}")
+    public String startUpdateInventories(@PathVariable Integer id) {
+        if(inventoryCountService.startUpdateInventories(id) == true)
+            return OperationConstants.SUCCESS;
+        else
+            return OperationConstants.FAIL;
+    }
 }

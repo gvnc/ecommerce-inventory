@@ -1,6 +1,10 @@
 package ecommerce.app.backend.service;
 
 import ecommerce.app.backend.StoreBean;
+import ecommerce.app.backend.markets.amazon.AmazonCaService;
+import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
+import ecommerce.app.backend.markets.bigcommerce.BigCommerceFSAPIService;
+import ecommerce.app.backend.markets.vendhq.VendHQAPIService;
 import ecommerce.app.backend.service.constants.InventoryCountConstants;
 import ecommerce.app.backend.model.DetailedProduct;
 import ecommerce.app.backend.model.InventoryCountRequest;
@@ -26,6 +30,18 @@ public class InventoryCountService {
 
     @Autowired
     private InventoryCountProductRepository inventoryCountProductRepository;
+
+    @Autowired
+    private BigCommerceAPIService bigCommerceAPIService;
+
+    @Autowired
+    private BigCommerceFSAPIService bigCommerceFSAPIService;
+
+    @Autowired
+    private VendHQAPIService vendHQAPIService;
+
+    @Autowired
+    private AmazonCaService amazonCaService;
 
     @Autowired
     private StoreBean storeBean;
@@ -173,6 +189,33 @@ public class InventoryCountService {
             InventoryCount inventoryCount = inventoryCountRepository.findById(id).orElse(null);
             if(inventoryCount != null){
                 inventoryCount.setStatus(InventoryCountConstants.REVIEW);
+                inventoryCountRepository.save(inventoryCount);
+                return true;
+            }
+        } catch (Exception e){
+            log.error("Failed to save inventory count.", e);
+        }
+        return false;
+    }
+
+    public boolean startUpdateInventories(Integer id) {
+        try{
+            // change inventory count status
+            InventoryCount inventoryCount = inventoryCountRepository.findById(id).orElse(null);
+            if(inventoryCount != null){
+                inventoryCount.setStatus(InventoryCountConstants.INVENTORY_UPDATE_INPROGRESS);
+                inventoryCountRepository.save(inventoryCount);
+
+                List<InventoryCountProduct> inventoryCountProductList = inventoryCountProductRepository.findAllByInventoryCountIdAndCountedAndMatched(id, true, false);
+                for(InventoryCountProduct inventoryCountProduct:inventoryCountProductList){
+                    DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(inventoryCountProduct.getSku());
+                    detailedProduct.setInventoryLevel(inventoryCountProduct.getCount());
+                    vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
+                    bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
+                    bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
+                    amazonCaService.updateInventory(inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
+                }
+                inventoryCount.setStatus(InventoryCountConstants.INVENTORY_UPDATE_COMPLETED);
                 inventoryCountRepository.save(inventoryCount);
                 return true;
             }

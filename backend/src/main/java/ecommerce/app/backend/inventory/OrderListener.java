@@ -28,8 +28,6 @@ import ecommerce.app.backend.repository.model.BaseOrder;
 import ecommerce.app.backend.service.OrderService;
 import ecommerce.app.backend.service.constants.OrderTypeConstants;
 import ecommerce.app.backend.util.Utils;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

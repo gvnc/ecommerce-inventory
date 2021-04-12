@@ -10,6 +10,8 @@ import {Growl} from "primereact/growl";
 import {TabView,TabPanel} from 'primereact/tabview';
 import {Toolbar} from "primereact/toolbar";
 import ConfirmationDialog from "../ConfirmationDialog";
+import {Dialog} from "primereact/dialog";
+import {ProgressBar} from "primereact/progressbar";
 
 class InventoryCountReview extends Component {
 
@@ -19,7 +21,8 @@ class InventoryCountReview extends Component {
             selectedProduct : null,
             activeIndex: 0,
             displayUpdateConfirmation: false,
-            displayAbandonConfirmation: false
+            displayAbandonConfirmation: false,
+            displayUpdateLoading: false
         };
         this.updateSuccessHandler = this.updateSuccessHandler.bind(this);
         this.abandonSuccessHandler = this.abandonSuccessHandler.bind(this);
@@ -39,7 +42,8 @@ class InventoryCountReview extends Component {
     }
 
     updateSuccessHandler(){
-
+        this.setState({displayUpdateLoading: false});
+        this.growl.show({severity: 'success', summary: 'Success', detail: 'Inventories updated.'});
     }
 
     render() {
@@ -47,17 +51,41 @@ class InventoryCountReview extends Component {
         let matchedProducts = this.props.inventoryCountProducts.filter(p => p.counted === true && p.matched === true);
         let unmatchedProducts = this.props.inventoryCountProducts.filter(p => p.counted === true && p.matched === false);
 
+        let inventoryCountStatus = "";
+        if(this.props.inventoryCount) {
+            inventoryCountStatus = this.props.inventoryCount.status;
+            if (this.props.inventoryCount.status === "INVENTORY_UPDATE_INPROGRESS") {
+                inventoryCountStatus = "Inventory Update In Progress";
+            } else if (this.props.inventoryCount.status === "INVENTORY_UPDATE_COMPLETED") {
+                inventoryCountStatus = "Inventory update is completed.";
+            }
+        }
+
         return (
                 this.props.inventoryCount &&
                 <div>
                     <Growl ref={(el) => this.growl = el} />
                     <Fieldset legend="Inventory Count" style={{fontSize:18}}>
-                        Name : {this.props.inventoryCount.name} | Created At : {this.props.inventoryCount.createDate} | Status : {this.props.inventoryCount.status}
+                        Name : {this.props.inventoryCount.name} | Created At : {this.props.inventoryCount.createDate} | Status : {inventoryCountStatus}
                     </Fieldset>
                     {
                         this.props.inventoryCount.status !=="REVIEW" &&
+                        this.props.inventoryCount.status !=="INVENTORY_UPDATE_INPROGRESS" &&
+                        this.props.inventoryCount.status !=="INVENTORY_UPDATE_COMPLETED" &&
                         <Card style={{height:'85px', width:'100%', marginTop:'2px', textAlign:'center', fontSize:18}}>
                             This count is in {this.props.inventoryCount.status} state. You are not allowed to review.
+                        </Card>
+                    }
+                    {
+                        this.props.inventoryCount.status === "INVENTORY_UPDATE_INPROGRESS" &&
+                        <Card style={{height:'85px', width:'100%', marginTop:'2px', textAlign:'center', fontSize:18}}>
+                        Inventory update is still in progress, please wait it to be completed.
+                        </Card>
+                    }
+                    {
+                        this.props.inventoryCount.status === "INVENTORY_UPDATE_COMPLETED" &&
+                        <Card style={{height:'85px', width:'100%', marginTop:'2px', textAlign:'center', fontSize:18}}>
+                            This inventory count is completed.
                         </Card>
                     }
                     {
@@ -130,6 +158,11 @@ class InventoryCountReview extends Component {
                         </Toolbar>
                     }
 
+                    <Dialog visible={this.state.displayUpdateLoading} header="Please wait" onHide={()=> console.log("hide")} closable={false}>
+                        <ProgressBar mode="indeterminate" />
+                        <p>This operation may take some time to complete.</p>
+                    </Dialog>
+
                     <ConfirmationDialog  visibleProperty={this.state.displayAbandonConfirmation}
                                          noHandler={() => this.setState({displayAbandonConfirmation: false})}
                                          yesHandler={() => {
@@ -141,8 +174,8 @@ class InventoryCountReview extends Component {
                     <ConfirmationDialog visibleProperty={this.state.displayUpdateConfirmation}
                                          noHandler={() => this.setState({displayUpdateConfirmation: false})}
                                          yesHandler={() => {
-                                             this.setState({displayUpdateConfirmation: false});
-                                             //this.props.abandonInventoryCount(this.props.inventoryCount.id, this.abandonSuccessHandler)
+                                             this.setState({displayUpdateConfirmation: false, displayUpdateLoading: true});
+                                             this.props.updateInventoryCount(this.props.inventoryCount.id, this.updateSuccessHandler)
                                          }}
                                          message="Do you confirm to update inventory in market places ?" />
                 </div>
