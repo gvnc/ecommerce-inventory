@@ -8,10 +8,12 @@ import ecommerce.app.backend.markets.squareup.SquareAPIService;
 import ecommerce.app.backend.model.DetailedProduct;
 import ecommerce.app.backend.model.PurchaseOrderRequest;
 import ecommerce.app.backend.repository.AverageCostViewRepository;
+import ecommerce.app.backend.repository.PurchaseOrderAttachmentRepository;
 import ecommerce.app.backend.repository.PurchaseOrderProductRepository;
 import ecommerce.app.backend.repository.PurchaseOrderRepository;
 import ecommerce.app.backend.repository.model.AverageCostView;
 import ecommerce.app.backend.repository.model.PurchaseOrder;
+import ecommerce.app.backend.repository.model.PurchaseOrderAttachment;
 import ecommerce.app.backend.repository.model.PurchaseOrderProduct;
 import ecommerce.app.backend.service.constants.PurchaseOrderConstants;
 import ecommerce.app.backend.markets.vendhq.VendHQAPIService;
@@ -19,6 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,6 +40,9 @@ public class PurchaseOrderService {
 
     @Autowired
     private PurchaseOrderProductRepository purchaseOrderProductRepository;
+
+    @Autowired
+    private PurchaseOrderAttachmentRepository purchaseOrderAttachmentRepository;
 
     @Autowired
     private BigCommerceAPIService bigCommerceAPIService;
@@ -137,6 +144,14 @@ public class PurchaseOrderService {
             List<PurchaseOrderProduct> productList = purchaseOrderProductRepository.findAllByPurchaseOrder_Id(orderId);
             po.setProductList(productList);
 
+            PurchaseOrderAttachment purchaseOrderAttachment = purchaseOrderAttachmentRepository.findByPurchaseOrder_Id(orderId);
+            // do not download the file yet
+            // if possible exclude column from findby
+            if(purchaseOrderAttachment != null) {
+                purchaseOrderAttachment.setData(null);
+            }
+            po.setFileAttachment(purchaseOrderAttachment);
+
             return po;
         } catch (Exception e){
             log.error("Failed to get purchase order by id " + orderId, e);
@@ -191,6 +206,7 @@ public class PurchaseOrderService {
     @Transactional
     public boolean deletePurchaseOrder(Integer orderId) {
         try{
+            purchaseOrderAttachmentRepository.deleteByPurchaseOrder_Id(orderId);
             purchaseOrderProductRepository.deleteByPurchaseOrder_Id(orderId);
             purchaseOrderRepository.deleteById(orderId);
             return true;
@@ -245,5 +261,39 @@ public class PurchaseOrderService {
 
     public AverageCostView getAverageCostView(String sku){
         return averageCostViewRepository.findById(sku).orElse(null);
+    }
+
+    @Transactional
+    public boolean uploadAttachment(Integer orderId, MultipartFile file){
+        try {
+            PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(orderId).orElse(null);
+            if (purchaseOrder != null) {
+                // delete old file if exists
+                purchaseOrderAttachmentRepository.deleteByPurchaseOrder_Id(purchaseOrder.getId());
+
+                // save new file
+                String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+                PurchaseOrderAttachment purchaseOrderAttachment = new PurchaseOrderAttachment();
+                purchaseOrderAttachment.setPurchaseOrder(purchaseOrder);
+                purchaseOrderAttachment.setFilename(fileName);
+                purchaseOrderAttachment.setData(file.getBytes());
+                purchaseOrderAttachmentRepository.save(purchaseOrderAttachment);
+                return true;
+            } else {
+                log.error("Can not find order to upload attachment.");
+            }
+        }catch (Exception e){
+            log.error("Failed to save file.", e);
+        }
+        return false;
+    }
+
+    public PurchaseOrderAttachment downloadAttachment(Integer orderId){
+        try {
+            return purchaseOrderAttachmentRepository.findByPurchaseOrder_Id(orderId);
+        }catch (Exception e){
+            log.error("Failed to get file.", e);
+        }
+        return null;
     }
 }

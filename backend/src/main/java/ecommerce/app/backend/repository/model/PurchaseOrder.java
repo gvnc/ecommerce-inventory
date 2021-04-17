@@ -23,6 +23,9 @@ public class PurchaseOrder {
     private String createdBy;
 
     @Getter @Setter
+    private String trackingNumbers;
+
+    @Getter @Setter
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm")
     private Date createDate;
 

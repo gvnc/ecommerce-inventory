@@ -5,7 +5,7 @@ import {Button} from "primereact/button";
 import {updateSelectedPurchaseOrder, updateSelectedPOProduct, savePurchaseOrder,
     setPurchaseOrder, deleteSelectedProduct, deletePurchaseOrderProduct,
     submitPurchaseOrder, receivePurchaseProducts, cancelPurchaseOrder,
-    deletePurchaseOrder } from "../../store/actions/purchaseActions";
+    deletePurchaseOrder, uploadAttachment, downloadAttachment} from "../../store/actions/purchaseActions";
 import {Fieldset} from "primereact/fieldset";
 import {Card} from "primereact/card";
 import {Column} from "primereact/column";
@@ -16,6 +16,7 @@ import {Checkbox} from 'primereact/checkbox';
 import ConfirmationDialog from "../ConfirmationDialog";
 import {PDFDownloadLink, PDFViewer} from "@react-pdf/renderer";
 import PDFDocument from "./PDFDocument";
+import {Chips} from 'primereact/chips';
 
 class OrderDetailsDialog extends Component {
 
@@ -44,8 +45,15 @@ class OrderDetailsDialog extends Component {
         this.receiveErrorHandler = this.receiveErrorHandler.bind(this);
         this.receiveSuccessHandler = this.receiveSuccessHandler.bind(this);
         this.calculateDuties = this.calculateDuties.bind(this);
+        this.onFileChange = this.onFileChange.bind(this);
+        this.cancelSelectedFile = this.cancelSelectedFile.bind(this);
+        this.uploadFileAttachment = this.uploadFileAttachment.bind(this);
+        this.uploadFileSuccessHandler = this.uploadFileSuccessHandler.bind(this);
+        this.downloadFileAttachment = this.downloadFileAttachment.bind(this);
 
         this.state = {
+            selectedFile: null,
+            resetFileKey: '',
             displayProductSelect: false,
             checked: false,
             receiveList: [],
@@ -57,6 +65,8 @@ class OrderDetailsDialog extends Component {
 
     resetInputs(){
         this.setState({
+            selectedFile: null,
+            resetFileKey: '',
             displayProductSelect: false,
             checked: false,
             receiveList: [],
@@ -272,6 +282,28 @@ class OrderDetailsDialog extends Component {
         this.props.deletePurchaseOrder(this.props.order.id, this.deletedSuccessHandler, this.errorHandler);
     }
 
+    onFileChange(event){
+        this.setState({ selectedFile: event.target.files[0] });
+    };
+
+    cancelSelectedFile(){
+        let randomString = Math.random().toString(36);
+        this.setState({ selectedFile: null, resetFileKey: randomString});
+    };
+
+    uploadFileAttachment(){
+        this.props.uploadAttachment(this.props.order.id, this.state.selectedFile, this.uploadFileSuccessHandler, this.errorHandler);
+    };
+
+    uploadFileSuccessHandler(message){
+        this.cancelSelectedFile();
+        this.successHandler(message);
+    }
+
+    downloadFileAttachment(){
+        this.props.downloadAttachment(this.props.order.id);
+    };
+
     render() {
         let totalExpenses = 0;
         let dutyRate = 0;
@@ -329,7 +361,7 @@ class OrderDetailsDialog extends Component {
         let dialogFooter =  <div className="ui-dialog-buttonpane p-clearfix">
                         {
                             orderStatus === 'DRAFT' &&
-                            <Button label="Submit" icon="pi pi-check" {...submitButtonOpts} onClick={this.submitPurchaseOrder}/>
+                            <Button label="Submit" icon="pi pi-step-forward" {...submitButtonOpts} onClick={this.submitPurchaseOrder}/>
                         }
                         {
                             orderStatus === 'DRAFT' &&
@@ -353,7 +385,7 @@ class OrderDetailsDialog extends Component {
                         {
                             orderStatus === 'DRAFT' &&
                             <div className="p-col-2">
-                                <Button label="Add Product" onClick={() => this.setState({displayProductSelect: true})}/>
+                                <Button label="Add Product" icon="pi pi-plus"  onClick={() => this.setState({displayProductSelect: true})}/>
                             </div>
                         }
                         {
@@ -380,21 +412,48 @@ class OrderDetailsDialog extends Component {
                         <div className="container" style={{width:'1400px'}}>
                             <div className="p-grid p-fluid container">
                                 <div className="p-col-12">
-                                    <Fieldset legend="Order Details">
+                                    <Fieldset legend={"Order Details #" + this.props.order.id}>
                                         <div className="p-grid p-fluid">
-                                            <div className="p-col-2 labelText">Order No</div>
-                                            <div className="p-col-2">#{this.props.order.id}</div>
-                                            <div className="p-col-2 labelText">Created By</div>
-                                            <div className="p-col-2">{this.props.order.createdBy}</div>
-                                            <div className="p-col-2 labelText">Create Date</div>
-                                            <div className="p-col-2">{this.props.order.createDate}</div>
-                                            <div className="p-col-2 labelText">Order Status</div>
-                                            <div className="p-col-2">{this.props.order.status}</div>
-                                            <div className="p-col-2 labelText">Supplier</div>
-                                            <div className="p-col-4">
-                                                <InputText id="supplier" onChange={(e) => {this.props.updateSelectedPurchaseOrder(this.props.order.id, "supplier", e.target.value)}}
-                                                           value={this.props.order.supplier} style={{width:'200px'}} {...draftOpts} />
+                                            <div className="p-col-8">
+                                                <span className="labelText">Order Status</span> : {this.props.order.status}
+                                                <span className="labelText" style={{marginLeft:'10px'}}>| Created By</span> : {this.props.order.createdBy}
+                                                <span className="labelText" style={{marginLeft:'10px'}}>| Create Date</span> : {this.props.order.createDate}
                                             </div>
+                                            <div className="p-col-1 labelText" style={{alignSelf:'center'}}>Supplier</div>
+                                            <div className="p-col-3">
+                                                <InputText id="supplier" onChange={(e) => {this.props.updateSelectedPurchaseOrder(this.props.order.id, "supplier", e.target.value)}}
+                                                           value={this.props.order.supplier} {...draftOpts} />
+                                            </div>
+                                            <div className="p-col-2 labelText" style={{alignSelf:'center'}}>Tracking Number</div>
+                                            <div className="p-col-10">
+                                                <Chips value={this.props.order.trackingNumberArray==null ? [] : this.props.order.trackingNumberArray} {...draftOpts}
+                                                       onChange={(e) => {this.props.updateSelectedPurchaseOrder(this.props.order.id, "trackingNumberArray", e.target.value)}}></Chips>
+                                            </div>
+                                            <div className="p-col-2 labelText">Attachment</div>
+                                            <div className="p-col-4">
+                                                <input type="file" onChange={this.onFileChange} key={this.state.resetFileKey} accept="image/*,.pdf"/>
+                                            </div>
+                                            {
+                                                this.state.selectedFile &&
+                                                <div className="p-col-4">
+                                                    <Button label="Upload" icon="pi pi-upload" style={{width: '85px', marginRight:'10px'}} onClick={this.uploadFileAttachment}/>
+                                                    <Button label="Cancel" icon="pi pi-times-circle" style={{width: '85px'}} onClick={this.cancelSelectedFile}/>
+                                                </div>
+                                            }
+                                            {
+                                                !this.state.selectedFile && !this.props.orderFileAttachment &&
+                                                <div className="p-col-4">
+
+                                                </div>
+                                            }
+                                            {
+                                                !this.state.selectedFile && this.props.orderFileAttachment &&
+                                                <div className="p-col-4">
+                                                    <a href="#" style={{fontWeight: 600}} onClick={this.downloadFileAttachment}>
+                                                        Download {this.props.orderFileAttachment.filename}
+                                                    </a>
+                                                </div>
+                                            }
                                             <div className="p-col-2 labelText">
                                                 <PDFDownloadLink document={<PDFDocument order={this.props.order} orderProducts={this.props.orderProducts} />} fileName="PurchaseOrder.pdf">
                                                     {({ blob, url, loading, error }) => (loading ? 'Loading document...' : 'Download PDF')}
@@ -496,7 +555,8 @@ class OrderDetailsDialog extends Component {
 const mapStateToProps = state => {
     return {
         order: state.purchase.selectedOrder,
-        orderProducts: state.purchase.selectedOrderProducts
+        orderProducts: state.purchase.selectedOrderProducts,
+        orderFileAttachment: state.purchase.selectedOrderFileAttachment
     };
 };
 
@@ -511,7 +571,9 @@ const mapDispatchToProps = dispatch => {
         submitPurchaseOrder: (purchaseOrder, productList, successHandler, errorHandler) => dispatch(submitPurchaseOrder(purchaseOrder, productList, successHandler, errorHandler)),
         receivePurchaseProducts: (orderId, receiveList, receiveSuccessHandler, receiveErrorHandler) => dispatch(receivePurchaseProducts(orderId, receiveList, receiveSuccessHandler, receiveErrorHandler)),
         cancelPurchaseOrder: (orderId, successHandler, errorHandler) => dispatch(cancelPurchaseOrder(orderId, successHandler, errorHandler)),
-        deletePurchaseOrder: (orderId, deletedSuccessHandler, errorHandler)  => dispatch(deletePurchaseOrder(orderId, deletedSuccessHandler, errorHandler))
+        deletePurchaseOrder: (orderId, deletedSuccessHandler, errorHandler)  => dispatch(deletePurchaseOrder(orderId, deletedSuccessHandler, errorHandler)),
+        uploadAttachment: (orderId, fileObject, successHandler, errorHandler)  => dispatch(uploadAttachment(orderId, fileObject, successHandler, errorHandler)),
+        downloadAttachment:(orderId)  => dispatch(downloadAttachment(orderId))
     };
 };
 

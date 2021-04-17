@@ -46,24 +46,24 @@ class LoginComponent extends Component {
         if (AuthenticationService.isUserLoggedIn()) {
             return <Redirect to="/status" />
         }
-        let footerContent = <div style={{textAlign: 'center'}}>
+        let footerContent = <div style={{textAlign: 'right', marginRight:'50px'}}>
                                 <Button label="Login" onClick={this.loginClicked} />
                             </div>;
 
         return (
             <div className="p-grid p-justify-center">
-                <Card title="Login" style={{width:'375px', marginTop:'50px'}} footer={footerContent}>
+                <Card title="Login" style={{width:'400px', marginTop:'50px'}} footer={footerContent}>
                     <div className="p-grid p-fluid">
-                        <div className="p-col-6">
+                        <div className="p-col-4">
                             <label>User Name</label>
                         </div>
-                        <div className="p-col-6">
+                        <div className="p-col-8">
                             <input type="text" name="username" value={this.state.username} onChange={this.handleChange} />
                         </div>
-                        <div className="p-col-6">
+                        <div className="p-col-4">
                             <label>Password</label>
                         </div>
-                        <div className="p-col-6">
+                        <div className="p-col-8">
                             <input type="password" name="password" value={this.state.password} onChange={this.handleChange} />
                         </div>
                         {/*<ShowInvalidCredentials hasLoginFailed={this.state.hasLoginFailed}/>*/}

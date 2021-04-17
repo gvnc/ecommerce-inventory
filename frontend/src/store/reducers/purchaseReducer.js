@@ -6,13 +6,15 @@ import {
     UPDATE_SELECTED_PO_PRODUCT,
     GET_PURCHASE_ORDER_COMPLETED,
     DELETE_SELECTED_PRODUCT,
-    DELETE_PURCHASE_ORDER
+    DELETE_PURCHASE_ORDER,
+    FILE_ATTACHMENT_UPLOADED
 } from '../actionTypes';
 
 const initialState = {
     orders: [],
     selectedOrder: null,
-    selectedOrderProducts: []
+    selectedOrderProducts: [],
+    selectedOrderFileAttachment: null
 };
 
 const reducer = (state = initialState, action) => {
@@ -95,6 +97,10 @@ const reducer = (state = initialState, action) => {
             orders = state.orders;
             order = action.order;
             if(order){
+                let trackingNumbers = order.trackingNumbers;
+                if(trackingNumbers && trackingNumbers.length>0){
+                    order.trackingNumberArray = trackingNumbers.split(",");
+                }
                 orders = state.orders.map((item, index) =>{
                     if(item.id === order.id){
                         return order;
@@ -106,7 +112,8 @@ const reducer = (state = initialState, action) => {
                 ...state,
                 orders: orders,
                 selectedOrder: order,
-                selectedOrderProducts: action.orderProducts
+                selectedOrderProducts: action.orderProducts,
+                selectedOrderFileAttachment: action.orderFileAttachment
             };
         case DELETE_SELECTED_PRODUCT:
             sku = action.sku;
@@ -122,6 +129,13 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 orders: orders
+            };
+        case FILE_ATTACHMENT_UPLOADED:
+            return {
+                ...state,
+                selectedOrderFileAttachment: {
+                    filename: action.filename
+                }
             };
         default:
             return state;

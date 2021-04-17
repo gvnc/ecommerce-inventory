@@ -47,21 +47,21 @@ class PurchaseOrders extends Component {
     createOrderSuccessful(){
         this.growl.show({severity: 'success', summary: 'Success', detail: 'Purchase order created'});
         this.setState({
+            displayDetailsDialog:true,
             displayCreateDialog:false
         });
-        this.openOrderDetails();
     }
 
     editButtonBody(rowData) {
         return (
-            <Button type="button" icon="pi pi-cog" className="p-button-secondary" onClick={() => this.openOrderDetails(rowData.id)}></Button>
+            <Button type="button" icon="pi pi-folder-open" className="p-button-secondary" onClick={() => this.openOrderDetails(rowData.id)}></Button>
         );
     }
 
     render() {
         let header = <div className="p-grid p-fluid">
             <div className="p-col-2">
-                <Button label="Create New" onClick={this.createNewOrder}/>
+                <Button label="Create New" icon="pi pi-plus"  onClick={this.createNewOrder}/>
             </div>
             <div className="p-col-10">
                 <span>Purchase Orders</span>

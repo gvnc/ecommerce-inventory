@@ -6,20 +6,24 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import ecommerce.app.backend.model.PurchaseOrderRequest;
 import ecommerce.app.backend.repository.model.BaseOrder;
 import ecommerce.app.backend.repository.model.PurchaseOrder;
+import ecommerce.app.backend.repository.model.PurchaseOrderAttachment;
 import ecommerce.app.backend.repository.model.PurchaseOrderProduct;
 import ecommerce.app.backend.service.OrderService;
 import ecommerce.app.backend.service.PurchaseOrderService;
 import ecommerce.app.backend.service.constants.OrderTypeConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.List;
 
 @Slf4j
 @RestController
-@CrossOrigin(origins = { "http://95.111.250.92:3000", "http://localhost:3000", "http://localhost:4200" })
+@CrossOrigin(origins = { "http://95.111.250.92:3000", "http://localhost:3000", "http://localhost:4200" }, exposedHeaders = "filename")
 @RequestMapping("/purchase")
 public class PurchaseOrderController {
 
@@ -113,5 +117,24 @@ public class PurchaseOrderController {
             log.error("Failed to receive products by order id " + orderId, e);
         }
         return null;
+    }
+
+    @PostMapping("/orders/{orderId}/attachment")
+    public String uploadAttachment(@PathVariable Integer orderId, @RequestParam MultipartFile file) {
+        if(purchaseOrderService.uploadAttachment(orderId, file) == true)
+            return OperationConstants.SUCCESS;
+        else
+            return OperationConstants.FAIL;
+    }
+
+    @GetMapping("/orders/{orderId}/attachment")
+    public ResponseEntity<byte[]> getFile(@PathVariable Integer orderId) {
+
+        PurchaseOrderAttachment purchaseOrderAttachment = purchaseOrderService.downloadAttachment(orderId);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + purchaseOrderAttachment.getFilename() + "\"")
+                .header("filename", purchaseOrderAttachment.getFilename())
+                .body(purchaseOrderAttachment.getData());
     }
 }

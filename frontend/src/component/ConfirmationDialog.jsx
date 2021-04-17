@@ -7,9 +7,9 @@ export default class ConfirmationDialog extends Component {
     render() {
         let dialogFooter =
             <div className="ui-dialog-buttonpane p-clearfix">
-                <Button label="Yes" icon="pi pi-check" className="contentsMarginRight"
+                <Button label="Yes" className="contentsMarginRight"
                         onClick={this.props.yesHandler} />
-                <Button label="No" icon="pi pi-times" className="contentsMarginRight"
+                <Button label="No" className="contentsMarginRight"
                         onClick={this.props.noHandler} />
             </div>;
 

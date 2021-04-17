@@ -61,14 +61,14 @@ class InventoryCounts extends Component {
     }
 
     editButtonBody(rowData) {
-        return <Button type="button" icon="pi pi-reply" className="p-button-secondary"
+        return <Button type="button" icon="pi pi-folder-open" className="p-button-secondary"
                        onClick={() => this.editButtonClicked(rowData.status, rowData.id)}></Button>;
     }
 
     render() {
         let header = <div className="p-grid p-fluid">
             <div className="p-col-2">
-                <Button label="Create" icon="pi pi-sign-in" onClick={this.createNew}/>
+                <Button label="Create New" icon="pi pi-plus" onClick={this.createNew}/>
             </div>
             <div className="p-col-10">
                 <span>Inventory Counts</span>

@@ -211,7 +211,7 @@ public class InventoryCountService {
                     DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(inventoryCountProduct.getSku());
                     detailedProduct.setInventoryLevel(inventoryCountProduct.getCount());
                     vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
-                    bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
+                    bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
                     bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
                     amazonCaService.updateInventory(inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
                 }
@@ -220,7 +220,7 @@ public class InventoryCountService {
                 return true;
             }
         } catch (Exception e){
-            log.error("Failed to save inventory count.", e);
+            log.error("Failed to do update for inventory count id {}.", id, e);
         }
         return false;
     }

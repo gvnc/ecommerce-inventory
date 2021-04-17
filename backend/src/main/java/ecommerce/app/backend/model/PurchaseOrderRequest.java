@@ -1,6 +1,7 @@
 package ecommerce.app.backend.model;
 
 import ecommerce.app.backend.repository.model.PurchaseOrder;
+import ecommerce.app.backend.repository.model.PurchaseOrderAttachment;
 import ecommerce.app.backend.repository.model.PurchaseOrderProduct;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,4 +15,7 @@ public class PurchaseOrderRequest {
 
     @Getter @Setter
     private List<PurchaseOrderProduct> productList;
+
+    @Getter @Setter
+    private PurchaseOrderAttachment fileAttachment;
 }

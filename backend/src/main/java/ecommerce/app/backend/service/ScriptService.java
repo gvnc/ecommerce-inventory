@@ -76,7 +76,7 @@ public class ScriptService {
 
                     VendHQProduct vendHQProduct = storeBean.getDetailedProductsMap().get(sku).getVendHQProduct();
                     if (vendHQProduct != null) {
-                        vendHQAPIService.updateInventory(vendHQProduct, bcQuantity);
+                    //    vendHQAPIService.updateInventory(vendHQProduct, bcQuantity);
                     } else {
                         log.info("Vend product not found for sku " + sku);
                     }

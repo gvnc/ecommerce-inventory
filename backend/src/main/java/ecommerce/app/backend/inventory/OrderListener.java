@@ -78,19 +78,19 @@ public class OrderListener {
     public void listenInventoryChanges(){
 
         if(orderListenerEnabled == true && storeBean.getOrderListenerAllowed() == true){
-            log.info("Order listener started to run.");
+            log.debug("Order listener started to run.");
             listenBigCommerceOrders();
             listenVendHQSales();
             listenBigCommerceFSOrders();
             listenAmazonCAOrders();
             //listenSquareupOrders(); // remove comment out to enable vendhq
             OrderListenerUtil.saveLatestOrderInfo(orderListenerDataFile, latestOrderInfo);
-            log.info("Order listener ended running.");
+            log.debug("Order listener ended running.");
         }
     }
 
     public void listenBigCommerceOrders(){
-        log.info("Started to check bigcommerce orders.");
+        log.debug("Started to check bigcommerce orders.");
         try {
             List<BCOrder> ordersList = bigCommerceAPIService.getOrders();
             if(ordersList != null){
@@ -161,7 +161,7 @@ public class OrderListener {
     }
 
     public void listenBigCommerceFSOrders(){
-        log.info("Started to check bigcommerce fs orders.");
+        log.debug("Started to check bigcommerce fs orders.");
         try {
             List<BCOrder> ordersList = bigCommerceFSAPIService.getOrders();
             if(ordersList != null){
@@ -232,7 +232,7 @@ public class OrderListener {
     }
 
     public void listenVendHQSales(){
-        log.info("Started to check vend sales.");
+        log.debug("Started to check vend sales.");
         try {
             List<VendHQSale> salesList = vendHQAPIService.getSales(latestOrderInfo.getVendMaxVersion());
             if(salesList != null){
@@ -306,7 +306,7 @@ public class OrderListener {
     }
 
     public void listenAmazonCAOrders(){
-        log.info("Started to check amazon ca orders.");
+        log.debug("Started to check amazon ca orders.");
         try {
             // get orders first
             List<Order> orderList = amazonCaService.getOrders(latestOrderInfo.getAmazonCaLastUpdate());
