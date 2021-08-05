@@ -30,7 +30,7 @@ public class VendHQServiceTest {
 
     @Before
     public void configureStub(){
-        vendHQAPIService = new VendHQAPIService("http://localhost:8900/vendhq", "testing");
+        vendHQAPIService = new VendHQAPIService("http://localhost:8900/vendhq", "testing", "");
         ReflectionTestUtils.setField(vendHQAPIService, "storeBean", storeBean);
 
         wireMockRule

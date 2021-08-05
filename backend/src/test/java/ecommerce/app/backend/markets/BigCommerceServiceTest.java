@@ -53,7 +53,7 @@ public class BigCommerceServiceTest {
 
     @Test
     public void getProductList(){
-        BigCommerceProduct[] productList = bigCommerceAPIService.getProductList(1);
+        BigCommerceProduct[] productList = bigCommerceAPIService.getProductList(1, 2);
         Assert.assertNotNull(productList);
         Assert.assertTrue(productList.length > 0);
     }

@@ -1,6 +1,8 @@
 package ecommerce.app.backend.service;
 
 import ecommerce.app.backend.StoreBean;
+import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
+import ecommerce.app.backend.markets.bigcommerce.products.BigCommerceProduct;
 import ecommerce.app.backend.markets.squareup.SquareAPIService;
 import ecommerce.app.backend.markets.squareup.items.SquareProduct;
 import ecommerce.app.backend.markets.vendhq.VendHQAPIService;
@@ -24,6 +26,9 @@ public class ScriptService {
 
     @Autowired
     private VendHQAPIService vendHQAPIService;
+
+    @Autowired
+    private BigCommerceAPIService bigCommerceAPIService;
 
     public void syncSquareInventory(){
         Map<String, BaseProduct> productMap = storeBean.getProductsMap();
@@ -79,6 +84,45 @@ public class ScriptService {
                     //    vendHQAPIService.updateInventory(vendHQProduct, bcQuantity);
                     } else {
                         log.info("Vend product not found for sku " + sku);
+                    }
+                } else {
+                    int justChek = 1;
+                }
+            }catch (Exception e){
+                log.error("Error", e);
+            }
+        }
+    }
+
+    public void syncBigCommerceInventory(){
+        Map<String, BaseProduct> productMap = storeBean.getProductsMap();
+        for(String sku:productMap.keySet()){
+            try {
+                BaseProduct baseProduct = productMap.get(sku);
+                Integer bcQuantity = baseProduct.getBigCommerceInventory();
+                if (bcQuantity == null)
+                    bcQuantity = 0;
+
+                Integer vendQuantity = baseProduct.getVendHQInventory();
+                if (vendQuantity == null)
+                    vendQuantity = 0;
+
+                if (vendQuantity.intValue() != bcQuantity.intValue()) {
+                    log.info("Difference found. SKU=" + sku + ", BigC=" + bcQuantity + ", Vend=" + vendQuantity);
+
+                    if(vendQuantity.intValue() < 0){
+                        log.warn("vendProduct has negative inventory, skip to update bigcommerce. SKU=" + sku + ", BigC=" + bcQuantity + ", Vend=" + vendQuantity);
+                    } else {
+                        BigCommerceProduct bigCommerceProduct = storeBean.getDetailedProductsMap().get(sku).getBigCommerceProduct();
+                        if (bigCommerceProduct != null) {
+                            boolean result = bigCommerceAPIService.updateProductQuantity(bigCommerceProduct, sku, vendQuantity.intValue(), true);
+                            if (result == false) {
+                                Thread.sleep(30000);
+                                bigCommerceAPIService.updateProductQuantity(bigCommerceProduct, sku, vendQuantity.intValue(), true);
+                            }
+                        } else {
+                            log.info("BigCommerce product not found for sku " + sku);
+                        }
                     }
                 } else {
                     int justChek = 1;

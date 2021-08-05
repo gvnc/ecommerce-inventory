@@ -10,7 +10,7 @@ class LoginComponent extends Component {
         super(props)
 
         this.state = {
-            username: 'admin',
+            username: process.env.REACT_APP_GUI_USERNAME,
             password: '',
             hasLoginFailed: false,
             showSuccessMessage: false

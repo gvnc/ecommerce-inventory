@@ -28,6 +28,7 @@ public class VendHQAPIService {
     private String baseAPIv09;
     private String baseAPIv20;
     private String authorizationToken;
+    private String outletId;
 
     private int readTimeout = 30000;
     private int connectionTimeout = 60000;
@@ -40,10 +41,11 @@ public class VendHQAPIService {
     @Autowired
     private TestProducts testProducts;
 
-    public VendHQAPIService(@Value("${vend.apipath}") String apipath, @Value("${vend.token}") String token) {
+    public VendHQAPIService(@Value("${vend.apipath}") String apipath, @Value("${vend.token}") String token, @Value("${vend.outletid}") String outletId) {
         this.authorizationToken = "Bearer " + token;
         this.baseAPIv09 = apipath;
         this.baseAPIv20 = apipath + "/2.0";
+        this.outletId = outletId;
 
         SimpleClientHttpRequestFactory rf =
                 (SimpleClientHttpRequestFactory) restTemplate.getRequestFactory();
@@ -93,6 +95,12 @@ public class VendHQAPIService {
                 throw e;
         }
         return null;
+    }
+
+    public boolean hasValidOutletId(String outletId){
+        if(this.outletId != null && !this.outletId.equals(""))
+            return this.outletId.equals(outletId);
+        return true;
     }
 
     public boolean updatePrice(String productSku, String supplyPrice, String price){

@@ -96,24 +96,20 @@ class ListProductsBulkEdit extends Component {
     editorForRowEditing(props, field) {
         if(field === "price"){
             return <div className="p-grid p-dir-col">
-                { this.renderSingleColumn(props, "vendHQPrice")}
-                { /* // remove comment out to enable square
-                this.renderSingleColumn(props, "squarePrice")
-                */}
-                { this.renderSingleColumn(props, "bigCommercePrice")}
-                { this.renderSingleColumn(props, "bigCommerceFSPrice")}
-                { this.renderSingleColumn(props, "amazonCAPrice")}
+                { process.env.REACT_APP_SHOW_VEND && this.renderSingleColumn(props, "vendHQPrice")}
+                { process.env.REACT_APP_SHOW_SQUARE && this.renderSingleColumn(props, "squarePrice")}
+                { process.env.REACT_APP_SHOW_BC && this.renderSingleColumn(props, "bigCommercePrice")}
+                { process.env.REACT_APP_SHOW_BCFS && this.renderSingleColumn(props, "bigCommerceFSPrice")}
+                { process.env.REACT_APP_SHOW_AMCA && this.renderSingleColumn(props, "amazonCAPrice")}
             </div>
         }
         if(field === "inventory"){
             return <div className="p-grid p-dir-col">
-                { this.renderSingleColumn(props, "vendHQInventory")}
-                { /* // remove comment out to enable square
-                 this.renderSingleColumn(props, "squareInventory")
-                 */}
-                { this.renderSingleColumn(props, "bigCommerceInventory")}
-                { this.renderSingleColumn(props, "bigCommerceFSInventory")}
-                { this.renderSingleColumn(props, "amazonCAInventory")}
+                { process.env.REACT_APP_SHOW_VEND && this.renderSingleColumn(props, "vendHQInventory")}
+                { process.env.REACT_APP_SHOW_SQUARE && this.renderSingleColumn(props, "squareInventory") }
+                { process.env.REACT_APP_SHOW_BC && this.renderSingleColumn(props, "bigCommerceInventory")}
+                { process.env.REACT_APP_SHOW_BCFS && this.renderSingleColumn(props, "bigCommerceFSInventory")}
+                { process.env.REACT_APP_SHOW_AMCA && this.renderSingleColumn(props, "amazonCAInventory")}
             </div>
         }
         return <div/>;
@@ -239,24 +235,21 @@ class ListProductsBulkEdit extends Component {
 
     priceFieldRender(rowData){
         return  <div className="p-grid p-dir-col">
-                    {this.singleFieldRender(rowData, "vendHQPrice")}
-                    {  /* // remove comment out to enable square
-                    this.singleFieldRender(rowData, "squarePrice")
-                    */}
-                    {this.singleFieldRender(rowData, "bigCommercePrice")}
-                    {this.singleFieldRender(rowData, "bigCommerceFSPrice")}
-                    {this.singleFieldRender(rowData, "amazonCAPrice")}
+                    {process.env.REACT_APP_SHOW_VEND && this.singleFieldRender(rowData, "vendHQPrice")}
+                    {process.env.REACT_APP_SHOW_AMCA && this.singleFieldRender(rowData, "squarePrice")}
+                    {process.env.REACT_APP_SHOW_BC && this.singleFieldRender(rowData, "bigCommercePrice")}
+                    {process.env.REACT_APP_SHOW_BCFS && this.singleFieldRender(rowData, "bigCommerceFSPrice")}
+                    {process.env.REACT_APP_SHOW_AMCA && this.singleFieldRender(rowData, "amazonCAPrice")}
                 </div>
     }
 
     inventoryFieldRender(rowData){
         return  <div className="p-grid p-dir-col">
-                    {this.singleFieldRender(rowData, "vendHQInventory")}
-                    { /* // remove comment out to enable square
-                    this.singleFieldRender(rowData, "squareInventory")*/}
-                    {this.singleFieldRender(rowData, "bigCommerceInventory")}
-                    {this.singleFieldRender(rowData, "bigCommerceFSInventory")}
-                    {this.singleFieldRender(rowData, "amazonCAInventory")}
+                    {process.env.REACT_APP_SHOW_VEND && this.singleFieldRender(rowData, "vendHQInventory")}
+                    {process.env.REACT_APP_SHOW_SQUARE && this.singleFieldRender(rowData, "squareInventory")}
+                    {process.env.REACT_APP_SHOW_BC && this.singleFieldRender(rowData, "bigCommerceInventory")}
+                    {process.env.REACT_APP_SHOW_BCFS && this.singleFieldRender(rowData, "bigCommerceFSInventory")}
+                    {process.env.REACT_APP_SHOW_AMCA && this.singleFieldRender(rowData, "amazonCAInventory")}
                 </div>
     }
 
@@ -270,12 +263,11 @@ class ListProductsBulkEdit extends Component {
 
     marketPlaceRender(){
         return  <div className="p-grid p-dir-col">
-                    <div className="p-col">VendHQ</div>
-            {/* // remove comment out to enable square
-            <div className="p-col">SquareUp</div> */}
-                    <div className="p-col">BigComm.</div>
-                    <div className="p-col">BigComm.FS</div>
-                    <div className="p-col">Amazon CA</div>
+            { process.env.REACT_APP_SHOW_VEND && <div className="p-col">VendHQ</div> }
+            { process.env.REACT_APP_SHOW_SQUARE &&<div className="p-col">SquareUp</div> }
+            { process.env.REACT_APP_SHOW_BC && <div className="p-col">BigComm.</div> }
+            { process.env.REACT_APP_SHOW_BCFS && <div className="p-col">BigComm.FS</div> }
+            { process.env.REACT_APP_SHOW_AMCA && <div className="p-col">Amazon CA</div> }
                 </div>
     }
 

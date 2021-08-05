@@ -80,8 +80,11 @@ public class SyncProductsService {
         try {
             log.info("Started to get products from BigCommerce");
             storeBean.getSyncStatus().setBigCommerceSyncStatus(SyncConstants.SYNC_INPROGRESS);
+
+            Map<String,List<BigCommerceVariant>> variantMap = bigCommerceAPIService.getAllVariants();
+
             while (page == 1 || productsArray.length > 0) {
-                productsArray = bigCommerceAPIService.getProductList(page);
+                productsArray = bigCommerceAPIService.getProductList(page, 2);
                 page++;
 
                 for (BigCommerceProduct bigCommerceProduct : productsArray) {
@@ -90,22 +93,24 @@ public class SyncProductsService {
                     }
                     // get variants if exists
                     if(bigCommerceProduct.getInventoryTracking() != null && bigCommerceProduct.getInventoryTracking().equals("variant")){
-                        BigCommerceVariant[] variants = bigCommerceAPIService.getVariants(bigCommerceProduct.getId());
-                        for(BigCommerceVariant variant:variants){
-                            String sku = variant.getSku();
-                            String productName = bigCommerceProduct.getName() + " / ";
-                            if(variant.getOptionValues() != null && variant.getOptionValues().length > 0){
-                                String optionLabel = variant.getOptionValues()[0].getLabel();
-                                productName = productName + optionLabel;
-                            }
-                            BigCommerceProduct variantProduct = (BigCommerceProduct) bigCommerceProduct.clone();
-                            variantProduct.setSku(sku);
-                            variantProduct.setName(productName);
-                            variantProduct.setVariantId(variant.getId());
-                            variantProduct.setInventoryLevel(variant.getInventoryLevel());
+                        List<BigCommerceVariant> variants = variantMap.get(bigCommerceProduct.getId());
+                        if(variants != null) {
+                            for (BigCommerceVariant variant : variants) {
+                                String sku = variant.getSku();
+                                String productName = bigCommerceProduct.getName() + " / ";
+                                if (variant.getOptionValues() != null && variant.getOptionValues().length > 0) {
+                                    String optionLabel = variant.getOptionValues()[0].getLabel();
+                                    productName = productName + optionLabel;
+                                }
+                                BigCommerceProduct variantProduct = (BigCommerceProduct) bigCommerceProduct.clone();
+                                variantProduct.setSku(sku);
+                                variantProduct.setName(productName);
+                                variantProduct.setVariantId(variant.getId());
+                                variantProduct.setInventoryLevel(variant.getInventoryLevel());
 
-                            handleSingleBCProduct(variantProduct);
-                            productCounter++;
+                                handleSingleBCProduct(variantProduct);
+                                productCounter++;
+                            }
                         }
                     } else {
                         handleSingleBCProduct(bigCommerceProduct);
@@ -157,8 +162,11 @@ public class SyncProductsService {
         try {
             log.info("Started to get products from BigCommerce FS");
             storeBean.getSyncStatus().setBigCommerceFSSyncStatus(SyncConstants.SYNC_INPROGRESS);
+
+            Map<String,List<BigCommerceVariant>> variantMap = bigCommerceAPIService.getAllVariants();
+
             while (page == 1 || productsArray.length > 0) {
-                productsArray = bigCommerceFSAPIService.getProductList(page);
+                productsArray = bigCommerceFSAPIService.getProductList(page, 2);
                 page++;
 
                 for (BigCommerceProduct bigCommerceProduct : productsArray) {
@@ -168,22 +176,24 @@ public class SyncProductsService {
 
                     // get variants if exists
                     if(bigCommerceProduct.getInventoryTracking() != null && bigCommerceProduct.getInventoryTracking().equals("variant")){
-                        BigCommerceVariant[] variants = bigCommerceFSAPIService.getVariants(bigCommerceProduct.getId());
-                        for(BigCommerceVariant variant:variants){
-                            String sku = variant.getSku();
-                            String productName = bigCommerceProduct.getName() + " / ";
-                            if(variant.getOptionValues() != null && variant.getOptionValues().length > 0){
-                                String optionLabel = variant.getOptionValues()[0].getLabel();
-                                productName = productName + optionLabel;
-                            }
-                            BigCommerceProduct variantProduct = (BigCommerceProduct) bigCommerceProduct.clone();
-                            variantProduct.setSku(sku);
-                            variantProduct.setName(productName);
-                            variantProduct.setVariantId(variant.getId());
-                            variantProduct.setInventoryLevel(variant.getInventoryLevel());
+                        List<BigCommerceVariant> variants = variantMap.get(bigCommerceProduct.getId());
+                        if(variants != null) {
+                            for (BigCommerceVariant variant : variants) {
+                                String sku = variant.getSku();
+                                String productName = bigCommerceProduct.getName() + " / ";
+                                if (variant.getOptionValues() != null && variant.getOptionValues().length > 0) {
+                                    String optionLabel = variant.getOptionValues()[0].getLabel();
+                                    productName = productName + optionLabel;
+                                }
+                                BigCommerceProduct variantProduct = (BigCommerceProduct) bigCommerceProduct.clone();
+                                variantProduct.setSku(sku);
+                                variantProduct.setName(productName);
+                                variantProduct.setVariantId(variant.getId());
+                                variantProduct.setInventoryLevel(variant.getInventoryLevel());
 
-                            handleSingleBCFSProduct(variantProduct);
-                            productCounter++;
+                                handleSingleBCFSProduct(variantProduct);
+                                productCounter++;
+                            }
                         }
                     } else {
                         handleSingleBCFSProduct(bigCommerceProduct);
@@ -313,7 +323,8 @@ public class SyncProductsService {
 
                 VendHQInventory[] inventoryArray = vendHQInventoryData.getData();
                 for (VendHQInventory vendHQInventory : inventoryArray) {
-                    inventoryMap.put(vendHQInventory.getProductId(), vendHQInventory);
+                    if(vendHQAPIService.hasValidOutletId(vendHQInventory.getOutletId()))
+                        inventoryMap.put(vendHQInventory.getProductId(), vendHQInventory);
                 }
             }
         } catch (Exception e) {
@@ -519,6 +530,14 @@ public class SyncProductsService {
         }
 
        */
+        // this was a one-time sync operation, if required again, open it and run again.
+        /*
+        if(1 == 1){
+            scriptService.syncBigCommerceInventory();
+        }
+
+         */
+
         storeBean.setOrderListenerAllowed(true);
     }
 }

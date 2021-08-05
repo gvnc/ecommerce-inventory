@@ -55,11 +55,11 @@ public class SyncProductsServiceTest {
         products[0] = p1;
         products[1] = p2;
 
-        Mockito.when(bigCommerceAPIService.getProductList(1)).thenReturn(products);
-        Mockito.when(bigCommerceAPIService.getProductList(2)).thenReturn(new BigCommerceProduct[0]);
+        Mockito.when(bigCommerceAPIService.getProductList(1, 2)).thenReturn(products);
+        Mockito.when(bigCommerceAPIService.getProductList(2, 2)).thenReturn(new BigCommerceProduct[0]);
 
-        Mockito.when(bigCommerceFSAPIService.getProductList(1)).thenReturn(products);
-        Mockito.when(bigCommerceFSAPIService.getProductList(2)).thenReturn(new BigCommerceProduct[0]);
+        Mockito.when(bigCommerceFSAPIService.getProductList(1, 2)).thenReturn(products);
+        Mockito.when(bigCommerceFSAPIService.getProductList(2, 2)).thenReturn(new BigCommerceProduct[0]);
     }
 
     private void configureVendHQMockData(){

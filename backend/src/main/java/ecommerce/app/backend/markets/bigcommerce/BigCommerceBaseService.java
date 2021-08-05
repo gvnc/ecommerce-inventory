@@ -27,6 +27,8 @@ public abstract class BigCommerceBaseService {
     private String accessToken;
     private String clientId;
 
+    private final Long waitThrottle = 30000L;
+
     private RestTemplate restTemplate = new RestTemplate();
 
     @Autowired
@@ -49,10 +51,24 @@ public abstract class BigCommerceBaseService {
         return headers;
     }
 
-    public BigCommerceProduct[] getProductList(int page){
+    public BigCommerceProduct[] getProductList(int page, int retry){
+        try {
+            for(int i=0;i<retry;i++) {
+                BigCommerceProduct[] productArray = getProductList(page);
+                if(productArray != null)
+                    return productArray;
+                Thread.sleep(waitThrottle);
+            }
+        } catch (Exception e){
+            log.error("Failed to get variants by page.", e);
+        }
+        return null;
+    }
+
+    private BigCommerceProduct[] getProductList(int page){
         try {
             String includeFields = "id,name,sku,is_visible,price,cost_price,retail_price,sale_price,inventory_level,inventory_tracking,mpn";
-            String url = baseAPIv3 + "/catalog/products?limit=50&page=" + page + "&include_fields=" + includeFields;
+            String url = baseAPIv3 + "/catalog/products?limit=100&page=" + page + "&include_fields=" + includeFields;
 
             HttpEntity<String> requestEntity = new HttpEntity<>("", getHeaders());
 
@@ -68,6 +84,71 @@ public abstract class BigCommerceBaseService {
         return null;
     }
 
+    public BigCommerceVariant[] getVariantsByPage(int page, int retry){
+        try {
+            for(int i=0;i<retry;i++) {
+                BigCommerceVariant[] variantArray = getVariantsByPage(page);
+                if(variantArray != null)
+                    return variantArray;
+                Thread.sleep(waitThrottle);
+            }
+        } catch (Exception e){
+            log.error("Failed to get variants by page.", e);
+        }
+        return null;
+    }
+
+    private BigCommerceVariant[] getVariantsByPage(int page){
+        try {
+            String includeFields = "id,product_id,sku,inventory_level,option_values";
+            String url = baseAPIv3 + "/catalog/variants?limit=100&page=" + page + "&include_fields=" + includeFields;
+
+            HttpEntity<String> requestEntity = new HttpEntity<>("", getHeaders());
+
+            ResponseEntity<BigCommerceVariantData> dataResponse =
+                    restTemplate.exchange(url, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<BigCommerceVariantData>() { });
+
+            BigCommerceVariantData data = dataResponse.getBody();
+
+            return data.getData();
+        } catch (Exception e){
+            log.error("Failed to get variants by page.", e);
+        }
+        return null;
+    }
+
+    public Map<String, List<BigCommerceVariant>> getAllVariants(){
+        log.info("Started to get all variants.");
+        Map<String, List<BigCommerceVariant>> variantMap = new HashMap();
+
+        int page = 1;
+        int variantCounter = 0;
+        BigCommerceVariant[] variantArray = new BigCommerceVariant[0];
+        try {
+            while (page == 1 || variantArray.length > 0) {
+                variantArray = getVariantsByPage(page, 2);
+                page++;
+
+                if(variantArray != null){
+                    for(BigCommerceVariant variant:variantArray){
+                        String productId = variant.getProductId();
+                        List variantList = variantMap.get(productId);
+                        if(variantList == null){
+                            variantList = new ArrayList();
+                            variantMap.put(productId, variantList);
+                        }
+                        variantList.add(variant);
+                        variantCounter ++;
+                    }
+                }
+            }
+        } catch (Exception e){
+            log.error("Failed to get variant list.", e);
+        }
+        log.info("Found {} variants.", variantCounter);
+        return variantMap;
+    }
+/*
     public BigCommerceVariant[] getVariants(String productId){
         try {
             String includeFields = "id,product_id,sku,inventory_level,option_values";
@@ -86,7 +167,7 @@ public abstract class BigCommerceBaseService {
         }
         return null;
     }
-
+*/
     public boolean updatePrice(BigCommerceProduct bigCommerceProduct, String productSku, String costPrice, String retailPrice, String price){
         try {
             if(bigCommerceProduct == null){

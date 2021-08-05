@@ -4,19 +4,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
 
 @Service
 public class JwtInMemoryUserDetailsService implements UserDetailsService {
 
   static List<JwtUserDetails> inMemoryUserList = new ArrayList<>();
 
-  static {
-    inMemoryUserList.add(new JwtUserDetails(1L, "admin",
-        "$2a$10$NerLWZ6XG3NDz2s5Jj1htOzgIPn/i4Q7HrNdZHqzYqkttHkqBCmK6", "ROLE_USER_2"));
+  @Value("${gui.username}")
+  private String username;
+
+  @Value("${gui.password}")
+  private String password;
+
+  @PostConstruct
+  private void initUser(){
+    inMemoryUserList.add(new JwtUserDetails(1L, username, password, "ROLE_USER_2"));
   }
 
   @Override

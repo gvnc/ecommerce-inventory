@@ -52,41 +52,58 @@ class MarketPlaceSyncStatus extends Component {
             <div className="container">
                 <div className="container" style={{width:'500px', marginTop: '50px'}}>
                     <Card title="Market Place Sync Status" footer={cardFooter}>
-                        <div className="p-grid p-fluid">
-                            <div className="p-col">Big Commerce</div>
-                            <div className="p-col">{this.getIconImage(syncResult.bigCommerceSyncStatus)} {syncResult.bigCommerceSyncStatus}</div>
-                            <div className="p-col">{syncResult.bigCommerceLastUpdate}</div>
-                        </div>
-                        <div className="p-grid p-fluid">
-                            <div className="p-col">Big Commerce FS</div>
-                            <div className="p-col">{this.getIconImage(syncResult.bigCommerceFSSyncStatus)} {syncResult.bigCommerceFSSyncStatus}</div>
-                            <div className="p-col">{syncResult.bigCommerceFSLastUpdate}</div>
-                        </div>
-                        <div className="p-grid p-fluid">
-                            <div className="p-col">Vend HQ</div>
-                            <div className="p-col">{this.getIconImage(syncResult.vendHQSyncStatus)} {syncResult.vendHQSyncStatus}</div>
-                            <div className="p-col">{syncResult.vendHQLastUpdate}</div>
-                        </div>
-                        {/*
-                        <div className="p-grid p-fluid">
-                            <div className="p-col">Amazon US</div>
-                            <div className="p-col">{this.getIconImage(syncResult.amazonUsStatus)} {syncResult.amazonUsStatus}</div>
-                            <div className="p-col">{syncResult.amazonUsLastUpdate}</div>
-                        </div>
-                        */}
-                        <div className="p-grid p-fluid">
-                            <div className="p-col">Amazon CA</div>
-                            <div className="p-col">{this.getIconImage(syncResult.amazonCaStatus)} {syncResult.amazonCaStatus}</div>
-                            <div className="p-col">{syncResult.amazonCaLastUpdate}</div>
-                        </div>
-                        { // remove comment out to enable square
-                            /*
-                        <div className="p-grid p-fluid">
-                            <div className="p-col">SquareUp</div>
-                            <div className="p-col">{this.getIconImage(syncResult.squareupSyncStatus)} {syncResult.squareupSyncStatus}</div>
-                            <div className="p-col">{syncResult.squareupLastUpdate}</div>
-                        </div>
-                             */
+                        {
+                            process.env.REACT_APP_SHOW_BC &&
+                            <div className="p-grid p-fluid">
+                                <div className="p-col">Big Commerce</div>
+                                <div
+                                    className="p-col">{this.getIconImage(syncResult.bigCommerceSyncStatus)} {syncResult.bigCommerceSyncStatus}</div>
+                                <div className="p-col">{syncResult.bigCommerceLastUpdate}</div>
+                            </div>
+                        }
+                        {
+                            process.env.REACT_APP_SHOW_BCFS &&
+                            <div className="p-grid p-fluid">
+                                <div className="p-col">Big Commerce FS</div>
+                                <div
+                                    className="p-col">{this.getIconImage(syncResult.bigCommerceFSSyncStatus)} {syncResult.bigCommerceFSSyncStatus}</div>
+                                <div className="p-col">{syncResult.bigCommerceFSLastUpdate}</div>
+                            </div>
+                        }
+                        {
+                            process.env.REACT_APP_SHOW_VEND &&
+                            <div className="p-grid p-fluid">
+                                <div className="p-col">Vend HQ</div>
+                                <div className="p-col">{this.getIconImage(syncResult.vendHQSyncStatus)} {syncResult.vendHQSyncStatus}</div>
+                                <div className="p-col">{syncResult.vendHQLastUpdate}</div>
+                            </div>
+                        }
+                        {
+                            process.env.REACT_APP_SHOW_AMUS &&
+                            <div className="p-grid p-fluid">
+                                <div className="p-col">Amazon US</div>
+                                <div
+                                    className="p-col">{this.getIconImage(syncResult.amazonUsStatus)} {syncResult.amazonUsStatus}</div>
+                                <div className="p-col">{syncResult.amazonUsLastUpdate}</div>
+                            </div>
+                        }
+
+                        {
+                            process.env.REACT_APP_SHOW_AMCA &&
+                            <div className="p-grid p-fluid">
+                                <div className="p-col">Amazon CA</div>
+                                <div
+                                    className="p-col">{this.getIconImage(syncResult.amazonCaStatus)} {syncResult.amazonCaStatus}</div>
+                                <div className="p-col">{syncResult.amazonCaLastUpdate}</div>
+                            </div>
+                        }
+                        {
+                            process.env.REACT_APP_SHOW_SQUARE &&
+                            <div className="p-grid p-fluid">
+                                <div className="p-col">SquareUp</div>
+                                <div className="p-col">{this.getIconImage(syncResult.squareupSyncStatus)} {syncResult.squareupSyncStatus}</div>
+                                <div className="p-col">{syncResult.squareupLastUpdate}</div>
+                            </div>
                         }
                     </Card>
                 </div>

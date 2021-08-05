@@ -155,14 +155,24 @@ class ProductDetailDialog extends Component {
     handleInventoryUpdateResult(){
         let result = this.props.updateInventoryResult;
         let messages = [];
-        messages.push({life:6000, severity: result.bigCommerceInventoryUpdate, summary: "BigCommerce", detail: this.getDetailMessageForInventory(result.bigCommerceInventoryUpdate)});
-        messages.push({life:6000, severity: result.bigCommerceFSInventoryUpdate, summary: "BigCommerce FS", detail: this.getDetailMessageForInventory(result.bigCommerceFSInventoryUpdate)});
 
-        // remove comment out to enable square
-        // messages.push({life:6000, severity: result.squareInventoryUpdate, summary: "SquareUp", detail: this.getDetailMessageForInventory(result.squareInventoryUpdate)});
-        messages.push({life:6000, severity: result.vendhqInventoryUpdate, summary: "VendHQ", detail: this.getDetailMessageForInventory(result.vendhqInventoryUpdate)});
-        messages.push({life:6000, severity: result.amazonUsInventoryUpdate, summary: "Amazon Us", detail: this.getDetailMessageForInventory(result.amazonUsInventoryUpdate)});
-        messages.push({life:6000, severity: result.amazonCaInventoryUpdate, summary: "Amazon Ca", detail: this.getDetailMessageForInventory(result.amazonCaInventoryUpdate)});
+        if(process.env.REACT_APP_SHOW_BC)
+            messages.push({life:6000, severity: result.bigCommerceInventoryUpdate, summary: "BigCommerce", detail: this.getDetailMessageForInventory(result.bigCommerceInventoryUpdate)});
+
+        if(process.env.REACT_APP_SHOW_BCFS)
+            messages.push({life:6000, severity: result.bigCommerceFSInventoryUpdate, summary: "BigCommerce FS", detail: this.getDetailMessageForInventory(result.bigCommerceFSInventoryUpdate)});
+
+        if(process.env.REACT_APP_SHOW_SQUARE)
+            messages.push({life:6000, severity: result.squareInventoryUpdate, summary: "SquareUp", detail: this.getDetailMessageForInventory(result.squareInventoryUpdate)});
+
+        if(process.env.REACT_APP_SHOW_VEND)
+            messages.push({life:6000, severity: result.vendhqInventoryUpdate, summary: "VendHQ", detail: this.getDetailMessageForInventory(result.vendhqInventoryUpdate)});
+
+        if(process.env.REACT_APP_SHOW_AMUS)
+            messages.push({life:6000, severity: result.amazonUsInventoryUpdate, summary: "Amazon Us", detail: this.getDetailMessageForInventory(result.amazonUsInventoryUpdate)});
+
+        if(process.env.REACT_APP_SHOW_AMCA)
+            messages.push({life:6000, severity: result.amazonCaInventoryUpdate, summary: "Amazon Ca", detail: this.getDetailMessageForInventory(result.amazonCaInventoryUpdate)});
 
         this.props.setGrowlMessage(messages);
 
@@ -194,13 +204,24 @@ class ProductDetailDialog extends Component {
     handleCommitPriceResult(){
         let result = this.props.commitPriceResult;
         let messages = [];
-        messages.push({life:6000, severity: result.bigCommercePriceChange, summary: "BigCommerce", detail: this.getDetailMessage(result.bigCommercePriceChange)});
-        messages.push({life:6000, severity: result.bigCommerceFSPriceChange, summary: "BigCommerce FS", detail: this.getDetailMessage(result.bigCommerceFSPriceChange)});
-        // remove comment out to enable square
-        // messages.push({life:6000, severity: result.squarePriceChange, summary: "SquareUp", detail: this.getDetailMessage(result.squarePriceChange)});
-        messages.push({life:6000, severity: result.vendhqPriceChange, summary: "VendHQ", detail: this.getDetailMessage(result.vendhqPriceChange)});
-        messages.push({life:6000, severity: result.amazonUsPriceChange, summary: "Amazon Us", detail: this.getDetailMessage(result.amazonUsPriceChange)});
-        messages.push({life:6000, severity: result.amazonCaPriceChange, summary: "Amazon Ca", detail: this.getDetailMessage(result.amazonCaPriceChange)});
+
+        if(process.env.REACT_APP_SHOW_BC)
+            messages.push({life:6000, severity: result.bigCommercePriceChange, summary: "BigCommerce", detail: this.getDetailMessage(result.bigCommercePriceChange)});
+
+        if(process.env.REACT_APP_SHOW_BCFS)
+            messages.push({life:6000, severity: result.bigCommerceFSPriceChange, summary: "BigCommerce FS", detail: this.getDetailMessage(result.bigCommerceFSPriceChange)});
+
+        if(process.env.REACT_APP_SHOW_SQUARE)
+            messages.push({life:6000, severity: result.squarePriceChange, summary: "SquareUp", detail: this.getDetailMessage(result.squarePriceChange)});
+
+        if(process.env.REACT_APP_SHOW_VEND)
+            messages.push({life:6000, severity: result.vendhqPriceChange, summary: "VendHQ", detail: this.getDetailMessage(result.vendhqPriceChange)});
+
+        if(process.env.REACT_APP_SHOW_AMUS)
+            messages.push({life:6000, severity: result.amazonUsPriceChange, summary: "Amazon Us", detail: this.getDetailMessage(result.amazonUsPriceChange)});
+
+        if(process.env.REACT_APP_SHOW_AMCA)
+            messages.push({life:6000, severity: result.amazonCaPriceChange, summary: "Amazon Ca", detail: this.getDetailMessage(result.amazonCaPriceChange)});
 
         this.props.setGrowlMessage(messages);
 
@@ -260,37 +281,56 @@ class ProductDetailDialog extends Component {
                          onTabChange={(e) => this.setState({activeIndex: e.index})}>
                     <TabPanel header="BC-Vend">
                         <div className="p-grid">
-                            <div className="p-col-4">
-                                <BigCommerceProductCard title="BigCommerce" product={this.props.detailedProduct.bigCommerceProduct} updateProperty={this.updateProperty} />
-                            </div>
-                            <div className="p-col-4">
-                                <VendHQProductCard product={this.props.detailedProduct.vendHQProduct} updateProperty={this.updateProperty} />
-                            </div>
-                            <div className="p-col-4">
-                                <BigCommerceProductCard title="BigCommerce FS" product={this.props.detailedProduct.bigCommerceFSProduct} updateProperty={this.updateProperty} />
-                            </div>
-                            { // remove comment out to enable square
-                                /*
-                            <div className="p-col-4">
-                                <SquareProductCard product={this.props.detailedProduct.squareProduct} updateProperty={this.updateProperty} />
-                            </div>
-
-                                 */
+                            {
+                                process.env.REACT_APP_SHOW_BC &&
+                                <div className="p-col-4">
+                                    <BigCommerceProductCard title="BigCommerce"
+                                                            product={this.props.detailedProduct.bigCommerceProduct}
+                                                            updateProperty={this.updateProperty}/>
+                                </div>
+                            }
+                            {
+                                process.env.REACT_APP_SHOW_VEND &&
+                                <div className="p-col-4">
+                                    <VendHQProductCard product={this.props.detailedProduct.vendHQProduct}
+                                                       updateProperty={this.updateProperty}/>
+                                </div>
+                            }
+                            {
+                                process.env.REACT_APP_SHOW_BCFS &&
+                                <div className="p-col-4">
+                                    <BigCommerceProductCard title="BigCommerce FS"
+                                                            product={this.props.detailedProduct.bigCommerceFSProduct}
+                                                            updateProperty={this.updateProperty}/>
+                                </div>
+                            }
+                            {
+                                process.env.REACT_APP_SHOW_SQUARE &&
+                                <div className="p-col-4">
+                                    <SquareProductCard product={this.props.detailedProduct.squareProduct}
+                                                       updateProperty={this.updateProperty}/>
+                                </div>
                             }
                         </div>
                     </TabPanel>
-                    <TabPanel header="Amazon">
+                    <TabPanel header="Amazon" headerStyle={process.env.REACT_APP_SHOW_AMCA ? {"display":"visible"} : {"display":"none"}}>
                         <div className="p-grid">
-                            <div className="p-col-2"></div>
-                            <div className="p-col-4">
-                                <AmazonProductCard title="Amazon CA" product={this.props.detailedProduct.amazonCaProduct} updateProperty={this.updateProperty} />
-                            </div>
-                            <div className="p-col-4">
-                                <Card title="Amazon US" style={{height:'100%'}} >
-                                    <p>to be implemented</p>
-                                </Card>
-                            </div>
-                            <div className="p-col-2"></div>
+                            {
+                                process.env.REACT_APP_SHOW_AMCA &&
+                                <div className="p-col-4">
+                                    <AmazonProductCard title="Amazon CA"
+                                                       product={this.props.detailedProduct.amazonCaProduct}
+                                                       updateProperty={this.updateProperty}/>
+                                </div>
+                            }
+                            {
+                                process.env.REACT_APP_SHOW_AMUS &&
+                                <div className="p-col-4">
+                                    <Card title="Amazon US" style={{height: '100%'}}>
+                                        <p>to be implemented</p>
+                                    </Card>
+                                </div>
+                            }
                         </div>
                     </TabPanel>
                     <TabPanel header="Inventory Changes">

@@ -69,6 +69,18 @@ public class OrderListener {
 
     private String orderListenerDataFile;
 
+    @Value("${listen.orders.bigcommerce.enabled}")
+    private Boolean listenBigCommerceEnabled;
+
+    @Value("${listen.orders.bigcommercefs.enabled}")
+    private Boolean listenBigCommerceFsEnabled;
+
+    @Value("${listen.orders.vendhq.enabled}")
+    private Boolean listenVendHQEnabled;
+
+    @Value("${listen.orders.amazonca.enabled}")
+    private Boolean listenAmazonCAEnabled;
+
     public OrderListener(@Value("${order.listener.data.file}")String orderListenerDataFile) {
         this.orderListenerDataFile = orderListenerDataFile;
         this.latestOrderInfo = OrderListenerUtil.getLatestOrderInfo(orderListenerDataFile);
@@ -83,13 +95,16 @@ public class OrderListener {
             listenVendHQSales();
             listenBigCommerceFSOrders();
             listenAmazonCAOrders();
-            //listenSquareupOrders(); // remove comment out to enable vendhq
+            //listenSquareupOrders(); // remove comment out to enable square
             OrderListenerUtil.saveLatestOrderInfo(orderListenerDataFile, latestOrderInfo);
             log.debug("Order listener ended running.");
         }
     }
 
     public void listenBigCommerceOrders(){
+        if(!listenBigCommerceEnabled)
+            return;
+
         log.debug("Started to check bigcommerce orders.");
         try {
             List<BCOrder> ordersList = bigCommerceAPIService.getOrders();
@@ -161,6 +176,9 @@ public class OrderListener {
     }
 
     public void listenBigCommerceFSOrders(){
+        if(!listenBigCommerceFsEnabled)
+            return;
+
         log.debug("Started to check bigcommerce fs orders.");
         try {
             List<BCOrder> ordersList = bigCommerceFSAPIService.getOrders();
@@ -232,6 +250,9 @@ public class OrderListener {
     }
 
     public void listenVendHQSales(){
+        if(!listenVendHQEnabled)
+            return;
+
         log.debug("Started to check vend sales.");
         try {
             List<VendHQSale> salesList = vendHQAPIService.getSales(latestOrderInfo.getVendMaxVersion());
@@ -306,6 +327,9 @@ public class OrderListener {
     }
 
     public void listenAmazonCAOrders(){
+        if(!listenAmazonCAEnabled)
+            return;
+
         log.debug("Started to check amazon ca orders.");
         try {
             // get orders first

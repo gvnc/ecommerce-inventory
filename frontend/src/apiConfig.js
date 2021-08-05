@@ -5,6 +5,10 @@
 // You cannot override NODE_ENV manually.
 
 let apiUrl = "https://" + window.location.hostname;
+if(process.env.REACT_APP_BACKEND_PORT){
+    apiUrl = apiUrl + ":" + process.env.REACT_APP_BACKEND_PORT;
+}
+
 try {
     if(process.env.NODE_ENV === "development")
         apiUrl = "http://localhost:8080";
