@@ -5,7 +5,7 @@
   "dependencies": {
     "@david.kucsai/react-pdf-table": "^0.3.0",
     "@react-pdf/renderer": "^1.6.8",
-    "axios": "^0.18.0",
+    "axios": "^0.21.2",
     "classnames": "^2.2.6",
     "js-file-download": "^0.4.12",
     "primeflex": "^1.0.0",
