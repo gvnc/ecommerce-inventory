@@ -143,6 +143,56 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>3.0.0</version>
+				<executions>
+					<execution>
+						<id>antrun-plugin</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<echo message="DIKKAT !!"/>
+								<echo message="ASAGIDAKI DOSYALARI KONTROL ET"/>
+								<echo message="Dosya: .env.production"/>
+								<echo message="Bunu yaptiktan sonra defcon ya da vapes uygulamalarindan birine package cikabilirsin."/>
+								<echo message="package cikmak icin proje dizininde deploy-YYYYMMDD formatinda bir dosya olusturmalisin"/>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.6.0</version>
+				<executions>
+					<execution>
+						<id>validate release</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<executable>../scripts/validate.sh</executable>
+						</configuration>
+					</execution>
+					<execution>
+						<id>clean validation file</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>compile</phase>
+						<configuration>
+							<executable>../scripts/clean-deploy-file.sh</executable>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
