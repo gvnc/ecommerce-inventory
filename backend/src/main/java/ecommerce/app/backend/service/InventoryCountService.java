@@ -140,10 +140,10 @@ public class InventoryCountService {
                             product.setBigcommerceQuantity(detailedProduct.getBigCommerceProduct().getInventoryLevel());
                         }
                         if(detailedProduct.getBigCommerceFSProduct() != null){
-                            product.setBigcommerceQuantity(detailedProduct.getBigCommerceFSProduct().getInventoryLevel());
+                            product.setBigcommerceFSQuantity(detailedProduct.getBigCommerceFSProduct().getInventoryLevel());
                         }
                         if(detailedProduct.getAmazonCaProduct() != null){
-                            product.setBigcommerceQuantity(detailedProduct.getAmazonCaProduct().getQuantity());
+                            product.setAmazonCAQuantity(detailedProduct.getAmazonCaProduct().getQuantity());
                         }
                         productList.add(product);
                     });
@@ -206,14 +206,30 @@ public class InventoryCountService {
                 inventoryCount.setStatus(InventoryCountConstants.INVENTORY_UPDATE_INPROGRESS);
                 inventoryCountRepository.save(inventoryCount);
 
-                List<InventoryCountProduct> inventoryCountProductList = inventoryCountProductRepository.findAllByInventoryCountIdAndCountedAndMatched(id, true, false);
+                List<InventoryCountProduct> inventoryCountProductList = inventoryCountProductRepository.findAllByInventoryCountId(id);
                 for(InventoryCountProduct inventoryCountProduct:inventoryCountProductList){
-                    DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(inventoryCountProduct.getSku());
-                    detailedProduct.setInventoryLevel(inventoryCountProduct.getCount());
-                    vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
-                    bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
-                    bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
-                    amazonCaService.updateInventory(inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
+                    try {
+                        DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(inventoryCountProduct.getSku());
+                        if(detailedProduct != null) {
+                            detailedProduct.setInventoryLevel(inventoryCountProduct.getCount());
+                            if (inventoryCountProduct.getVendhqQuantity() != null && inventoryCountProduct.getVendhqQuantity() != inventoryCountProduct.getCount()) {
+                                vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
+                            }
+                            if (inventoryCountProduct.getBigcommerceQuantity() != null && inventoryCountProduct.getBigcommerceQuantity() != inventoryCountProduct.getCount()) {
+                                bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
+                            }
+                            if (inventoryCountProduct.getBigcommerceFSQuantity() != null && inventoryCountProduct.getBigcommerceFSQuantity() != inventoryCountProduct.getCount()) {
+                                bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
+                            }
+                            if (inventoryCountProduct.getAmazonCAQuantity() != null && inventoryCountProduct.getAmazonCAQuantity() != inventoryCountProduct.getCount()) {
+                                amazonCaService.updateInventory(inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
+                            }
+                        }else{
+                            log.error("Inventory count update failed, product sku {} not found in any market.", inventoryCountProduct.getSku());
+                        }
+                    }catch (Exception e){
+                        log.error("Inventory count update failed for product sku {}", inventoryCountProduct.getSku(), e);
+                    }
                 }
                 inventoryCount.setStatus(InventoryCountConstants.INVENTORY_UPDATE_COMPLETED);
                 inventoryCountRepository.save(inventoryCount);

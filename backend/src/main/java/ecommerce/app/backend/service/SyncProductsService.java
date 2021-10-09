@@ -533,10 +533,16 @@ public class SyncProductsService {
         // this was a one-time sync operation, if required again, open it and run again.
         /*
         if(1 == 1){
-            scriptService.syncBigCommerceInventory();
+            scriptService.syncBigCommerceInventoryViaVend();
         }
 
          */
+/*
+        if(1 == 1){
+            scriptService.syncBCFSViaBC();
+        }
+
+ */
 
         storeBean.setOrderListenerAllowed(true);
     }

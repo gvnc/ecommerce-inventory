@@ -38,13 +38,15 @@ class InventoryCountInProgress extends Component {
 
     countProduct(){
         let selectedProduct = this.state.selectedProduct;
-        selectedProduct.count = this.state.countValue;
+        if(selectedProduct.count && selectedProduct.count !== ""){
+            selectedProduct.count = Number(selectedProduct.count) + Number(this.state.countValue);
+        } else{
+            selectedProduct.count = Number(this.state.countValue);
+        }
         selectedProduct.counted = true;
 
         let matched = true;
         let anyProductHit = false;
-
-        console.log(JSON.stringify(selectedProduct));
 
         if(selectedProduct.vendhqQuantity !== null){
             anyProductHit = true;
@@ -82,7 +84,9 @@ class InventoryCountInProgress extends Component {
             selectedProduct.matched = false;
         }
 
-        console.log(JSON.stringify(selectedProduct));
+        // reset countvalue
+        this.setState({countValue:"0"})
+
         // save count product
         this.props.saveInventoryCountProduct(selectedProduct);
         this.growl.show({severity: 'success', summary: 'Success', detail: 'Count saved.'});
@@ -154,7 +158,7 @@ class InventoryCountInProgress extends Component {
                                  onTabChange={(e) => this.setState({activeIndex: e.index})}>
                             <TabPanel header="All Products">
                                 <DataTable value={this.props.inventoryCountProducts} paginator={true} rows={10} selectionMode="single"
-                                           selection={this.state.selectedProduct} onSelectionChange={e => this.setState({selectedProduct: e.value, countValue:e.value.count})}
+                                           selection={this.state.selectedProduct} onSelectionChange={e => this.setState({selectedProduct: e.value, countValue:"0"})}
                                            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
                                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" >
                                     <Column field="sku" header="Product SKU" sortable={true} filter={true} filterPlaceholder="search sku" filterMatchMode="contains" />
@@ -170,7 +174,7 @@ class InventoryCountInProgress extends Component {
                             </TabPanel>
                             <TabPanel header="Uncounted">
                                 <DataTable value={uncountedProducts} paginator={true} rows={10} selectionMode="single"
-                                           selection={this.state.selectedProduct} onSelectionChange={e => this.setState({selectedProduct: e.value, countValue:e.value.count})}
+                                           selection={this.state.selectedProduct} onSelectionChange={e => this.setState({selectedProduct: e.value, countValue:"0"})}
                                            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
                                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" >
                                     <Column field="sku" header="Product SKU" sortable={true} filter={true} filterPlaceholder="search sku" filterMatchMode="contains" />
@@ -186,7 +190,7 @@ class InventoryCountInProgress extends Component {
                             </TabPanel>
                             <TabPanel header="Counted">
                                 <DataTable value={countedProducts} paginator={true} rows={10} selectionMode="single"
-                                           selection={this.state.selectedProduct} onSelectionChange={e => this.setState({selectedProduct: e.value, countValue:e.value.count})}
+                                           selection={this.state.selectedProduct} onSelectionChange={e => this.setState({selectedProduct: e.value, countValue:"0"})}
                                            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
                                            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" >
                                     <Column field="sku" header="Product SKU" sortable={true} filter={true} filterPlaceholder="search sku" filterMatchMode="contains" />

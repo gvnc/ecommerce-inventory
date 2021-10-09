@@ -9,7 +9,7 @@ public interface InventoryCountProductRepository extends CrudRepository<Inventor
 
     List<InventoryCountProduct> findAllByInventoryCountId(Integer inventoryCountId);
 
-    List<InventoryCountProduct> findAllByInventoryCountIdAndCountedAndMatched(Integer inventoryCountId, Boolean counted, Boolean matched);
+    //List<InventoryCountProduct> findAllByInventoryCountIdAndCountedAndMatched(Integer inventoryCountId, Boolean counted, Boolean matched);
 
     void deleteByInventoryCountId(Integer inventoryCountId);
 }

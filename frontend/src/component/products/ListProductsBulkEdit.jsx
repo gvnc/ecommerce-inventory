@@ -236,7 +236,7 @@ class ListProductsBulkEdit extends Component {
     priceFieldRender(rowData){
         return  <div className="p-grid p-dir-col">
                     {process.env.REACT_APP_SHOW_VEND && this.singleFieldRender(rowData, "vendHQPrice")}
-                    {process.env.REACT_APP_SHOW_AMCA && this.singleFieldRender(rowData, "squarePrice")}
+                    {process.env.REACT_APP_SHOW_SQUARE && this.singleFieldRender(rowData, "squarePrice")}
                     {process.env.REACT_APP_SHOW_BC && this.singleFieldRender(rowData, "bigCommercePrice")}
                     {process.env.REACT_APP_SHOW_BCFS && this.singleFieldRender(rowData, "bigCommerceFSPrice")}
                     {process.env.REACT_APP_SHOW_AMCA && this.singleFieldRender(rowData, "amazonCAPrice")}

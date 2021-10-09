@@ -386,7 +386,11 @@ public class AmazonBaseService {
             String feedXml = feedHeader + feedMessages + "</AmazonEnvelope>";
 
             String feedSubmissionId = submitFeed(feedXml, "_POST_INVENTORY_AVAILABILITY_DATA_");
-            return isFeedSubmissionSuccessful(feedSubmissionId);
+            if(feedSubmissionId != null) {
+                return isFeedSubmissionSuccessful(feedSubmissionId);
+            } else{
+                log.error("Can not check result for feed submission, because feed submission id is null");
+            }
         } catch (Exception e){
             log.error("Failed to update product quantity.", e);
         }
@@ -419,7 +423,11 @@ public class AmazonBaseService {
 
             String feedXml = feedHeader + feedMessages + "</AmazonEnvelope>";
             String feedSubmissionId = submitFeed(feedXml, "_POST_PRODUCT_PRICING_DATA_");
-            return isFeedSubmissionSuccessful(feedSubmissionId);
+            if(feedSubmissionId != null) {
+                return isFeedSubmissionSuccessful(feedSubmissionId);
+            } else{
+                log.error("Can not check result for feed submission, because feed submission id is null");
+            }
         } catch (Exception e){
             log.error("Failed to update product prizes.", e);
         }

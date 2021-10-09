@@ -26,6 +26,8 @@ class InventoryCountReview extends Component {
         };
         this.updateSuccessHandler = this.updateSuccessHandler.bind(this);
         this.abandonSuccessHandler = this.abandonSuccessHandler.bind(this);
+        this.findProductCountMatch = this.findProductCountMatch.bind(this);
+        this.isUndefinedOrNull = this.isUndefinedOrNull.bind(this);
     }
 
     componentDidMount() {
@@ -46,10 +48,31 @@ class InventoryCountReview extends Component {
         this.growl.show({severity: 'success', summary: 'Success', detail: 'Inventories updated.'});
     }
 
+    isUndefinedOrNull(val){
+        return val === undefined || val === null;
+    }
+
+    findProductCountMatch(p, matchValue){
+        if(this.isUndefinedOrNull(p.vendhqQuantity) === false && p.vendhqQuantity !== p.count){
+            return !matchValue;
+        }
+        if(this.isUndefinedOrNull(p.bigcommerceQuantity) === false && p.bigcommerceQuantity !== p.count){
+            return !matchValue;
+        }
+        if(this.isUndefinedOrNull(p.bigcommerceFSQuantity) === false && p.bigcommerceFSQuantity !== p.count){
+            return !matchValue;
+        }
+        if(this.isUndefinedOrNull(p.amazonCAQuantity) === false && p.amazonCAQuantity !== p.count){
+            return !matchValue;
+        }
+        return matchValue;
+    }
+
     render() {
+        const componentClass = this;
         let countedProducts = this.props.inventoryCountProducts.filter(p => p.counted === true);
-        let matchedProducts = this.props.inventoryCountProducts.filter(p => p.counted === true && p.matched === true);
-        let unmatchedProducts = this.props.inventoryCountProducts.filter(p => p.counted === true && p.matched === false);
+        let matchedProducts = this.props.inventoryCountProducts.filter(p => componentClass.findProductCountMatch(p,true));
+        let unmatchedProducts = this.props.inventoryCountProducts.filter(p => componentClass.findProductCountMatch(p,false));
 
         let inventoryCountStatus = "";
         if(this.props.inventoryCount) {
