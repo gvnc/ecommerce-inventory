@@ -11,6 +11,7 @@ import ecommerce.app.backend.markets.vendhq.products.VendHQProduct;
 import ecommerce.app.backend.model.BaseProduct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -18,6 +19,9 @@ import java.util.Map;
 @Slf4j
 @Service
 public class ScriptService {
+
+    @Value("${script.enabled:false}")
+    private boolean scriptEnabled;
 
     @Autowired
     private StoreBean storeBean;
@@ -35,6 +39,8 @@ public class ScriptService {
     private BigCommerceFSAPIService bigCommerceFSAPIService;
 
     public void syncSquareInventory(){
+        if(scriptEnabled == false)
+            return;
         Map<String, BaseProduct> productMap = storeBean.getProductsMap();
         for(String sku:productMap.keySet()){
 
@@ -67,6 +73,8 @@ public class ScriptService {
 
     // TODO - not complete !!!
     public void syncVendInventory(){
+        if(scriptEnabled == false)
+            return;
         Map<String, BaseProduct> productMap = storeBean.getProductsMap();
         for(String sku:productMap.keySet()){
 
@@ -99,6 +107,8 @@ public class ScriptService {
     }
 
     public void syncBigCommerceInventoryViaVend(){
+        if(scriptEnabled == false)
+            return;
         Map<String, BaseProduct> productMap = storeBean.getProductsMap();
         for(String sku:productMap.keySet()){
             try {
@@ -136,6 +146,8 @@ public class ScriptService {
     }
 
     public void syncBCFSViaBC(){
+        if(scriptEnabled == false)
+            return;
         Map<String, BaseProduct> productMap = storeBean.getProductsMap();
         for(String sku:productMap.keySet()){
             try {
