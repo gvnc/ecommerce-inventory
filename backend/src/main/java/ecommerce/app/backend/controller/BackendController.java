@@ -11,6 +11,7 @@ import ecommerce.app.backend.repository.model.AverageCostView;
 import ecommerce.app.backend.repository.model.BaseOrder;
 import ecommerce.app.backend.service.OrderService;
 import ecommerce.app.backend.service.PurchaseOrderService;
+import ecommerce.app.backend.service.ScriptService;
 import ecommerce.app.backend.service.SyncProductsService;
 import ecommerce.app.backend.util.Utils;
 import ecommerce.app.backend.markets.vendhq.VendHQAPIService;
@@ -65,6 +66,12 @@ public class BackendController {
     @GetMapping("/startSync")
     public SyncStatus startSync() {
         syncProductsService.syncAllMarketPlaces();
+        return storeBean.getSyncStatus();
+    }
+
+    @GetMapping("/startSyncFromMaster")
+    public SyncStatus startSyncFromMaster() {
+        syncProductsService.syncFromMaster();
         return storeBean.getSyncStatus();
     }
 

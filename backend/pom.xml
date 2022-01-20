@@ -160,7 +160,7 @@
 								<echo message="ASAGIDAKI DOSYALARI KONTROL ET"/>
 								<echo message="Dosya: .env.production"/>
 								<echo message="Bunu yaptiktan sonra defcon ya da vapes uygulamalarindan birine package cikabilirsin."/>
-								<echo message="package cikmak icin proje dizininde deploy-YYYYMMDD formatinda bir dosya olusturmalisin"/>
+								<echo message="package cikmak icin proje dizininde deploy-YYYY.MM.DD formatinda bir dosya olusturmalisin"/>
 							</target>
 						</configuration>
 					</execution>

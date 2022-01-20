@@ -183,8 +183,8 @@ public class AmazonBaseService {
 
     public List<AmazonProduct> getProductList(){
         final String statusDone = "_DONE_";
-        final int maxRetryForReportCompletionCheck = 3;
-        final int waitTimeInMillisForReportCompletionCheck = 10000;
+        final int maxRetryForReportCompletionCheck = 6;
+        final int waitTimeInMillisForReportCompletionCheck = 15000;
 
         try {
             String reportRequestId = reportRequestForProducts();

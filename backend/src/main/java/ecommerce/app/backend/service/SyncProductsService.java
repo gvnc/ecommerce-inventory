@@ -502,11 +502,23 @@ public class SyncProductsService {
         storeBean.setProductsMap(new HashMap<>());
     }
 
+    // this feature is only added for SelectVapes app !!
+    // vend is the master, bigcommerce is the one to be updated
+    public void syncFromMaster(){
+        // first sync
+        syncAllMarketPlaces();
+        // then start compare and update
+        storeBean.setOrderListenerAllowed(false);
+        setSyncStatusIntoPending();
+        scriptService.syncBigCommerceInventoryViaVend();
+        storeBean.setOrderListenerAllowed(true);
+    }
+
     public void syncAllMarketPlaces(){
         storeBean.setOrderListenerAllowed(false);
 
-        this.setSyncStatusIntoPending();
-        this.resetStore();
+        setSyncStatusIntoPending();
+        resetStore();
 
         syncVendHQ();
         syncBigCommerce();
@@ -531,12 +543,12 @@ public class SyncProductsService {
 
        */
         // this was a one-time sync operation, if required again, open it and run again.
-        /*
+/*
         if(1 == 1){
             scriptService.syncBigCommerceInventoryViaVend();
         }
+        */
 
-         */
 /*
         if(1 == 1){
             scriptService.syncBCFSViaBC();

@@ -9,6 +9,7 @@ import ecommerce.app.backend.markets.squareup.items.SquareProduct;
 import ecommerce.app.backend.markets.vendhq.VendHQAPIService;
 import ecommerce.app.backend.markets.vendhq.products.VendHQProduct;
 import ecommerce.app.backend.model.BaseProduct;
+import ecommerce.app.backend.service.constants.SyncConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -109,10 +110,10 @@ public class ScriptService {
     public void syncBigCommerceInventoryViaVend(){
         if(scriptEnabled == false)
             return;
+
         Map<String, BaseProduct> productMap = storeBean.getProductsMap();
         for(String sku:productMap.keySet()){
             try {
-
                 BigCommerceProduct bigCommerceProduct = storeBean.getDetailedProductsMap().get(sku).getBigCommerceProduct();
                 VendHQProduct vendProduct = storeBean.getDetailedProductsMap().get(sku).getVendHQProduct();
                 if (bigCommerceProduct != null && vendProduct != null) {
@@ -143,6 +144,9 @@ public class ScriptService {
                 log.error("Error", e);
             }
         }
+
+        storeBean.getSyncStatus().setBigCommerceSyncStatus(SyncConstants.SYNC_COMPLETED);
+        storeBean.getSyncStatus().setVendHQSyncStatus(SyncConstants.SYNC_COMPLETED);
     }
 
     public void syncBCFSViaBC(){

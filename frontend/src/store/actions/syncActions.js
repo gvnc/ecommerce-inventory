@@ -49,6 +49,25 @@ export const startSync = () => {
     };
 }
 
+export const syncFromMaster = () => {
+
+    return (dispatch) => {
+
+        let requestUrl = API_URL + "/startSyncFromMaster";
+
+        axios.get(requestUrl)
+            .catch(err => {
+                console.log("error:" + err);
+            })
+            .then(response => {
+                if(response) {
+                    dispatch(updateSyncStatus(response.data, false));
+                    dispatch(getProductList());
+                }
+            })
+    };
+}
+
 export const getOrders = () => {
 
     return (dispatch) => {

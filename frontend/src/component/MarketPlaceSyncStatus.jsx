@@ -1,8 +1,11 @@
 import React, { Component } from 'react'
 import { connect } from "react-redux";
-import { getSyncStatus, startSync, updateSyncStatus} from "../store/actions/syncActions"
+import { getSyncStatus, startSync, updateSyncStatus, syncFromMaster} from "../store/actions/syncActions"
 import {Card} from "primereact/card";
 import {Button} from "primereact/button";
+import {Growl} from "primereact/growl";
+
+const SYNC_IN_PROGRESS = "SyncInProgress";
 
 class MarketPlaceSyncStatus extends Component {
 
@@ -10,7 +13,11 @@ class MarketPlaceSyncStatus extends Component {
         this.props.getSyncStatus();
         this.getIconImage = this.getIconImage.bind(this);
         this.startSync = this.startSync.bind(this);
+        this.setSyncStatusInPending = this.setSyncStatusInPending.bind(this);
+        this.syncFromMaster = this.syncFromMaster.bind(this);
+        this.isSyncInProgress = this.isSyncInProgress.bind(this);
     }
+
 
     getIconImage(syncResult){
         if(syncResult === "SyncCompleted")
@@ -23,17 +30,45 @@ class MarketPlaceSyncStatus extends Component {
         return <img width={20} height={20} alt="" src={require('../assets/yellow.png')} />;
     }
 
-    startSync(){
+    isSyncInProgress(){
+        if(process.env.REACT_APP_SHOW_BC && this.props.syncStatus.bigCommerceSyncStatus === SYNC_IN_PROGRESS)
+            return true;
+        if(process.env.REACT_APP_SHOW_BCFS && this.props.syncStatus.bigCommerceFSSyncStatus === SYNC_IN_PROGRESS)
+            return true;
+        if(process.env.REACT_APP_SHOW_VEND && this.props.syncStatus.vendHQSyncStatus === SYNC_IN_PROGRESS)
+            return true;
+        if(process.env.REACT_APP_SHOW_AMCA && this.props.syncStatus.amazonCaStatus === SYNC_IN_PROGRESS)
+            return true;
+    }
+
+    setSyncStatusInPending(){
         let syncStatus = this.props.syncStatus;
-        syncStatus.bigCommerceSyncStatus = "SyncInProgress";
-        syncStatus.bigCommerceFSSyncStatus = "SyncInProgress";
-        syncStatus.vendHQSyncStatus = "SyncInProgress";
-        syncStatus.amazonUsStatus = "SyncInProgress";
-        syncStatus.amazonCaStatus = "SyncInProgress";
-        syncStatus.squareupSyncStatus = "SyncInProgress";
+        syncStatus.bigCommerceSyncStatus = SYNC_IN_PROGRESS;
+        syncStatus.bigCommerceFSSyncStatus = SYNC_IN_PROGRESS;
+        syncStatus.vendHQSyncStatus = SYNC_IN_PROGRESS;
+        syncStatus.amazonUsStatus = SYNC_IN_PROGRESS;
+        syncStatus.amazonCaStatus = SYNC_IN_PROGRESS;
+        syncStatus.squareupSyncStatus = SYNC_IN_PROGRESS;
 
         this.props.updateSyncStatus(syncStatus, true);
+    }
+
+    startSync(){
+        if(this.isSyncInProgress()){
+            this.growl.show({severity: 'error', summary: 'Error', detail: 'Sync is still in progress !'});
+            return;
+        }
+        this.setSyncStatusInPending();
         this.props.startSync();
+    }
+
+    syncFromMaster(){
+        if(this.isSyncInProgress()){
+            this.growl.show({severity: 'error', summary: 'Error', detail: 'Sync is still in progress !'});
+            return;
+        }
+        this.setSyncStatusInPending();
+        this.props.syncFromMaster();
     }
 
     render() {
@@ -45,11 +80,17 @@ class MarketPlaceSyncStatus extends Component {
         if(this.props.syncInProgress === false) {
             cardFooter = <div style={{textAlign: 'center'}}>
                             <Button label="Start Sync Operation" icon="pi pi-play" onClick={this.startSync}/>
+                            {
+                                process.env.REACT_APP_SHOW_SYNC_FROM_MASTER &&
+                                    <Button label="Sync From Master" icon="pi pi-save"
+                                            onClick={this.syncFromMaster} style={{marginLeft: "10px"}} />
+                            }
                         </div>;
         }
 
         return (
             <div className="container">
+                <Growl ref={(el) => this.growl = el} />
                 <div className="container" style={{width:'500px', marginTop: '50px'}}>
                     <Card title="Market Place Sync Status" footer={cardFooter}>
                         {
@@ -123,6 +164,7 @@ const mapDispatchToProps = dispatch => {
     return {
         getSyncStatus: () => dispatch(getSyncStatus()),
         startSync: () => dispatch(startSync()),
+        syncFromMaster: () => dispatch(syncFromMaster()),
         updateSyncStatus: (syncData, syncInProgress) => dispatch(updateSyncStatus(syncData, syncInProgress))
     };
 };
