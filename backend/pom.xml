@@ -19,35 +19,7 @@
 		<java.version>1.8</java.version>
 	</properties>
 
-	<profiles>
-		<profile>
-			<id>prod</id>
-			<properties>
-				<activatedProfile>prod</activatedProfile>
-			</properties>
-			<dependencies>
-				<dependency>
-					<groupId>mysql</groupId>
-					<artifactId>mysql-connector-java</artifactId>
-				</dependency>
-			</dependencies>
-		</profile>
-		<profile>
-			<id>dev</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<properties>
-				<activatedProfile>dev</activatedProfile>
-			</properties>
-			<dependencies>
-				<dependency>
-					<groupId>com.h2database</groupId>
-					<artifactId>h2</artifactId>
-				</dependency>
-			</dependencies>
-		</profile>
-	</profiles>
+	<!-- h2 db dependency removed as it s not required any more even in development mode -->
 
 	<dependencies>
 		<dependency>
@@ -67,6 +39,10 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -142,56 +118,6 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>3.0.0</version>
-				<executions>
-					<execution>
-						<id>antrun-plugin</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<target>
-								<echo message="DIKKAT !!"/>
-								<echo message="ASAGIDAKI DOSYALARI KONTROL ET"/>
-								<echo message="Dosya: .env.production"/>
-								<echo message="Bunu yaptiktan sonra defcon ya da vapes uygulamalarindan birine package cikabilirsin."/>
-								<echo message="package cikmak icin proje dizininde deploy-YYYY.MM.DD formatinda bir dosya olusturmalisin"/>
-							</target>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.6.0</version>
-				<executions>
-					<execution>
-						<id>validate release</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>generate-resources</phase>
-						<configuration>
-							<executable>../scripts/validate.sh</executable>
-						</configuration>
-					</execution>
-					<execution>
-						<id>clean validation file</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>compile</phase>
-						<configuration>
-							<executable>../scripts/clean-deploy-file.sh</executable>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>

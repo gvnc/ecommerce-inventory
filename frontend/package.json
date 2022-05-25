@@ -21,8 +21,10 @@
     "redux-thunk": "^2.3.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start:vapes": "sh -ac '. ./.env.development.vapes; react-scripts start'",
+    "start:defcon": "sh -ac '. ./.env.development.defcon; react-scripts start'",
+    "build:vapes": "sh -ac '. ./.env.production.vapes; react-scripts build'",
+    "build:defcon": "sh -ac '. ./.env.production.defcon; react-scripts build'",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "cleanBuild": "rm -rf build"
