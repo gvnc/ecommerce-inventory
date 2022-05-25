@@ -1,6 +1,7 @@
 package ecommerce.app.backend.service;
 
 import ecommerce.app.backend.StoreBean;
+import ecommerce.app.backend.markets.MarketType;
 import ecommerce.app.backend.markets.amazon.AmazonCaService;
 import ecommerce.app.backend.markets.amazon.products.AmazonProduct;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
@@ -54,6 +55,9 @@ public class SyncProductsService {
 
     @Autowired
     private SquareAPIService squareAPIService;
+
+    @Value("${master.market.type}")
+    private MarketType marketType;
 
     @Value("${sync.bigcommerce.enabled}")
     private Boolean syncBigCommerceEnabled;
@@ -510,7 +514,14 @@ public class SyncProductsService {
         // then start compare and update
         storeBean.setOrderListenerAllowed(false);
         setSyncStatusIntoPending();
-        scriptService.syncBigCommerceInventoryViaVend();
+        switch (marketType){
+            case BIGCOMMERCE:
+                scriptService.syncMarketsByMasterBigCommerce();
+                break;
+            case VEND:
+                scriptService.syncMarketsByMasterVend();
+                break;
+        }
         storeBean.setOrderListenerAllowed(true);
     }
 

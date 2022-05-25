@@ -1,6 +1,8 @@
 package ecommerce.app.backend.service;
 
 import ecommerce.app.backend.StoreBean;
+import ecommerce.app.backend.markets.amazon.AmazonCaService;
+import ecommerce.app.backend.markets.amazon.products.AmazonProduct;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceFSAPIService;
 import ecommerce.app.backend.markets.bigcommerce.products.BigCommerceProduct;
@@ -38,6 +40,9 @@ public class ScriptService {
 
     @Autowired
     private BigCommerceFSAPIService bigCommerceFSAPIService;
+
+    @Autowired
+    private AmazonCaService amazonCaService;
 
     public void syncSquareInventory(){
         if(scriptEnabled == false)
@@ -107,9 +112,104 @@ public class ScriptService {
         }
     }
 
-    public void syncBigCommerceInventoryViaVend(){
-        if(scriptEnabled == false)
-            return;
+    public void syncMarketsByMasterBigCommerce() {
+        Map<String, BaseProduct> productMap = storeBean.getProductsMap();
+        for(String sku:productMap.keySet()){
+            try {
+                BigCommerceProduct bigCommerceProduct = storeBean.getDetailedProductsMap().get(sku).getBigCommerceProduct();
+
+                if (bigCommerceProduct != null) {
+                    BaseProduct baseProduct = productMap.get(sku);
+                    Integer bcQuantity = baseProduct.getBigCommerceInventory();
+                    if (bcQuantity == null)
+                        bcQuantity = 0;
+
+                    if (bcQuantity.intValue() < 0) {
+                        log.warn("bcQuantity has negative inventory, skip to update in sync from master. SKU=" + sku + ", BigC=" + bcQuantity );
+                    } else {
+                        pushInventoryToVend(sku, bcQuantity);
+                        pushInventoryToBcFS(sku, bcQuantity);
+                        pushInventoryToAmazonCA(sku, bcQuantity);
+                    }
+                }
+            }catch (Exception e){
+                log.error("Error", e);
+            }
+        }
+
+        storeBean.getSyncStatus().setBigCommerceSyncStatus(SyncConstants.SYNC_COMPLETED);
+        storeBean.getSyncStatus().setBigCommerceFSSyncStatus(SyncConstants.SYNC_COMPLETED);
+        storeBean.getSyncStatus().setVendHQSyncStatus(SyncConstants.SYNC_COMPLETED);
+        storeBean.getSyncStatus().setAmazonCaStatus(SyncConstants.SYNC_COMPLETED);
+    }
+
+    private void pushInventoryToVend(String sku, Integer newQuantity){
+        try{
+            VendHQProduct vendProduct = storeBean.getDetailedProductsMap().get(sku).getVendHQProduct();
+            if (vendProduct != null) {
+                Integer vendQuantity = storeBean.getProductsMap().get(sku).getVendHQInventory();
+                if (vendQuantity == null)
+                    vendQuantity = 0;
+
+                if (vendQuantity.intValue() != newQuantity.intValue()) {
+                    log.info("Difference found. SKU=" + sku + ", BigC=" + newQuantity + ", Vend=" + vendQuantity);
+                    boolean result = vendHQAPIService.updateProductQuantity(vendProduct, sku, newQuantity.intValue(), true);
+                    if (result == false) {
+                        // in case api thresholds exceeded, wait some time to retry
+                        Thread.sleep(30000);
+                        vendHQAPIService.updateProductQuantity(vendProduct, sku, newQuantity.intValue(), true);
+                    }
+                }
+            }
+        } catch (Exception e){
+
+        }
+    }
+
+    private void pushInventoryToBcFS(String sku, Integer newQuantity){
+        try{
+            BigCommerceProduct bcFsProduct = storeBean.getDetailedProductsMap().get(sku).getBigCommerceFSProduct();
+            if (bcFsProduct != null) {
+                Integer bcfsQuantity = storeBean.getProductsMap().get(sku).getVendHQInventory();
+                if (bcfsQuantity == null)
+                    bcfsQuantity = 0;
+
+                if (bcfsQuantity.intValue() != newQuantity.intValue()) {
+                    log.info("Difference found. SKU=" + sku + ", BigC=" + newQuantity + ", Vend=" + bcfsQuantity);
+                    boolean result = bigCommerceFSAPIService.updateProductQuantity(bcFsProduct, sku, newQuantity.intValue(), true);
+                    if (result == false) {
+                        // in case api thresholds exceeded, wait some time to retry
+                        Thread.sleep(30000);
+                        bigCommerceFSAPIService.updateProductQuantity(bcFsProduct, sku, newQuantity.intValue(), true);
+                    }
+                }
+            }
+        } catch (Exception e){
+
+        }
+    }
+
+
+    private void pushInventoryToAmazonCA(String sku, Integer newQuantity){
+        try{
+            AmazonProduct amazonProduct = storeBean.getDetailedProductsMap().get(sku).getAmazonCaProduct();
+            if (amazonProduct != null) {
+                Integer amazonQuantity = storeBean.getProductsMap().get(sku).getAmazonCAInventory();
+                if (amazonQuantity == null)
+                    amazonQuantity = 0;
+
+                if (amazonQuantity.intValue() != newQuantity.intValue()) {
+                    log.info("Difference found. SKU=" + sku + ", BigC=" + newQuantity + ", Amazon=" + amazonQuantity);
+                    amazonCaService.updateInventory(sku, newQuantity.intValue(), true);
+                }
+            }
+
+        } catch (Exception e){
+
+        }
+    }
+
+    public void syncMarketsByMasterVend(){
 
         Map<String, BaseProduct> productMap = storeBean.getProductsMap();
         for(String sku:productMap.keySet()){
@@ -134,6 +234,7 @@ public class ScriptService {
                             log.info("Difference found. SKU=" + sku + ", BigC=" + bcQuantity + ", Vend=" + vendQuantity);
                             boolean result = bigCommerceAPIService.updateProductQuantity(bigCommerceProduct, sku, vendQuantity.intValue(), true);
                             if (result == false) {
+                                // in case api thresholds exceeded, wait some time to retry
                                 Thread.sleep(30000);
                                 bigCommerceAPIService.updateProductQuantity(bigCommerceProduct, sku, vendQuantity.intValue(), true);
                             }
