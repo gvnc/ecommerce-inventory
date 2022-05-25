@@ -12,6 +12,7 @@ import ecommerce.app.backend.markets.bigcommerce.products.BigCommerceProduct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
@@ -33,6 +34,9 @@ public abstract class BigCommerceBaseService {
 
     @Autowired
     private TestProducts testProducts;
+
+    @Value("${price.update.enabled:true}")
+    private boolean priceUpdateEnabled;
 
     public BigCommerceBaseService(Class parentClass, String apipath, String clientId, String accessToken) {
         log = LoggerFactory.getLogger(parentClass);
@@ -180,32 +184,35 @@ public abstract class BigCommerceBaseService {
                 return false;
             }
 
-            String url = baseAPIv3 + "/catalog/products/{productId}";
+            if(priceUpdateEnabled) {
 
-            Map<String, String> param = new HashMap();
-            param.put("productId", bigCommerceProduct.getId());
+                String url = baseAPIv3 + "/catalog/products/{productId}";
 
-            ObjectMapper mapper = new ObjectMapper();
-            ObjectNode jsonObject = mapper.createObjectNode();
-            if(costPrice != null)
-                jsonObject.put("cost_price", Float.parseFloat(costPrice));
+                Map<String, String> param = new HashMap();
+                param.put("productId", bigCommerceProduct.getId());
 
-            if(retailPrice != null)
-                jsonObject.put("retail_price", Float.parseFloat(retailPrice));
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode jsonObject = mapper.createObjectNode();
+                if (costPrice != null)
+                    jsonObject.put("cost_price", Float.parseFloat(costPrice));
 
-            if(price != null)
-                jsonObject.put("price", Float.parseFloat(price));
+                if (retailPrice != null)
+                    jsonObject.put("retail_price", Float.parseFloat(retailPrice));
 
-            HttpEntity requestEntity = new HttpEntity(jsonObject, getHeaders());
+                if (price != null)
+                    jsonObject.put("price", Float.parseFloat(price));
 
-            ResponseEntity<ObjectNode> responseObject = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, ObjectNode.class, param);
+                HttpEntity requestEntity = new HttpEntity(jsonObject, getHeaders());
 
-            ObjectNode response = responseObject.getBody();
+                ResponseEntity<ObjectNode> responseObject = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, ObjectNode.class, param);
 
-            if(response.get("errors") != null){
-                log.error("Failed to change product price for bigcommerce. Returning response has errors.");
-                log.error("Errors " + response.get("errors").toString());
-                return false;
+                ObjectNode response = responseObject.getBody();
+
+                if (response.get("errors") != null) {
+                    log.error("Failed to change product price for bigcommerce. Returning response has errors.");
+                    log.error("Errors " + response.get("errors").toString());
+                    return false;
+                }
             }
 
             if(costPrice!= null)

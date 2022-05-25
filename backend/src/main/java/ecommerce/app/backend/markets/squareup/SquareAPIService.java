@@ -40,7 +40,6 @@ public class SquareAPIService {
     private String authorizationToken;
     private String locationId;
 
-
     private int readTimeout = 30000;
     private int connectionTimeout = 60000;
 
@@ -52,6 +51,8 @@ public class SquareAPIService {
     @Autowired
     private TestProducts testProducts;
 
+    @Value("${price.update.enabled:true}")
+    private boolean priceUpdateEnabled;
 
     public SquareAPIService(@Value("${squareup.apipath}") String apipath, @Value("${squareup.token}") String token, @Value("${squareup.locationid}") String locationId) {
         this.apiPath = apipath;
@@ -279,29 +280,31 @@ public class SquareAPIService {
                 throw new Exception("Squareup product can not be found in memory.");
             }
 
-            String variationId = product.getSquareProduct().getVariationId();
-            SquareItemVariation itemVariation = getProductById(variationId);
-            if(itemVariation.getItemVariationData().getPriceMoney() == null)
-                throw new Exception("Price money is missing.");
+            if(priceUpdateEnabled) {
+                String variationId = product.getSquareProduct().getVariationId();
+                SquareItemVariation itemVariation = getProductById(variationId);
+                if (itemVariation.getItemVariationData().getPriceMoney() == null)
+                    throw new Exception("Price money is missing.");
 
-            Long newPriceLong = Utils.dollarToCents(newPrice);
-            itemVariation.getItemVariationData().getPriceMoney().setAmount(newPriceLong);
+                Long newPriceLong = Utils.dollarToCents(newPrice);
+                itemVariation.getItemVariationData().getPriceMoney().setAmount(newPriceLong);
 
-            ChangePriceBody changePriceBody = new ChangePriceBody();
-            changePriceBody.setObject(itemVariation);
-            changePriceBody.setIdempotencyKey(UUID.randomUUID().toString());
+                ChangePriceBody changePriceBody = new ChangePriceBody();
+                changePriceBody.setObject(itemVariation);
+                changePriceBody.setIdempotencyKey(UUID.randomUUID().toString());
 
-            HttpEntity requestEntity = new HttpEntity(changePriceBody, getHeaders());
+                HttpEntity requestEntity = new HttpEntity(changePriceBody, getHeaders());
 
-            ResponseEntity<ChangePriceResponse> dataResponse =
-                    restTemplate.exchange(url, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<ChangePriceResponse>() { });
+                ResponseEntity<ChangePriceResponse> dataResponse =
+                        restTemplate.exchange(url, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<ChangePriceResponse>() {});
 
-            if(dataResponse.getBody() != null){
-                log.info("Price change successful for squareup. [product:"+productSku+",price:"+newPrice+"]");
-                product.getSquareProduct().setPrice(Float.parseFloat(newPrice));
-                BaseProduct baseProduct = storeBean.getProductsMap().get(productSku);
-                baseProduct.setSquarePrice(Float.parseFloat(newPrice));
-                return true;
+                if (dataResponse.getBody() != null) {
+                    log.info("Price change successful for squareup. [product:" + productSku + ",price:" + newPrice + "]");
+                    product.getSquareProduct().setPrice(Float.parseFloat(newPrice));
+                    BaseProduct baseProduct = storeBean.getProductsMap().get(productSku);
+                    baseProduct.setSquarePrice(Float.parseFloat(newPrice));
+                    return true;
+                }
             }
         } catch (Exception e){
             log.error("Failed to get update price.", e);

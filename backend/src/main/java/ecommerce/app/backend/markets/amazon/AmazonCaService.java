@@ -20,6 +20,9 @@ public class AmazonCaService extends AmazonBaseService {
     @Autowired
     private TestProducts testProducts;
 
+    @Value("${price.update.enabled:true}")
+    private boolean priceUpdateEnabled;
+
     public AmazonCaService(@Value("${aws.ca.accessKeyId}")String accessKeyId,
                            @Value("${aws.ca.secret}")String secretAccessKey,
                            @Value("${aws.ca.serviceUrl}")String serviceUrl,
@@ -45,7 +48,9 @@ public class AmazonCaService extends AmazonBaseService {
                 log.warn("Price change request ignored for amazon ca. Price values are null.");
                 return false;
             }
-            storeBean.getAmazonCaPriceUpdateSet().add(detailedProduct.getSku());
+            if(priceUpdateEnabled) {
+                storeBean.getAmazonCaPriceUpdateSet().add(detailedProduct.getSku());
+            }
             amazonProduct.setPrice(Float.parseFloat(price));
 
             BaseProduct baseProduct = storeBean.getProductsMap().get(productSku);

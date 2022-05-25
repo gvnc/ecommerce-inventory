@@ -41,6 +41,9 @@ public class VendHQAPIService {
     @Autowired
     private TestProducts testProducts;
 
+    @Value("${price.update.enabled:true}")
+    private boolean priceUpdateEnabled;
+
     public VendHQAPIService(@Value("${vend.apipath}") String apipath, @Value("${vend.token}") String token, @Value("${vend.outletid}") String outletId) {
         this.authorizationToken = "Bearer " + token;
         this.baseAPIv09 = apipath;
@@ -121,27 +124,29 @@ public class VendHQAPIService {
                 return false;
             }
 
-            String url = baseAPIv09 + "/products";
+            if(priceUpdateEnabled) {
+                String url = baseAPIv09 + "/products";
 
-            ObjectMapper mapper = new ObjectMapper();
-            ObjectNode jsonObject = mapper.createObjectNode();
-            jsonObject.put("id", vendHQProduct.getId());
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode jsonObject = mapper.createObjectNode();
+                jsonObject.put("id", vendHQProduct.getId());
 
-            if(supplyPrice != null)
-                jsonObject.put("supply_price", supplyPrice);
+                if (supplyPrice != null)
+                    jsonObject.put("supply_price", supplyPrice);
 
-            if(price != null)
-                jsonObject.put("retail_price", Float.parseFloat(price));
+                if (price != null)
+                    jsonObject.put("retail_price", Float.parseFloat(price));
 
-            HttpEntity requestEntity = new HttpEntity(jsonObject, getHeaders());
+                HttpEntity requestEntity = new HttpEntity(jsonObject, getHeaders());
 
-            ResponseEntity<VendHQResponseProduct> responseObject = restTemplate.exchange(url, HttpMethod.POST, requestEntity, VendHQResponseProduct.class);
+                ResponseEntity<VendHQResponseProduct> responseObject = restTemplate.exchange(url, HttpMethod.POST, requestEntity, VendHQResponseProduct.class);
 
-            VendHQResponseProduct responseProduct = responseObject.getBody();
+                VendHQResponseProduct responseProduct = responseObject.getBody();
 
-            if(responseProduct == null){
-                log.error("Failed to change product price for vendhq. Returning response is null.");
-                return false;
+                if (responseProduct == null) {
+                    log.error("Failed to change product price for vendhq. Returning response is null.");
+                    return false;
+                }
             }
 
             if(price != null) {
