@@ -47,12 +47,15 @@ class ListProductsBulkEdit extends Component {
     syncBigCommercePrice(baseProduct, newValue){
         if(baseProduct.bigCommercePrice !== null)
             baseProduct.bigCommercePrice = newValue;
-        if(baseProduct.bigCommerceFSPrice !== null)
-            baseProduct.bigCommerceFSPrice = newValue;
         if(baseProduct.vendHQPrice !== null)
             baseProduct.vendHQPrice = newValue;
         if(baseProduct.squarePrice !== null)
             baseProduct.squarePrice = newValue;
+    }
+
+    syncBigCommerceFSPrice(baseProduct, newValue){
+        if(baseProduct.bigCommerceFSPrice !== null)
+            baseProduct.bigCommerceFSPrice = newValue;
     }
 
     syncAmazonPrice(baseProduct, newValue){
@@ -77,16 +80,19 @@ class ListProductsBulkEdit extends Component {
     onEditorValueChangeForRowEditing(baseProduct, field, value) {
         var floatRegexPattern = /^\d*(\.\d*)?$/;
         if(value === "" || floatRegexPattern.test(value)){
-            if(field === "bigCommercePrice" || field === "bigCommerceFSPrice" || field === "vendHQPrice" || field === "squarePrice"){
+            if(field === "bigCommercePrice" || field === "vendHQPrice" || field === "squarePrice"){
                 this.syncBigCommercePrice(baseProduct, value);
             } else if(field === "amazonCAPrice"){
                 this.syncAmazonPrice(baseProduct, value);
+            } else if(field === "bigCommerceFSPrice"){
+                this.syncBigCommerceFSPrice(baseProduct, value);
             }
             this.props.updateBaseProductPrice(baseProduct);
         }
         var intRegexPattern = /^\d*?$/;
         if(value === "" || intRegexPattern.test(value)) {
-            if (field === "bigCommerceInventory" || field === "bigCommerceFSInventory" || field === "vendHQInventory" || field === "amazonCAInventory" || field === "squareInventory") {
+            if (field === "bigCommerceInventory" || field === "bigCommerceFSInventory" || field === "vendHQInventory"
+                || field === "amazonCAInventory" || field === "squareInventory") {
                 this.syncInventoryForAll(baseProduct, value);
                 this.props.updateBaseProductPrice(baseProduct);
             }
@@ -160,16 +166,7 @@ class ListProductsBulkEdit extends Component {
         this.modifiedProducts[event.data.sku] = {...event.data};
     }
 
-    onRowEditSave(event) {
-        let baseProduct = event.data;
-
-        // validate fields
-        if (!this.onRowEditorValidator(baseProduct)) {
-            this.growl.show({severity: 'error', summary: 'Error', detail: 'Price/Inventory inputs are invalid.'});
-            return;
-        }
-
-        // update BigCommerce market
+    saveBigCommercePrice(baseProduct){
         let bigCommercePrice = null;
         if(baseProduct.vendHQPrice){
             bigCommercePrice = baseProduct.vendHQPrice;
@@ -177,8 +174,6 @@ class ListProductsBulkEdit extends Component {
             bigCommercePrice = baseProduct.squarePrice;
         } else if(baseProduct.bigCommercePrice){
             bigCommercePrice = baseProduct.bigCommercePrice;
-        } else if(baseProduct.bigCommerceFSPrice){
-            bigCommercePrice = baseProduct.bigCommerceFSPrice;
         }
 
         if(bigCommercePrice !== null && !isNaN(parseFloat(bigCommercePrice))) {
@@ -189,7 +184,25 @@ class ListProductsBulkEdit extends Component {
             };
             this.props.commitPriceChange(baseProduct.sku, priceParameters);
         }
+    }
 
+    saveBigCommerceFSPrice(baseProduct){
+        let bigCommercePrice = null;
+        if(baseProduct.bigCommerceFSPrice){
+            bigCommercePrice = baseProduct.bigCommerceFSPrice;
+        }
+
+        if(bigCommercePrice !== null && !isNaN(parseFloat(bigCommercePrice))) {
+            let priceParameters = {
+                "bigCommercePrice" : bigCommercePrice,
+                "bigCommerceRetailPrice" : bigCommercePrice,
+                "marketPlace" : "BigCommerceFS"
+            };
+            this.props.commitPriceChange(baseProduct.sku, priceParameters);
+        }
+    }
+
+    saveAmazonPrice(baseProduct){
         // update Amazon market
         let amazonPrice = null;
         if(baseProduct.amazonCAPrice){
@@ -202,8 +215,9 @@ class ListProductsBulkEdit extends Component {
             };
             this.props.commitPriceChange(baseProduct.sku, priceParameters);
         }
+    }
 
-        // update inventory
+    saveInventory(baseProduct){
         let inventoryLevel = null;
         if(baseProduct.vendHQInventory){
             inventoryLevel = baseProduct.vendHQInventory;
@@ -220,6 +234,24 @@ class ListProductsBulkEdit extends Component {
         if(inventoryLevel !== null){
             this.props.updateInventory(baseProduct.sku, inventoryLevel);
         }
+    }
+
+    onRowEditSave(event) {
+        let baseProduct = event.data;
+
+        // validate fields
+        if (!this.onRowEditorValidator(baseProduct)) {
+            this.growl.show({severity: 'error', summary: 'Error', detail: 'Price/Inventory inputs are invalid.'});
+            return;
+        }
+
+        // update prices
+        this.saveBigCommercePrice(baseProduct);
+        this.saveBigCommerceFSPrice(baseProduct);
+        this.saveAmazonPrice(baseProduct);
+
+        // update inventory
+        this.saveInventory(baseProduct);
         
         // delete from modifiedProducts
         delete this.modifiedProducts[event.data.sku];

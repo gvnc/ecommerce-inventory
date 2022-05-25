@@ -122,13 +122,23 @@ public class BackendController {
         String marketPlace = Utils.getStringFromNode(propertyChanges.get("marketPlace"));
 
         if(marketPlace != null){
-            if(marketPlace.equals("BigCommerce")){
-
+            if(marketPlace.equals("BigCommerceFS")){
                 String newCostPrice = Utils.getStringFromNode(propertyChanges.get("bigCommerceCostPrice"));
                 String newRetailPrice = Utils.getStringFromNode(propertyChanges.get("bigCommerceRetailPrice"));
                 String newPrice = Utils.getStringFromNode(propertyChanges.get("bigCommercePrice"));
 
-                // update bigcommerce product inventory
+                if(bigCommerceFSAPIService.updatePrice(productSku, newCostPrice, newRetailPrice, newPrice) == true){
+                    commitPriceResult.setBigCommerceFSPriceChange(OperationConstants.SUCCESS);
+                } else {
+                    commitPriceResult.setBigCommerceFSPriceChange(OperationConstants.FAIL);
+                    commitPriceResult.setFinalResult(OperationConstants.FAIL);
+                }
+            } else if(marketPlace.equals("BigCommerce")){
+                String newCostPrice = Utils.getStringFromNode(propertyChanges.get("bigCommerceCostPrice"));
+                String newRetailPrice = Utils.getStringFromNode(propertyChanges.get("bigCommerceRetailPrice"));
+                String newPrice = Utils.getStringFromNode(propertyChanges.get("bigCommercePrice"));
+
+                // update bigcommerce product price
                 if(bigCommerceAPIService.updatePrice(productSku, newCostPrice, newRetailPrice, newPrice) == true){
                     commitPriceResult.setBigCommercePriceChange(OperationConstants.SUCCESS);
                 } else {
@@ -136,15 +146,7 @@ public class BackendController {
                     commitPriceResult.setFinalResult(OperationConstants.FAIL);
                 }
 
-                // update bigcommerce fs product inventory
-                if(bigCommerceFSAPIService.updatePrice(productSku, newCostPrice, newRetailPrice, newPrice) == true){
-                    commitPriceResult.setBigCommerceFSPriceChange(OperationConstants.SUCCESS);
-                } else {
-                    commitPriceResult.setBigCommerceFSPriceChange(OperationConstants.FAIL);
-                    commitPriceResult.setFinalResult(OperationConstants.FAIL);
-                }
-
-                // update vendhq product inventory
+                // update vendhq product price
                 if(vendHQAPIService.updatePrice(productSku, newCostPrice, newRetailPrice) == true){
                     commitPriceResult.setVendhqPriceChange(OperationConstants.SUCCESS);
                 } else {
@@ -152,7 +154,7 @@ public class BackendController {
                     commitPriceResult.setFinalResult(OperationConstants.FAIL);
                 }
 
-                // update squareup product inventory
+                // update squareup product price
                 /* // remove comment out to enable square
                 if(squareAPIService.updatePrice(productSku, newRetailPrice) == true){
                     commitPriceResult.setSquarePriceChange(OperationConstants.SUCCESS);
