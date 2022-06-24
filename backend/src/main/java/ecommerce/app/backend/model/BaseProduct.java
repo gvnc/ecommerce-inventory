@@ -21,6 +21,9 @@ public class BaseProduct {
     private Float vendHQPrice;
 
     @Getter @Setter
+    private Float helcimPrice;
+
+    @Getter @Setter
     private Float amazonCAPrice;
 
     @Getter @Setter
@@ -34,6 +37,9 @@ public class BaseProduct {
 
     @Getter @Setter
     private Integer vendHQInventory;
+
+    @Getter @Setter
+    private Integer helcimInventory;
 
     @Getter @Setter
     private Integer amazonCAInventory;

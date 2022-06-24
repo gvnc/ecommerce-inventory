@@ -2,6 +2,7 @@ package ecommerce.app.backend.model;
 
 import ecommerce.app.backend.markets.amazon.products.AmazonProduct;
 import ecommerce.app.backend.markets.bigcommerce.products.BigCommerceProduct;
+import ecommerce.app.backend.markets.helcim.products.HelcimProduct;
 import ecommerce.app.backend.markets.squareup.items.SquareProduct;
 import ecommerce.app.backend.markets.vendhq.products.VendHQProduct;
 import lombok.Getter;
@@ -29,6 +30,9 @@ public class DetailedProduct {
 
     @Getter @Setter
     private VendHQProduct vendHQProduct;
+
+    @Getter @Setter
+    private HelcimProduct helcimProduct;
 
     @Getter @Setter
     private AmazonProduct amazonCaProduct;

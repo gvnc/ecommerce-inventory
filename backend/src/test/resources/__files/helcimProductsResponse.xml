@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<products>
+    <product>
+        <id>1067954</id>
+        <name>First Strike T15 Paintball Gun</name>
+        <sku>849176011010</sku>
+        <stock>1.00</stock>
+        <price>809.95</price>
+        <salePrice>809.95</salePrice>
+        <availability>1</availability>
+        <availabilityOnline>0</availabilityOnline>
+        <picture>https://defcon-paintball-gear.myhelcim.com/images-generic/smHcmComm-NoPicture.png</picture>
+    </product>
+</products>
