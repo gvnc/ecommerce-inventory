@@ -6,7 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class HelcimProduct {
-    private Long id;
+    private Integer id;
     private String name;
     private String sku;
     private Float stock;

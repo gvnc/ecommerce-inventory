@@ -5,6 +5,8 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import ecommerce.app.backend.StoreBean;
 import ecommerce.app.backend.markets.helcim.HelcimAPIService;
 import ecommerce.app.backend.markets.helcim.products.HelcimProduct;
+import ecommerce.app.backend.model.BaseProduct;
+import ecommerce.app.backend.model.DetailedProduct;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,10 +30,31 @@ public class HelcimServiceTest {
 
     private StoreBean storeBean = new StoreBean();
 
+    private HelcimProduct testProduct;
+    private final String testSku = "849176011010";
+
+    private void initStoreBean(){
+        BaseProduct baseProduct = new BaseProduct(testSku, "First Strike T15 Paintball Gun");
+        baseProduct.setHelcimPrice(120.0F);
+        baseProduct.setHelcimInventory(5);
+        storeBean.getProductsMap().put(testSku, baseProduct);
+
+        testProduct = new HelcimProduct();
+        testProduct.setId(1067954);
+        testProduct.setStock(5.00F);
+        testProduct.setSku(testSku);
+        testProduct.setName("First Strike T15 Paintball Gun");
+
+        DetailedProduct detailedProduct = new DetailedProduct(testSku, "First Strike X");
+        detailedProduct.setHelcimProduct(testProduct);
+        storeBean.getDetailedProductsMap().put(testSku, detailedProduct);
+    }
+
     @Before
     public void configureStub(){
-        helcimAPIService = new HelcimAPIService("http://localhost:8900/helcim", "testing", "");
-       // helcimAPIService = new HelcimAPIService("https://secure.myhelcim.com/api", "b9RtH9wBaQnT64gh2HK5dcD3s", "2500270978");
+        initStoreBean();
+       // helcimAPIService = new HelcimAPIService("http://localhost:8900/helcim", "testing", "", true);
+        helcimAPIService = new HelcimAPIService("https://secure.myhelcim.com/api", "b9RtH9wBaQnT64gh2HK5dcD3s", "2500270978", true);
         ReflectionTestUtils.setField(helcimAPIService, "storeBean", storeBean);
 
         wireMockRule
@@ -42,6 +65,12 @@ public class HelcimServiceTest {
 
         wireMockRule
                 .stubFor(WireMock.any(WireMock.urlPathEqualTo("/helcim/product/inventory-update"))
+                        .willReturn(WireMock.ok()
+                                .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE)
+                                .withBodyFile("helcimProductUpdateResponse.xml")));
+
+        wireMockRule
+                .stubFor(WireMock.any(WireMock.urlPathEqualTo("/helcim/product/modify"))
                         .willReturn(WireMock.ok()
                                 .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE)
                                 .withBodyFile("helcimProductUpdateResponse.xml")));
@@ -56,13 +85,13 @@ public class HelcimServiceTest {
 
     @Test
     public void updateInventory(){
-        String sku = "12345";
-        HelcimProduct helcimProduct = new HelcimProduct();
-        helcimProduct.setId(1067954L);
-        helcimProduct.setStock(5.00F);
-        helcimProduct.setSku(sku);
+        boolean updateResult = helcimAPIService.updateInventory(testProduct, 2);
+        Assert.assertTrue(updateResult);
+    }
 
-        boolean updateResult = helcimAPIService.updateInventory(helcimProduct, 2);
+    @Test
+    public void updatePrice(){
+        boolean updateResult = helcimAPIService.updatePrice(testSku, "3.00");
         Assert.assertTrue(updateResult);
     }
 }

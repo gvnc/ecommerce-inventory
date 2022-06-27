@@ -43,16 +43,17 @@ public class HelcimAPIService {
 
     @Autowired
     private TestProducts testProducts;
-    
-    @Value("${price.update.enabled:true}")
+
     private boolean priceUpdateEnabled;
 
     public HelcimAPIService(@Value("${helcim.apipath}")String apiPath,
                             @Value("${helcim.apitoken}")String apiToken,
-                            @Value("${helcim.accountid}")String accountId) {
+                            @Value("${helcim.accountid}")String accountId,
+                            @Value("${price.update.enabled:true}")boolean priceUpdateEnabled) {
         this.apiPath = apiPath;
         this.apiToken = apiToken;
         this.accountId = accountId;
+        this.priceUpdateEnabled = priceUpdateEnabled;
     }
 
     private HttpHeaders getHeaders(){
@@ -99,18 +100,19 @@ public class HelcimAPIService {
                         newQuantity = 0;
                     }
                 }
-                /*
-                if(product.getVariantId() != null)
-                    return updateVariantInventory(product, newQuantity);
-                else
 
-                 */
-                    return updateInventory(product, newQuantity);
+                // TODO - variant exists or not ?
+
+                return updateInventory(product, newQuantity);
             }else {
                 log.warn("No product found in helcim with sku {}", sku);
             }
         }
         return true;
+    }
+
+    private boolean operationSucceeded(HelcimApiResponse helcimApiResponse){
+        return helcimApiResponse != null && "1".equals(helcimApiResponse.getResponse());
     }
 
     public boolean updateInventory(HelcimProduct product, Integer newQuantity){
@@ -120,9 +122,9 @@ public class HelcimAPIService {
 
             String url = apiPath + "/product/inventory-update";
 
-            MultiValueMap<String, String> dataMap= new LinkedMultiValueMap<>();
+            MultiValueMap<String, Object> dataMap= new LinkedMultiValueMap<>();
             dataMap.add("stockChange", newQuantity.toString());
-            dataMap.add("productId", product.getId().toString());
+            dataMap.add("productId", product.getId());
             dataMap.add("note", "UpdatedByDefconSyncApplication");
 
             HttpHeaders headers = getHeaders();
@@ -134,7 +136,7 @@ public class HelcimAPIService {
                     restTemplate.exchange(url, HttpMethod.POST, requestEntity, HelcimApiResponse.class);
 
             HelcimApiResponse apiResponse = responseObject.getBody();
-            if(apiResponse != null && "1".equals(apiResponse.getResponse())){
+            if(operationSucceeded(apiResponse)){
                 product.setStock(Float.parseFloat(newQuantity.toString()));
                 BaseProduct baseProduct = storeBean.getProductsMap().get(product.getSku());
                 if (baseProduct != null) {
@@ -153,17 +155,16 @@ public class HelcimAPIService {
         return false;
     }
 
-
     public boolean updatePrice(String productSku, String price){
         try {
-            log.info("Price change request for helcim. [product:"+productSku+",price:"+price+"]");
+            log.info("Price change requested for helcim. [product:{},price:{}]", productSku, price);
             DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(productSku);
             if(detailedProduct == null)
                 return false;
 
             HelcimProduct helcimProduct = detailedProduct.getHelcimProduct();
             if(helcimProduct == null){
-                log.warn("Skip price change, no helcim product found with sku " + productSku);
+                log.warn("Skip price change, no helcim product found with sku {}", productSku);
                 return true;
             }
 
@@ -175,9 +176,11 @@ public class HelcimAPIService {
             if(priceUpdateEnabled) {
                 String url = apiPath + "/product/modify";
 
-                MultiValueMap<String, String> dataMap= new LinkedMultiValueMap<>();
+                MultiValueMap<String, Object> dataMap= new LinkedMultiValueMap<>();
                 dataMap.add("price", price);
-                dataMap.add("productId", helcimProduct.getId().toString());
+                dataMap.add("productId", helcimProduct.getId());
+                dataMap.add("SKU", productSku);
+                dataMap.add("name", helcimProduct.getName());
 
                 HttpHeaders headers = getHeaders();
                 headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -188,10 +191,12 @@ public class HelcimAPIService {
                         restTemplate.exchange(url, HttpMethod.POST, requestEntity, HelcimApiResponse.class);
 
                 HelcimApiResponse apiResponse = responseObject.getBody();
-                if(apiResponse != null && "1".equals(apiResponse.getResponse())){
-                    log.info("Price change successful for helcim. [product:"+productSku+",price:"+price+"]");
+                if(operationSucceeded(apiResponse)){
+                    log.info("Price change successful for helcim. [product:{},price:{}]", productSku, price);
                 }else{
-                    log.error("Price change failed for sku {}, response is {}", helcimProduct.getSku(), apiResponse.getResponseMessage());
+                    log.error("Price change failed for sku {}, response is {}",
+                            helcimProduct.getSku(), apiResponse.getResponseMessage());
+                    return false;
                 }
             }
 
