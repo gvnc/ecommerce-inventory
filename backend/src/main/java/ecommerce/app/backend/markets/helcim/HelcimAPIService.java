@@ -89,21 +89,36 @@ public class HelcimAPIService {
         log.info("Inventory update requested for helcim product. [sku:{},amount:{}]", sku, amount);
         if(testProducts.isAvailable(sku)){
             if(product != null) {
-                int newQuantity = amount;
+                int quantityChange = amount;
+                int currentQuantity = product.getStock().intValue();
+                int newQuantity = currentQuantity + quantityChange;
+
                 if(overwrite == false) {
-                    int currentQuantity = product.getStock().intValue();
-                    newQuantity = currentQuantity + amount;
-                    if (newQuantity < 0) {
+                    if(newQuantity <0) {
                         log.warn("There is no enough inventory in the helcim store for sku {}. [currentQuantity:{}, demanded:{}]",
                                 sku, currentQuantity, amount);
-                        log.warn("Set inventory to 0 for sku {}", sku);
-                        newQuantity = 0;
                     }
+                } else{
+                    // helcim api expects the stockChange either positive or negative
+                    // to overwrite the stock with new value, find the difference between currentQuantity and new amount
+                    quantityChange = amount - currentQuantity;
+                    newQuantity = amount;
                 }
-
                 // TODO - variant exists or not ?
 
-                return updateInventory(product, newQuantity);
+                boolean inventoryUpdated = updateInventory(product, quantityChange);
+                if(inventoryUpdated){
+                    product.setStock(Float.parseFloat(String.valueOf(newQuantity)));
+                    BaseProduct baseProduct = storeBean.getProductsMap().get(product.getSku());
+                    if (baseProduct != null) {
+                        baseProduct.setHelcimInventory(newQuantity);
+                    }
+
+                    log.info("Inventory change successful for helcim. [productId:{},sku:{},quantityChange:{},newQuantity:{}]",
+                            product.getId(), product.getSku(), quantityChange, newQuantity);
+                } else{
+                    return false;
+                }
             }else {
                 log.warn("No product found in helcim with sku {}", sku);
             }
@@ -115,15 +130,15 @@ public class HelcimAPIService {
         return helcimApiResponse != null && "1".equals(helcimApiResponse.getResponse());
     }
 
-    public boolean updateInventory(HelcimProduct product, Integer newQuantity){
+    public boolean updateInventory(HelcimProduct product, Integer quantityChange){
         try {
-            log.info("Inventory change request for helcim. [productId:{},sku:{},newQuantity:{}]",
-                    product.getId(), product.getSku(), newQuantity);
+            log.info("Inventory change request for helcim. [productId:{},sku:{},quantityChange:{}]",
+                    product.getId(), product.getSku(), quantityChange);
 
             String url = apiPath + "/product/inventory-update";
 
             MultiValueMap<String, Object> dataMap= new LinkedMultiValueMap<>();
-            dataMap.add("stockChange", newQuantity.toString());
+            dataMap.add("stockChange", quantityChange.toString());
             dataMap.add("productId", product.getId());
             dataMap.add("note", "UpdatedByDefconSyncApplication");
 
@@ -137,14 +152,6 @@ public class HelcimAPIService {
 
             HelcimApiResponse apiResponse = responseObject.getBody();
             if(operationSucceeded(apiResponse)){
-                product.setStock(Float.parseFloat(newQuantity.toString()));
-                BaseProduct baseProduct = storeBean.getProductsMap().get(product.getSku());
-                if (baseProduct != null) {
-                    baseProduct.setHelcimInventory(newQuantity);
-                }
-
-                log.info("Inventory change successful for helcim. [productId:{},sku:{},newQuantity:{}]",
-                        product.getId(), product.getSku(), newQuantity);
                 return true;
             } else{
                 log.error("Failed to change product inventory for helcim. Returning response message is {}", apiResponse.getResponseMessage());
@@ -178,6 +185,7 @@ public class HelcimAPIService {
 
                 MultiValueMap<String, Object> dataMap= new LinkedMultiValueMap<>();
                 dataMap.add("price", price);
+                dataMap.add("salePrice", price);
                 dataMap.add("productId", helcimProduct.getId());
                 dataMap.add("SKU", productSku);
                 dataMap.add("name", helcimProduct.getName());
