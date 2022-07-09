@@ -25,10 +25,6 @@ public class TestProducts {
     }
 
     public boolean isAvailable(String productSku){
-        if(testEnabled == true) {
-            log.warn("Test mode is enabled.");
-            return testSkuSet.contains(productSku);
-        }
         return true;
     }
 }

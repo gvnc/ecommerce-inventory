@@ -3,6 +3,8 @@ package ecommerce.app.backend.markets.helcim;
 import ecommerce.app.backend.StoreBean;
 import ecommerce.app.backend.inventory.TestProducts;
 import ecommerce.app.backend.markets.helcim.products.HelcimApiResponse;
+import ecommerce.app.backend.markets.helcim.products.HelcimOrder;
+import ecommerce.app.backend.markets.helcim.products.HelcimOrderItem;
 import ecommerce.app.backend.markets.helcim.products.HelcimProduct;
 import ecommerce.app.backend.model.BaseProduct;
 import ecommerce.app.backend.model.DetailedProduct;
@@ -10,19 +12,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -45,6 +45,8 @@ public class HelcimAPIService {
     private TestProducts testProducts;
 
     private boolean priceUpdateEnabled;
+
+    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     public HelcimAPIService(@Value("${helcim.apipath}")String apiPath,
                             @Value("${helcim.apitoken}")String apiToken,
@@ -219,5 +221,58 @@ public class HelcimAPIService {
             log.error("Failed to change product price for helcim.", e);
             return false;
         }
+    }
+
+    public List<HelcimOrder> getOrders(){
+        try {
+            String today = simpleDateFormat.format(new Date());
+
+            String url = apiPath + "/invoice/search";
+
+            MultiValueMap<String, Object> dataMap= new LinkedMultiValueMap<>();
+            dataMap.add("dateFrom", today);
+            dataMap.add("dateTo", today);
+
+            HttpHeaders headers = getHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+            HttpEntity requestEntity = new HttpEntity(dataMap, headers);
+
+            ResponseEntity<HelcimOrder[]> responseObject =
+                    restTemplate.exchange(url, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<HelcimOrder[]>() { });
+
+            if(responseObject.getBody() != null){
+                return Arrays.asList(responseObject.getBody());
+            }
+        } catch (Exception e){
+            log.error("Failed to get orders.", e);
+        }
+        return null;
+    }
+
+    public List<HelcimOrderItem> getOrderProducts(String orderNumber){
+        try {
+            String url = apiPath + "/invoice/view";
+
+            MultiValueMap<String, Object> dataMap= new LinkedMultiValueMap<>();
+            dataMap.add("orderNumber", orderNumber);
+
+            HttpHeaders headers = getHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+            HttpEntity requestEntity = new HttpEntity(dataMap, headers);
+
+            ResponseEntity<HelcimOrder[]> responseObject =
+                    restTemplate.exchange(url, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<HelcimOrder[]>() { });
+
+            if(responseObject.getBody() != null){
+                HelcimOrder helcimOrder = responseObject.getBody()[0];
+                return helcimOrder != null ? Arrays.asList(helcimOrder.getItems()) : null;
+            }
+
+        } catch (Exception e){
+            log.error("Failed to get products.", e);
+        }
+        return null;
     }
 }

@@ -21,4 +21,7 @@ public class LatestOrderInfo {
 
     @Getter @Setter
     private Date squareLastModifiedDate;
+
+    @Getter @Setter
+    private Date helcimLastModifiedDate;
 }

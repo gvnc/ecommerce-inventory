@@ -1,0 +1,170 @@
+<?xml version="1.0"?>
+<orders>
+    <order>
+        <orderNumber>ORDR11464</orderNumber>
+        <token>
+            ca62bfd62aeeba8d42fd42
+        </token>
+        <dateCreated>
+            2017-06-16 14:47:43
+        </dateCreated>
+        <dateIssued>2017-06-16 00:00:00</dateIssued>
+        <datePaid>
+            2017-06-16 15:24:36
+        </datePaid>
+        <createdBy>
+            Sample Name
+        </createdBy>
+        <currency>
+            CAD
+        </currency>
+        <status>
+            PAID
+        </status>
+        <paymentTerms>
+            30
+        </paymentTerms>
+        <customer>
+            <customerCode>
+                12A1169
+            </customerCode>
+            <businessName>
+                Sample Store
+            </businessName>
+            <contactName>
+                Business Owner
+            </contactName>
+        </customer>
+        <amount>
+            73.50
+        </amount>
+        <amountDue>
+            0.00
+        </amountDue>
+        <amountTip>
+            73.50
+        </amountTip>
+        <discount>
+            <amountDiscount>
+                0.00
+            </amountDiscount>
+            <discountDetails></discountDetails>
+        </discount>
+        <tax>
+            <amountTax>
+                3.50
+            </amountTax>
+            <taxDetails>
+                GST 5.00%
+            </taxDetails>
+        </tax>
+        <shipping>
+            <amountShipping>
+                0.00
+            </amountShipping>
+            <shippingMethod></shippingMethod>
+        </shipping>
+        <subscriptionId>
+            0
+        </subscriptionId>
+        <comments></comments>
+        <billingAddress>
+            <contactName>
+                Business Owner
+            </contactName>
+            <businessName>
+                Sample Store
+            </businessName>
+            <street1>
+                123 Street
+            </street1>
+            <street2>
+                Unit 2
+            </street2>
+            <city>
+                Calgary
+            </city>
+            <province>
+                Alberta
+            </province>
+            <country>
+                Canada
+            </country>
+            <postalCode>
+                T1T 1T1
+            </postalCode>
+            <phone>
+                555-555-5555
+            </phone>
+            <fax></fax>
+            <email>
+                sample@example.com
+            </email>
+        </billingAddress>
+        <shippingAddress>
+            <contactName>
+                Business Owner
+            </contactName>
+            <businessName>
+                Sample Store
+            </businessName>
+            <street1>
+                123 Street
+            </street1>
+            <street2>
+                Unit 2
+            </street2>
+            <city>
+                Calgary
+            </city>
+            <province>
+                Alberta
+            </province>
+            <country>
+                Canada
+            </country>
+            <postalCode>
+                T1T 1T1
+            </postalCode>
+            <phone>
+                555-555-5555
+            </phone>
+            <fax></fax>
+            <email>
+                sample@example.com
+            </email>
+        </shippingAddress>
+        <items>
+            <item>
+                <SKU>369874</SKU>
+                <description>
+                    Sample Product [369874]
+                </description>
+                <serialNumber></serialNumber>
+                <quantity>5.00</quantity>
+                <price>
+                    1.00
+                </price>
+                <total>
+                    5.00
+                </total>
+            </item>
+            <item>
+                <SKU>985263</SKU>
+                <description>
+                    Product 1 [985263]
+                </description>
+                <serialNumber></serialNumber>
+                <quantity>5.00</quantity>
+                <price>
+                    13.00
+                </price>
+                <total>
+                    65.00
+                </total>
+            </item>
+        </items>
+        <transactions>
+        </transactions>
+    </order>
+</orders>

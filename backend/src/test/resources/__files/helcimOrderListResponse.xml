@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<orders>
+    <order>
+        <orderNumber>ORDR11055</orderNumber>
+        <token>
+            1083fe3be32dd3acbd89c4
+        </token>
+        <amount>
+            40.00
+        </amount>
+        <currency>
+            CAD
+        </currency>
+        <customerCode></customerCode>
+        <createdBy>
+            Helcim System
+        </createdBy>
+        <status>PAID</status>
+        <dateCreated>
+            2017-05-29 09:54:33
+        </dateCreated>
+        <dateIssued>2017-05-29 09:54:29</dateIssued>
+        <datePaid>
+            0000-00-00 00:00:00
+        </datePaid>
+    </order>
+    <order>
+        <orderNumber>ORDR11054</orderNumber>
+        <token>
+            a789ffa0d007fe518dc0f3
+        </token>
+        <amount>
+            52.50
+        </amount>
+        <currency>
+            CAD
+        </currency>
+        <customerCode></customerCode>
+        <createdBy>
+            Helcim System
+        </createdBy>
+        <status>DUE</status>
+        <dateCreated>
+            2017-05-29 09:50:03
+        </dateCreated>
+        <dateIssued>2017-05-29 09:50:03</dateIssued>
+        <datePaid>
+            0000-00-00 00:00:00
+        </datePaid>
+    </order>
+</orders>

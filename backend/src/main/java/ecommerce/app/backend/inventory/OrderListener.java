@@ -11,6 +11,10 @@ import ecommerce.app.backend.markets.bigcommerce.order.BCOrder;
 import ecommerce.app.backend.markets.bigcommerce.order.BCOrderProduct;
 import ecommerce.app.backend.markets.bigcommerce.order.BCOrderStatuses;
 import ecommerce.app.backend.markets.bigcommerce.products.BigCommerceProduct;
+import ecommerce.app.backend.markets.helcim.HelcimAPIService;
+import ecommerce.app.backend.markets.helcim.products.HelcimOrder;
+import ecommerce.app.backend.markets.helcim.products.HelcimOrderItem;
+import ecommerce.app.backend.markets.helcim.products.HelcimProduct;
 import ecommerce.app.backend.markets.squareup.SquareAPIService;
 import ecommerce.app.backend.markets.squareup.items.SquareItemVariation;
 import ecommerce.app.backend.markets.squareup.items.SquareProduct;
@@ -59,6 +63,9 @@ public class OrderListener {
     private SquareAPIService squareAPIService;
 
     @Autowired
+    private HelcimAPIService helcimAPIService;
+
+    @Autowired
     private StoreBean storeBean;
 
     @Autowired
@@ -81,6 +88,9 @@ public class OrderListener {
     @Value("${listen.orders.amazonca.enabled}")
     private Boolean listenAmazonCAEnabled;
 
+    @Value("${listen.orders.helcim.enabled}")
+    private Boolean listenHelcimEnabled;
+
     public OrderListener(@Value("${order.listener.data.file}")String orderListenerDataFile) {
         this.orderListenerDataFile = orderListenerDataFile;
         this.latestOrderInfo = OrderListenerUtil.getLatestOrderInfo(orderListenerDataFile);
@@ -95,6 +105,7 @@ public class OrderListener {
             listenVendHQSales();
             listenBigCommerceFSOrders();
             listenAmazonCAOrders();
+            listenHelcimOrders();
             //listenSquareupOrders(); // remove comment out to enable square
             OrderListenerUtil.saveLatestOrderInfo(orderListenerDataFile, latestOrderInfo);
             log.debug("Order listener ended running.");
@@ -168,6 +179,7 @@ public class OrderListener {
                     bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), product.getSku(), quantity, false);
                     amazonCaService.updateInventory(product.getSku(), quantity, false);
                     squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), product.getSku(), quantity, false);
+                    helcimAPIService.updateProductQuantity(detailedProduct.getHelcimProduct(), product.getSku(), quantity, false);
                 }
             }
         }catch (Exception e){
@@ -242,6 +254,7 @@ public class OrderListener {
                     bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), product.getSku(), quantity, false);
                     amazonCaService.updateInventory(product.getSku(), quantity, false);
                     squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), product.getSku(), quantity, false);
+                    helcimAPIService.updateProductQuantity(detailedProduct.getHelcimProduct(), product.getSku(), quantity, false);
                 }
             }
         }catch (Exception e){
@@ -319,6 +332,7 @@ public class OrderListener {
                     bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), sku, quantity, false);
                     amazonCaService.updateInventory(sku, quantity, false);
                     squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), sku, quantity, false);
+                    helcimAPIService.updateProductQuantity(detailedProduct.getHelcimProduct(), sku, quantity, false);
                 }
             }
         }catch (Exception e){
@@ -398,6 +412,7 @@ public class OrderListener {
                     bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), sku, quantity, false);
                     vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), sku, quantity, false);
                     squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), sku, quantity, false);
+                    helcimAPIService.updateProductQuantity(detailedProduct.getHelcimProduct(), sku, quantity, false);
                 }
             }
         }catch (Exception e){
@@ -473,10 +488,80 @@ public class OrderListener {
                     bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), sku, quantity, false);
                     bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), sku, quantity, false);
                     amazonCaService.updateInventory(sku, quantity, false);
+                    helcimAPIService.updateProductQuantity(detailedProduct.getHelcimProduct(), sku, quantity, false);
                 }
             }
         }catch (Exception e){
             log.error("Failed to update inventory after a change in squareup.[orderId:" + orderId + "]", e);
+        }
+    }
+
+    public void listenHelcimOrders(){
+        if(!listenHelcimEnabled)
+            return;
+
+        log.debug("Started to check helcim orders.");
+        try {
+            List<HelcimOrder> ordersList = helcimAPIService.getOrders();
+            if(ordersList != null){
+                for(HelcimOrder order:ordersList){
+                    if(order.getDateIssued().after(latestOrderInfo.getHelcimLastModifiedDate())){
+                        log.info("An order event is captured for Helcim. [orderId:{},status:{}]", order.getOrderNumber(), order.getStatus());
+                        if(order.getStatus().equals("PAID")){ // new sales
+                            BaseOrder baseOrder = orderService.saveOrder("Helcim", order.getOrderNumber(), order.getAmount(), order.getDateIssued(), order.getStatus());
+                            updateInventoriesByHelcim(order.getOrderNumber(), baseOrder, InventoryChange.DECREASE);
+                        }
+                        log.info("Order handling completed for Helcim. [orderId:{},status:{}]", order.getOrderNumber(), order.getStatus());
+                    }
+                }
+                latestOrderInfo.setHelcimLastModifiedDate(ordersList.get(0).getDateIssued());
+            }
+        }catch (Exception e){
+            log.error("Helcim listener failed.", e);
+        }
+    }
+
+    private void updateInventoriesByHelcim(String orderId, BaseOrder baseOrder, Integer changeType){
+        log.info("Update inventories after a change in helcim.[orderId:{}]", orderId);
+        try {
+            List<HelcimOrderItem> itemList = helcimAPIService.getOrderProducts(orderId);
+            if(itemList != null){
+                for(HelcimOrderItem orderItem:itemList){
+                    if(baseOrder != null){
+                        orderService.saveOrderItem(orderItem.getSku(), orderItem.getDescription(), orderItem.getQuantity().intValue(), baseOrder);
+                    }
+                    int quantity = orderItem.getQuantity().intValue() * changeType;
+
+                    // set overall quantity
+                    DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(orderItem.getSku());
+                    setOverallQuantity(detailedProduct, quantity);
+
+                    // update inventory level in memory for product in base market
+                    HelcimProduct helcimProduct = detailedProduct.getHelcimProduct();
+                    if(helcimProduct != null){
+                        int currentQuantity = helcimProduct.getStock().intValue();
+                        int newQuantity = currentQuantity + quantity;
+                        if (newQuantity < 0) {
+                            log.warn("There is no enough inventory in the helcim store for sku {}. [currentQuantity:{}, demanded:{}]",
+                                    orderItem.getSku(), currentQuantity, quantity);
+                        }
+                        helcimProduct.setStock(Float.parseFloat(String.valueOf(newQuantity)));
+                        BaseProduct baseProduct = storeBean.getProductsMap().get(orderItem.getSku());
+                        if(baseProduct != null){
+                            baseProduct.setHelcimInventory(newQuantity);
+                        }
+                    }
+
+                    // set quantity for other market places
+                    vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), orderItem.getSku(), quantity, false);
+                    bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), orderItem.getSku(), quantity, false);
+                    bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), orderItem.getSku(), quantity, false);
+                    amazonCaService.updateInventory(orderItem.getSku(), quantity, false);
+                    squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), orderItem.getSku(), quantity, false);
+                }
+            }
+        }catch (Exception e){
+            log.error("Failed to get product list for orders in helcim.", e);
         }
     }
 
