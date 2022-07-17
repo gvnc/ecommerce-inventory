@@ -29,4 +29,11 @@ public class SyncStatus {
 
     private String helcimSyncStatus = SyncConstants.SYNC_NA;
     private String helcimLastUpdate = "";
+
+    private String syncMaster;
+
+    public SyncStatus setMaster(String syncMaster){
+        this.syncMaster = syncMaster;
+        return this;
+    }
 }

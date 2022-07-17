@@ -12,11 +12,11 @@ import ecommerce.app.backend.repository.model.AverageCostView;
 import ecommerce.app.backend.repository.model.BaseOrder;
 import ecommerce.app.backend.service.OrderService;
 import ecommerce.app.backend.service.PurchaseOrderService;
-import ecommerce.app.backend.service.ScriptService;
 import ecommerce.app.backend.service.SyncProductsService;
 import ecommerce.app.backend.util.Utils;
 import ecommerce.app.backend.markets.vendhq.VendHQAPIService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -57,6 +57,9 @@ public class BackendController {
     @Autowired
     private PurchaseOrderService purchaseOrderService;
 
+    @Value("${master.market.type}")
+    private String syncMaster;
+
     @GetMapping("/isAppRunning")
     public Boolean isAppRunning() {
         return true;
@@ -64,19 +67,22 @@ public class BackendController {
 
     @GetMapping("/syncStatus")
     public SyncStatus getSyncStatus() {
-        return storeBean.getSyncStatus();
+        return storeBean.getSyncStatus()
+                .setMaster(syncMaster);
     }
 
     @GetMapping("/startSync")
     public SyncStatus startSync() {
         syncProductsService.syncAllMarketPlaces();
-        return storeBean.getSyncStatus();
+        return storeBean.getSyncStatus()
+                .setMaster(syncMaster);
     }
 
     @GetMapping("/startSyncFromMaster")
     public SyncStatus startSyncFromMaster() {
         syncProductsService.syncFromMaster();
-        return storeBean.getSyncStatus();
+        return storeBean.getSyncStatus()
+                .setMaster(syncMaster);
     }
 
     @GetMapping("/getOrders")

@@ -85,8 +85,14 @@ class MarketPlaceSyncStatus extends Component {
                             <Button label="Start Sync Operation" icon="pi pi-play" onClick={this.startSync}/>
                             {
                                 process.env.REACT_APP_SHOW_SYNC_FROM_MASTER &&
+                                <>
                                     <Button label="Sync From Master" icon="pi pi-save"
                                             onClick={this.syncFromMaster} style={{marginLeft: "10px"}} />
+                                    {
+                                        syncResult.syncMaster  &&
+                                        <div style={{fontWeight: 500,fontStyle: "italic",color: '#0e5757',marginTop: '7px'}}>Sync Master is {syncResult.syncMaster}</div>
+                                    }
+                                </>
                             }
                         </div>;
         }
