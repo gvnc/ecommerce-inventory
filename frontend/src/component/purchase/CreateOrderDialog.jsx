@@ -65,8 +65,6 @@ class CreateOrderDialog extends Component {
     }
 
     render() {
-        console.log("render dialog");
-
         let dialogFooter = <div className="ui-dialog-buttonpane p-clearfix">
             <Button label="Create" icon="pi pi-save" onClick={this.onSave}/>
             <Button label="Cancel" icon="pi pi-times" onClick={this.hideDialog}/>

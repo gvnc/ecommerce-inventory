@@ -39,6 +39,8 @@ class MarketPlaceSyncStatus extends Component {
             return true;
         if(process.env.REACT_APP_SHOW_AMCA && this.props.syncStatus.amazonCaStatus === SYNC_IN_PROGRESS)
             return true;
+        if(process.env.REACT_APP_SHOW_HELCIM && this.props.syncStatus.helcimSyncStatus === SYNC_IN_PROGRESS)
+            return true;
     }
 
     setSyncStatusInPending(){
@@ -46,6 +48,7 @@ class MarketPlaceSyncStatus extends Component {
         syncStatus.bigCommerceSyncStatus = SYNC_IN_PROGRESS;
         syncStatus.bigCommerceFSSyncStatus = SYNC_IN_PROGRESS;
         syncStatus.vendHQSyncStatus = SYNC_IN_PROGRESS;
+        syncStatus.helcimSyncStatus = SYNC_IN_PROGRESS;
         syncStatus.amazonUsStatus = SYNC_IN_PROGRESS;
         syncStatus.amazonCaStatus = SYNC_IN_PROGRESS;
         syncStatus.squareupSyncStatus = SYNC_IN_PROGRESS;
@@ -109,6 +112,14 @@ class MarketPlaceSyncStatus extends Component {
                                 <div
                                     className="p-col">{this.getIconImage(syncResult.bigCommerceFSSyncStatus)} {syncResult.bigCommerceFSSyncStatus}</div>
                                 <div className="p-col">{syncResult.bigCommerceFSLastUpdate}</div>
+                            </div>
+                        }
+                        {
+                            process.env.REACT_APP_SHOW_HELCIM &&
+                            <div className="p-grid p-fluid">
+                                <div className="p-col">Helcim</div>
+                                <div className="p-col">{this.getIconImage(syncResult.helcimSyncStatus)} {syncResult.helcimSyncStatus}</div>
+                                <div className="p-col">{syncResult.helcimLastUpdate}</div>
                             </div>
                         }
                         {

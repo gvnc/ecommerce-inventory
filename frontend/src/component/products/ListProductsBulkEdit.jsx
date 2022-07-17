@@ -53,6 +53,8 @@ class ListProductsBulkEdit extends Component {
             baseProduct.vendHQPrice = newValue;
         if(baseProduct.squarePrice !== null)
             baseProduct.squarePrice = newValue;
+        if(baseProduct.helcimPrice !== null)
+            baseProduct.helcimPrice = newValue;
     }
 
     syncAmazonPrice(baseProduct, newValue){
@@ -67,6 +69,8 @@ class ListProductsBulkEdit extends Component {
             baseProduct.bigCommerceFSInventory = newValue;
         if(baseProduct.vendHQInventory !== null)
             baseProduct.vendHQInventory = newValue;
+        if(baseProduct.helcimInventory !== null)
+            baseProduct.helcimInventory = newValue;
         if(baseProduct.amazonCAInventory !== null)
             baseProduct.amazonCAInventory = newValue;
         if(baseProduct.squareInventory !== null)
@@ -77,7 +81,8 @@ class ListProductsBulkEdit extends Component {
     onEditorValueChangeForRowEditing(baseProduct, field, value) {
         var floatRegexPattern = /^\d*(\.\d*)?$/;
         if(value === "" || floatRegexPattern.test(value)){
-            if(field === "bigCommercePrice" || field === "bigCommerceFSPrice" || field === "vendHQPrice" || field === "squarePrice"){
+            if(field === "bigCommercePrice" || field === "bigCommerceFSPrice" || field === "vendHQPrice"
+                || field === "squarePrice" || field === "helcimPrice"){
                 this.syncBigCommercePrice(baseProduct, value);
             } else if(field === "amazonCAPrice"){
                 this.syncAmazonPrice(baseProduct, value);
@@ -86,7 +91,8 @@ class ListProductsBulkEdit extends Component {
         }
         var intRegexPattern = /^\d*?$/;
         if(value === "" || intRegexPattern.test(value)) {
-            if (field === "bigCommerceInventory" || field === "bigCommerceFSInventory" || field === "vendHQInventory" || field === "amazonCAInventory" || field === "squareInventory") {
+            if (field === "bigCommerceInventory" || field === "bigCommerceFSInventory" || field === "vendHQInventory"
+                || field === "amazonCAInventory" || field === "squareInventory" || field === "helcimInventory") {
                 this.syncInventoryForAll(baseProduct, value);
                 this.props.updateBaseProductPrice(baseProduct);
             }
@@ -96,6 +102,7 @@ class ListProductsBulkEdit extends Component {
     editorForRowEditing(props, field) {
         if(field === "price"){
             return <div className="p-grid p-dir-col">
+                { process.env.REACT_APP_SHOW_HELCIM && this.renderSingleColumn(props, "helcimPrice")}
                 { process.env.REACT_APP_SHOW_VEND && this.renderSingleColumn(props, "vendHQPrice")}
                 { process.env.REACT_APP_SHOW_SQUARE && this.renderSingleColumn(props, "squarePrice")}
                 { process.env.REACT_APP_SHOW_BC && this.renderSingleColumn(props, "bigCommercePrice")}
@@ -105,6 +112,7 @@ class ListProductsBulkEdit extends Component {
         }
         if(field === "inventory"){
             return <div className="p-grid p-dir-col">
+                { process.env.REACT_APP_SHOW_HELCIM && this.renderSingleColumn(props, "helcimInventory")}
                 { process.env.REACT_APP_SHOW_VEND && this.renderSingleColumn(props, "vendHQInventory")}
                 { process.env.REACT_APP_SHOW_SQUARE && this.renderSingleColumn(props, "squareInventory") }
                 { process.env.REACT_APP_SHOW_BC && this.renderSingleColumn(props, "bigCommerceInventory")}
@@ -141,12 +149,14 @@ class ListProductsBulkEdit extends Component {
 
     onRowEditorValidator(rowData) {
         let isValid = true;
+        isValid = isValid && this.isPriceValid(rowData["helcimPrice"]);
         isValid = isValid && this.isPriceValid(rowData["vendHQPrice"]);
         isValid = isValid && this.isPriceValid(rowData["squarePrice"]);
         isValid = isValid && this.isPriceValid(rowData["bigCommercePrice"]);
         isValid = isValid && this.isPriceValid(rowData["bigCommerceFSPrice"]);
         isValid = isValid && this.isPriceValid(rowData["amazonCAPrice"]);
 
+        isValid = isValid && this.isInventoryValid(rowData["helcimInventory"]);
         isValid = isValid && this.isInventoryValid(rowData["vendHQInventory"]);
         isValid = isValid && this.isInventoryValid(rowData["squareInventory"]);
         isValid = isValid && this.isInventoryValid(rowData["bigCommerceInventory"]);
@@ -173,6 +183,8 @@ class ListProductsBulkEdit extends Component {
         let bigCommercePrice = null;
         if(baseProduct.vendHQPrice){
             bigCommercePrice = baseProduct.vendHQPrice;
+        }  else if(baseProduct.helcimPrice){
+            bigCommercePrice = baseProduct.helcimPrice;
         } else if(baseProduct.squarePrice){
             bigCommercePrice = baseProduct.squarePrice;
         } else if(baseProduct.bigCommercePrice){
@@ -207,6 +219,8 @@ class ListProductsBulkEdit extends Component {
         let inventoryLevel = null;
         if(baseProduct.vendHQInventory){
             inventoryLevel = baseProduct.vendHQInventory;
+        }  else if(baseProduct.helcimInventory){
+            inventoryLevel = baseProduct.helcimInventory;
         } else if(baseProduct.squareInventory){
             inventoryLevel = baseProduct.squareInventory;
         } else if(baseProduct.bigCommerceInventory){
@@ -235,6 +249,7 @@ class ListProductsBulkEdit extends Component {
 
     priceFieldRender(rowData){
         return  <div className="p-grid p-dir-col">
+                    {process.env.REACT_APP_SHOW_HELCIM && this.singleFieldRender(rowData, "helcimPrice")}
                     {process.env.REACT_APP_SHOW_VEND && this.singleFieldRender(rowData, "vendHQPrice")}
                     {process.env.REACT_APP_SHOW_SQUARE && this.singleFieldRender(rowData, "squarePrice")}
                     {process.env.REACT_APP_SHOW_BC && this.singleFieldRender(rowData, "bigCommercePrice")}
@@ -245,6 +260,7 @@ class ListProductsBulkEdit extends Component {
 
     inventoryFieldRender(rowData){
         return  <div className="p-grid p-dir-col">
+                    {process.env.REACT_APP_SHOW_HELCIM && this.singleFieldRender(rowData, "helcimInventory")}
                     {process.env.REACT_APP_SHOW_VEND && this.singleFieldRender(rowData, "vendHQInventory")}
                     {process.env.REACT_APP_SHOW_SQUARE && this.singleFieldRender(rowData, "squareInventory")}
                     {process.env.REACT_APP_SHOW_BC && this.singleFieldRender(rowData, "bigCommerceInventory")}
@@ -263,6 +279,7 @@ class ListProductsBulkEdit extends Component {
 
     marketPlaceRender(){
         return  <div className="p-grid p-dir-col">
+            { process.env.REACT_APP_SHOW_HELCIM && <div className="p-col">Helcim</div> }
             { process.env.REACT_APP_SHOW_VEND && <div className="p-col">VendHQ</div> }
             { process.env.REACT_APP_SHOW_SQUARE &&<div className="p-col">SquareUp</div> }
             { process.env.REACT_APP_SHOW_BC && <div className="p-col">BigComm.</div> }

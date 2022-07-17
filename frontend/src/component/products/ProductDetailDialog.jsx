@@ -10,6 +10,7 @@ import InventoryUpdate from "./InventoryUpdate";
 import {TabView,TabPanel} from 'primereact/tabview';
 import SquareProductCard from "./SquareProductCard";
 import ProductSaleHistory from "./ProductSaleHistory";
+import HelcimProductCard from "./HelcimProductCard";
 
 class ProductDetailDialog extends Component {
 
@@ -26,7 +27,7 @@ class ProductDetailDialog extends Component {
     }
 
     componentDidMount() {
-        console.log("component did mount");
+
     }
 
     save() {
@@ -40,6 +41,7 @@ class ProductDetailDialog extends Component {
             let bigCommerceFsProduct = detailedProduct.bigCommerceFSProduct;
             let vendHQProduct = detailedProduct.vendHQProduct;
             let squareProduct = detailedProduct.squareProduct;
+            let helcimProduct = detailedProduct.helcimProduct;
 
             // use product price parameters in redux store to request the backend
             // locale store does not work for some reason
@@ -69,6 +71,11 @@ class ProductDetailDialog extends Component {
                     "bigCommerceRetailPrice" : squareProduct.price,
                     "marketPlace" : marketPlace
                 };
+            } else if(helcimProduct !== undefined && helcimProduct !== null){
+                priceParameters = {
+                    "bigCommerceRetailPrice" : helcimProduct.price,
+                    "marketPlace" : marketPlace
+                };
             }
 
             this.props.commitPriceChange(this.props.detailedProduct.sku, priceParameters);
@@ -92,7 +99,6 @@ class ProductDetailDialog extends Component {
 
     updateInventoryEvent() {
         let inventoryLevel = this.props.detailedProduct.inventoryLevel;
-        console.log("inventoryLevel " + inventoryLevel);
         if(inventoryLevel !== ""){
             this.props.updateInventory(this.props.detailedProduct.sku, inventoryLevel);
             this.setState({"updateInventoryInProgress": true});
@@ -123,6 +129,9 @@ class ProductDetailDialog extends Component {
 
             if(detailedProduct.squareProduct !== null)
                 detailedProduct.squareProduct.price = value;
+
+            if(detailedProduct.helcimProduct !== null)
+                detailedProduct.helcimProduct.price = value;
         }
         if(property === "bigCommerceCostPrice"){
             if(detailedProduct.bigCommerceProduct !== null)
@@ -168,6 +177,9 @@ class ProductDetailDialog extends Component {
         if(process.env.REACT_APP_SHOW_VEND)
             messages.push({life:6000, severity: result.vendhqInventoryUpdate, summary: "VendHQ", detail: this.getDetailMessageForInventory(result.vendhqInventoryUpdate)});
 
+        if(process.env.REACT_APP_SHOW_HELCIM)
+            messages.push({life:6000, severity: result.helcimInventoryUpdate, summary: "Helcim", detail: this.getDetailMessageForInventory(result.helcimInventoryUpdate)});
+
         if(process.env.REACT_APP_SHOW_AMUS)
             messages.push({life:6000, severity: result.amazonUsInventoryUpdate, summary: "Amazon Us", detail: this.getDetailMessageForInventory(result.amazonUsInventoryUpdate)});
 
@@ -189,6 +201,9 @@ class ProductDetailDialog extends Component {
         }
         if(detailedProduct.squareProduct !== null){
             detailedProduct.squareProduct.inventory = detailedProduct.inventoryLevel;
+        }
+        if(detailedProduct.helcimProduct !== null){
+            detailedProduct.helcimProduct.stock = detailedProduct.inventoryLevel;
         }
 
         this.props.updateDetailedProduct(detailedProduct);
@@ -213,6 +228,9 @@ class ProductDetailDialog extends Component {
 
         if(process.env.REACT_APP_SHOW_SQUARE)
             messages.push({life:6000, severity: result.squarePriceChange, summary: "SquareUp", detail: this.getDetailMessage(result.squarePriceChange)});
+
+        if(process.env.REACT_APP_SHOW_HELCIM)
+            messages.push({life:6000, severity: result.helcimPriceChange, summary: "Helcim", detail: this.getDetailMessage(result.helcimPriceChange)});
 
         if(process.env.REACT_APP_SHOW_VEND)
             messages.push({life:6000, severity: result.vendhqPriceChange, summary: "VendHQ", detail: this.getDetailMessage(result.vendhqPriceChange)});
@@ -279,7 +297,7 @@ class ProductDetailDialog extends Component {
                     footer={dialogFooter} onHide={this.props.onHideEvent}>
                 <TabView activeIndex={this.state.activeIndex} style={{width:'1200px'}}
                          onTabChange={(e) => this.setState({activeIndex: e.index})}>
-                    <TabPanel header="BC-Vend">
+                    <TabPanel header="BC-Helcim">
                         <div className="p-grid">
                             {
                                 process.env.REACT_APP_SHOW_BC &&
@@ -287,6 +305,13 @@ class ProductDetailDialog extends Component {
                                     <BigCommerceProductCard title="BigCommerce"
                                                             product={this.props.detailedProduct.bigCommerceProduct}
                                                             updateProperty={this.updateProperty}/>
+                                </div>
+                            }
+                            {
+                                process.env.REACT_APP_SHOW_HELCIM &&
+                                <div className="p-col-4">
+                                    <HelcimProductCard product={this.props.detailedProduct.helcimProduct}
+                                                       updateProperty={this.updateProperty}/>
                                 </div>
                             }
                             {

@@ -9,7 +9,6 @@ export const getProductList = () => {
     return (dispatch) => {
         dispatch(setProductsRequested(true));
         let requestUrl = API_URL + "/products/list";
-        console.log("API_URL:" + API_URL);
         axios.get(requestUrl)
             .catch(err => {
                 console.log("error:" + err);
