@@ -5,39 +5,32 @@ import lombok.Setter;
 import javax.persistence.*;
 
 @Entity
+@Getter @Setter
 public class InventoryCountProduct {
 
-    @Id @Getter @Setter
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Getter @Setter
     private String sku;
 
-    @Getter @Setter
     private String name;
 
-    @Getter @Setter
     private Integer vendhqQuantity;
 
-    @Getter @Setter
     private Integer bigcommerceQuantity;
 
-    @Getter @Setter
     private Integer bigcommerceFSQuantity;
 
-    @Getter @Setter
     private Integer amazonCAQuantity;
 
-    @Getter @Setter
+    private Integer helcimQuantity;
+
     private Integer count = 0;
 
-    @Getter @Setter
     private Boolean counted = false;
 
-    @Getter @Setter
     private Boolean matched = false;
 
-    @Getter @Setter
     private Integer inventoryCountId;
 }

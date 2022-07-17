@@ -4,7 +4,7 @@ import ecommerce.app.backend.StoreBean;
 import ecommerce.app.backend.markets.amazon.AmazonCaService;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceFSAPIService;
-import ecommerce.app.backend.markets.vendhq.VendHQAPIService;
+import ecommerce.app.backend.markets.helcim.HelcimAPIService;
 import ecommerce.app.backend.service.constants.InventoryCountConstants;
 import ecommerce.app.backend.model.DetailedProduct;
 import ecommerce.app.backend.model.InventoryCountRequest;
@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -38,10 +39,10 @@ public class InventoryCountService {
     private BigCommerceFSAPIService bigCommerceFSAPIService;
 
     @Autowired
-    private VendHQAPIService vendHQAPIService;
+    private AmazonCaService amazonCaService;
 
     @Autowired
-    private AmazonCaService amazonCaService;
+    private HelcimAPIService helcimAPIService;
 
     @Autowired
     private StoreBean storeBean;
@@ -111,10 +112,6 @@ public class InventoryCountService {
                     productList = inventoryCountProductRepository.findAllByInventoryCountId(id);
                     productList.stream().forEach(product -> {
                         DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(product.getSku());
-                        if(detailedProduct.getVendHQProduct() != null){
-                            if(detailedProduct.getVendHQProduct().getInventory() != null)
-                                product.setVendhqQuantity(detailedProduct.getVendHQProduct().getInventory().getInventoryLevel());
-                        }
                         if(detailedProduct.getBigCommerceProduct() != null){
                             product.setBigcommerceQuantity(detailedProduct.getBigCommerceProduct().getInventoryLevel());
                         }
@@ -123,6 +120,9 @@ public class InventoryCountService {
                         }
                         if(detailedProduct.getAmazonCaProduct() != null){
                             product.setAmazonCAQuantity(detailedProduct.getAmazonCaProduct().getQuantity());
+                        }
+                        if(detailedProduct.getHelcimProduct() != null){
+                            product.setHelcimQuantity(detailedProduct.getHelcimProduct().getStock().intValue());
                         }
                     });
                 } else { // full count detected
@@ -132,10 +132,6 @@ public class InventoryCountService {
                         product.setInventoryCountId(inventoryCount.getId());
                         product.setSku(detailedProduct.getSku());
                         product.setName(detailedProduct.getName());
-                        if(detailedProduct.getVendHQProduct() != null){
-                            if(detailedProduct.getVendHQProduct().getInventory() != null)
-                                product.setVendhqQuantity(detailedProduct.getVendHQProduct().getInventory().getInventoryLevel());
-                        }
                         if(detailedProduct.getBigCommerceProduct() != null){
                             product.setBigcommerceQuantity(detailedProduct.getBigCommerceProduct().getInventoryLevel());
                         }
@@ -144,6 +140,9 @@ public class InventoryCountService {
                         }
                         if(detailedProduct.getAmazonCaProduct() != null){
                             product.setAmazonCAQuantity(detailedProduct.getAmazonCaProduct().getQuantity());
+                        }
+                        if(detailedProduct.getHelcimProduct() != null){
+                            product.setHelcimQuantity(detailedProduct.getHelcimProduct().getStock().intValue());
                         }
                         productList.add(product);
                     });
@@ -212,18 +211,25 @@ public class InventoryCountService {
                         DetailedProduct detailedProduct = storeBean.getDetailedProductsMap().get(inventoryCountProduct.getSku());
                         if(detailedProduct != null) {
                             detailedProduct.setInventoryLevel(inventoryCountProduct.getCount());
-                            if (inventoryCountProduct.getVendhqQuantity() != null && inventoryCountProduct.getVendhqQuantity() != inventoryCountProduct.getCount()) {
-                                vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
-                            }
-                            if (inventoryCountProduct.getBigcommerceQuantity() != null && inventoryCountProduct.getBigcommerceQuantity() != inventoryCountProduct.getCount()) {
-                                bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
-                            }
-                            if (inventoryCountProduct.getBigcommerceFSQuantity() != null && inventoryCountProduct.getBigcommerceFSQuantity() != inventoryCountProduct.getCount()) {
-                                bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
-                            }
-                            if (inventoryCountProduct.getAmazonCAQuantity() != null && inventoryCountProduct.getAmazonCAQuantity() != inventoryCountProduct.getCount()) {
-                                amazonCaService.updateInventory(inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true);
-                            }
+
+                            Optional.ofNullable(inventoryCountProduct.getBigcommerceQuantity())
+                                    .filter(quantity -> quantity != inventoryCountProduct.getCount())
+                                    .ifPresent(q -> bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(),
+                                            inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true) );
+
+                            Optional.ofNullable(inventoryCountProduct.getBigcommerceFSQuantity())
+                                    .filter(quantity -> quantity != inventoryCountProduct.getCount())
+                                    .ifPresent(q -> bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(),
+                                            inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true) );
+
+                            Optional.ofNullable(inventoryCountProduct.getAmazonCAQuantity())
+                                    .filter(quantity -> quantity != inventoryCountProduct.getCount())
+                                    .ifPresent(q -> amazonCaService.updateInventory(inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true));
+
+                            Optional.ofNullable(inventoryCountProduct.getHelcimQuantity())
+                                    .filter(quantity -> quantity != inventoryCountProduct.getCount())
+                                    .ifPresent(q -> helcimAPIService.updateProductQuantity(detailedProduct.getHelcimProduct(),
+                                            inventoryCountProduct.getSku(), inventoryCountProduct.getCount(), true) );
                         }else{
                             log.error("Inventory count update failed, product sku {} not found in any market.", inventoryCountProduct.getSku());
                         }

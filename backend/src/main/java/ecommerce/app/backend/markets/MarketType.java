@@ -6,5 +6,6 @@ public enum MarketType {
     BIGCOMMERCE,
     BIGCOMMERCE_FS,
     AMAZON_CA,
-    AMAZON_US
+    AMAZON_US,
+    HELCIM
 }

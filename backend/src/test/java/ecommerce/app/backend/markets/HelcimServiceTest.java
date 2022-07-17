@@ -57,7 +57,6 @@ public class HelcimServiceTest {
     public void configureStub(){
         initStoreBean();
         helcimAPIService = new HelcimAPIService("http://localhost:8900/helcim", "testing", "", true);
-       // helcimAPIService = new HelcimAPIService("https://secure.myhelcim.com/api", "b9RtH9wBaQnT64gh2HK5dcD3s", "2500270978", true);
         ReflectionTestUtils.setField(helcimAPIService, "storeBean", storeBean);
         TestProducts testProducts = new TestProducts(testSku);
         ReflectionTestUtils.setField(helcimAPIService, "testProducts", testProducts);

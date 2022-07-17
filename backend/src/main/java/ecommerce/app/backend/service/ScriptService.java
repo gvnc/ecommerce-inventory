@@ -6,6 +6,8 @@ import ecommerce.app.backend.markets.amazon.products.AmazonProduct;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceFSAPIService;
 import ecommerce.app.backend.markets.bigcommerce.products.BigCommerceProduct;
+import ecommerce.app.backend.markets.helcim.HelcimAPIService;
+import ecommerce.app.backend.markets.helcim.products.HelcimProduct;
 import ecommerce.app.backend.markets.squareup.SquareAPIService;
 import ecommerce.app.backend.markets.squareup.items.SquareProduct;
 import ecommerce.app.backend.markets.vendhq.VendHQAPIService;
@@ -44,6 +46,9 @@ public class ScriptService {
     @Autowired
     private AmazonCaService amazonCaService;
 
+    @Autowired
+    private HelcimAPIService helcimAPIService;
+
     public void syncSquareInventory(){
         if(scriptEnabled == false)
             return;
@@ -77,40 +82,6 @@ public class ScriptService {
         }
     }
 
-    // TODO - not complete !!!
-    public void syncVendInventory(){
-        if(scriptEnabled == false)
-            return;
-        Map<String, BaseProduct> productMap = storeBean.getProductsMap();
-        for(String sku:productMap.keySet()){
-
-            try {
-                BaseProduct baseProduct = productMap.get(sku);
-                Integer bcQuantity = baseProduct.getBigCommerceInventory();
-                if (bcQuantity == null)
-                    bcQuantity = 0;
-
-                Integer vendQuantity = baseProduct.getVendHQInventory();
-                if (vendQuantity == null)
-                    vendQuantity = 0;
-
-                if (vendQuantity.intValue() != bcQuantity.intValue()) {
-                    log.info("Difference found. SKU=" + sku + ", BigC=" + bcQuantity + ", Vend=" + vendQuantity);
-
-                    VendHQProduct vendHQProduct = storeBean.getDetailedProductsMap().get(sku).getVendHQProduct();
-                    if (vendHQProduct != null) {
-                    //    vendHQAPIService.updateInventory(vendHQProduct, bcQuantity);
-                    } else {
-                        log.info("Vend product not found for sku " + sku);
-                    }
-                } else {
-                    int justChek = 1;
-                }
-            }catch (Exception e){
-                log.error("Error", e);
-            }
-        }
-    }
 
     public void syncMarketsByMasterBigCommerce() {
         Map<String, BaseProduct> productMap = storeBean.getProductsMap();
@@ -127,7 +98,7 @@ public class ScriptService {
                     if (bcQuantity.intValue() < 0) {
                         log.warn("bcQuantity has negative inventory, skip to update in sync from master. SKU=" + sku + ", BigC=" + bcQuantity );
                     } else {
-                        pushInventoryToVend(sku, bcQuantity);
+                        pushInventoryToHelcim(sku, bcQuantity);
                         pushInventoryToBcFS(sku, bcQuantity);
                         pushInventoryToAmazonCA(sku, bcQuantity);
                     }
@@ -141,8 +112,11 @@ public class ScriptService {
         storeBean.getSyncStatus().setBigCommerceFSSyncStatus(SyncConstants.SYNC_COMPLETED);
         storeBean.getSyncStatus().setVendHQSyncStatus(SyncConstants.SYNC_COMPLETED);
         storeBean.getSyncStatus().setAmazonCaStatus(SyncConstants.SYNC_COMPLETED);
+        storeBean.getSyncStatus().setHelcimSyncStatus(SyncConstants.SYNC_COMPLETED);
     }
 
+    // replaced vend with helcim, so this method not required anymore
+    @Deprecated
     private void pushInventoryToVend(String sku, Integer newQuantity){
         try{
             VendHQProduct vendProduct = storeBean.getDetailedProductsMap().get(sku).getVendHQProduct();
@@ -158,6 +132,28 @@ public class ScriptService {
                         // in case api thresholds exceeded, wait some time to retry
                         Thread.sleep(30000);
                         vendHQAPIService.updateProductQuantity(vendProduct, sku, newQuantity.intValue(), true);
+                    }
+                }
+            }
+        } catch (Exception e){
+
+        }
+    }
+
+    private void pushInventoryToHelcim(String sku, Integer newQuantity){
+        try{
+            HelcimProduct helcimProduct = storeBean.getDetailedProductsMap().get(sku).getHelcimProduct();
+            if (helcimProduct != null) {
+                Integer helcimQuantity = storeBean.getProductsMap().get(sku).getHelcimInventory();
+                if (helcimQuantity == null)
+                    helcimQuantity = 0;
+
+                if (helcimQuantity.intValue() != newQuantity.intValue()) {
+                    log.info("Difference found. SKU=" + sku + ", BigC=" + newQuantity + ", Helcim=" + helcimQuantity);
+                    boolean result = helcimAPIService.updateProductQuantity(helcimProduct, sku, newQuantity.intValue(), true);
+                    if (result == false) {
+                        // retry once again just in case
+                        helcimAPIService.updateProductQuantity(helcimProduct, sku, newQuantity.intValue(), true);
                     }
                 }
             }
@@ -248,6 +244,47 @@ public class ScriptService {
 
         storeBean.getSyncStatus().setBigCommerceSyncStatus(SyncConstants.SYNC_COMPLETED);
         storeBean.getSyncStatus().setVendHQSyncStatus(SyncConstants.SYNC_COMPLETED);
+    }
+
+    public void syncMarketsByMasterHelcim(){
+
+        Map<String, BaseProduct> productMap = storeBean.getProductsMap();
+        for(String sku:productMap.keySet()){
+            try {
+                BigCommerceProduct bigCommerceProduct = storeBean.getDetailedProductsMap().get(sku).getBigCommerceProduct();
+                HelcimProduct helcimProduct = storeBean.getDetailedProductsMap().get(sku).getHelcimProduct();
+                if (bigCommerceProduct != null && helcimProduct != null) {
+
+                    BaseProduct baseProduct = productMap.get(sku);
+                    Integer bcQuantity = baseProduct.getBigCommerceInventory();
+                    if (bcQuantity == null)
+                        bcQuantity = 0;
+
+                    Integer helcimQuantity = baseProduct.getHelcimInventory();
+                    if (helcimQuantity == null)
+                        helcimQuantity = 0;
+
+                    if (helcimQuantity.intValue() != bcQuantity.intValue()) {
+                        if (helcimQuantity.intValue() < 0) {
+                            log.warn("helcimQuantity has negative inventory, skip to update bigcommerce. SKU=" + sku + ", BigC=" + bcQuantity + ", Helcim=" + helcimQuantity);
+                        } else {
+                            log.info("Difference found. SKU=" + sku + ", BigC=" + bcQuantity + ", Helcim=" + helcimQuantity);
+                            boolean result = bigCommerceAPIService.updateProductQuantity(bigCommerceProduct, sku, helcimQuantity.intValue(), true);
+                            if (result == false) {
+                                // in case api thresholds exceeded, wait some time to retry
+                                Thread.sleep(30000);
+                                bigCommerceAPIService.updateProductQuantity(bigCommerceProduct, sku, helcimQuantity.intValue(), true);
+                            }
+                        }
+                    }
+                }
+            }catch (Exception e){
+                log.error("Error", e);
+            }
+        }
+
+        storeBean.getSyncStatus().setBigCommerceSyncStatus(SyncConstants.SYNC_COMPLETED);
+        storeBean.getSyncStatus().setHelcimSyncStatus(SyncConstants.SYNC_COMPLETED);
     }
 
     public void syncBCFSViaBC(){

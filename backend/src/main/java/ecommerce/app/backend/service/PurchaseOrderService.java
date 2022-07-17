@@ -4,6 +4,7 @@ import ecommerce.app.backend.StoreBean;
 import ecommerce.app.backend.markets.amazon.AmazonCaService;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceFSAPIService;
+import ecommerce.app.backend.markets.helcim.HelcimAPIService;
 import ecommerce.app.backend.markets.squareup.SquareAPIService;
 import ecommerce.app.backend.model.DetailedProduct;
 import ecommerce.app.backend.model.PurchaseOrderRequest;
@@ -16,7 +17,6 @@ import ecommerce.app.backend.repository.model.PurchaseOrder;
 import ecommerce.app.backend.repository.model.PurchaseOrderAttachment;
 import ecommerce.app.backend.repository.model.PurchaseOrderProduct;
 import ecommerce.app.backend.service.constants.PurchaseOrderConstants;
-import ecommerce.app.backend.markets.vendhq.VendHQAPIService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,13 +51,13 @@ public class PurchaseOrderService {
     private BigCommerceFSAPIService bigCommerceFSAPIService;
 
     @Autowired
-    private VendHQAPIService vendHQAPIService;
-
-    @Autowired
     private AmazonCaService amazonCaService;
 
     @Autowired
     private SquareAPIService squareAPIService;
+
+    @Autowired
+    private HelcimAPIService helcimAPIService;
 
     @Autowired
     private StoreBean storeBean;
@@ -228,7 +228,7 @@ public class PurchaseOrderService {
             detailedProduct.setInventoryLevel(newQuantity);
 
             // set quantities for each market place
-            vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), sku, quantity, false);
+            helcimAPIService.updateProductQuantity(detailedProduct.getHelcimProduct(), sku, quantity, false);
             bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), sku, quantity, false);
             bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), sku, quantity, false);
             amazonCaService.updateInventory(sku, quantity, false);

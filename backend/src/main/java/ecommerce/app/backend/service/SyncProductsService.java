@@ -8,6 +8,8 @@ import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceFSAPIService;
 import ecommerce.app.backend.markets.bigcommerce.products.BigCommerceProduct;
 import ecommerce.app.backend.markets.bigcommerce.products.BigCommerceVariant;
+import ecommerce.app.backend.markets.helcim.HelcimAPIService;
+import ecommerce.app.backend.markets.helcim.products.HelcimProduct;
 import ecommerce.app.backend.markets.squareup.SquareAPIService;
 import ecommerce.app.backend.markets.squareup.inventory.SquareInventoryCount;
 import ecommerce.app.backend.markets.squareup.inventory.SquareInventoryCounts;
@@ -26,10 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -56,6 +55,9 @@ public class SyncProductsService {
     @Autowired
     private SquareAPIService squareAPIService;
 
+    @Autowired
+    private HelcimAPIService helcimAPIService;
+
     @Value("${master.market.type}")
     private MarketType marketType;
 
@@ -70,6 +72,9 @@ public class SyncProductsService {
 
     @Value("${sync.amazonca.enabled}")
     private Boolean syncAmazonCAEnabled;
+
+    @Value("${sync.helcim.enabled}")
+    private Boolean syncHelcimEnabled;
 
     private void syncBigCommerce() {
 
@@ -236,6 +241,43 @@ public class SyncProductsService {
         detailedProduct.setBigCommerceFSProduct(bigCommerceProduct);
     }
 
+
+    private void syncHelcim(){
+        if(!syncHelcimEnabled)
+            return;
+
+        try {
+            log.info("Started to get products from Helcim");
+            storeBean.getSyncStatus().setHelcimSyncStatus(SyncConstants.SYNC_INPROGRESS);
+            List<HelcimProduct> productList = helcimAPIService.getProductList();
+            for(HelcimProduct helcimProduct:productList){
+                DetailedProduct detailedProduct;
+                BaseProduct baseProduct = storeBean.getProductsMap().get(helcimProduct.getSku());
+                if (baseProduct == null) {
+                    baseProduct = new BaseProduct(helcimProduct.getSku(), helcimProduct.getName());
+                    baseProduct.setHelcimInventory(helcimProduct.getStock().intValue());
+                    baseProduct.setHelcimPrice(helcimProduct.getPrice());
+
+                    storeBean.getProductsMap().put(helcimProduct.getSku(), baseProduct);
+                    storeBean.getProductsList().add(baseProduct);
+
+                    detailedProduct = new DetailedProduct(helcimProduct.getSku(), helcimProduct.getName());
+                    detailedProduct.setHelcimProduct(helcimProduct);
+                    detailedProduct.setInventoryLevel(helcimProduct.getStock().intValue());
+                    storeBean.getDetailedProductsMap().put(helcimProduct.getSku(), detailedProduct);
+                }
+            }
+
+            storeBean.getSyncStatus().setHelcimSyncStatus(SyncConstants.SYNC_COMPLETED);
+            storeBean.getSyncStatus().setHelcimLastUpdate(Utils.getNowAsString());
+
+            log.info("{} products found in Helcim.", productList == null ? 0: productList.size());
+        } catch (Exception e) {
+            storeBean.getSyncStatus().setHelcimSyncStatus(SyncConstants.SYNC_FAILED);
+            log.error("Failed to sync helcim products", e);
+        }
+    }
+
     private void syncVendHQ(){
 
         if(!syncVendHQEnabled)
@@ -339,10 +381,6 @@ public class SyncProductsService {
         return inventoryMap;
     }
 
-    private void syncAmazonUS(){
-        // TODO to be implemented later
-        storeBean.getSyncStatus().setAmazonUsStatus(SyncConstants.SYNC_NA);
-    }
 
     private void syncAmazonCA(){
 
@@ -498,6 +536,7 @@ public class SyncProductsService {
         storeBean.getSyncStatus().setAmazonUsStatus(SyncConstants.SYNC_INPROGRESS);
         storeBean.getSyncStatus().setAmazonCaStatus(SyncConstants.SYNC_INPROGRESS);
         storeBean.getSyncStatus().setSquareupSyncStatus(SyncConstants.SYNC_INPROGRESS);
+        storeBean.getSyncStatus().setHelcimSyncStatus(SyncConstants.SYNC_INPROGRESS);
     }
 
     private void resetStore(){
@@ -506,8 +545,6 @@ public class SyncProductsService {
         storeBean.setProductsMap(new HashMap<>());
     }
 
-    // this feature is only added for SelectVapes app !!
-    // vend is the master, bigcommerce is the one to be updated
     public void syncFromMaster(){
         // first sync
         syncAllMarketPlaces();
@@ -521,6 +558,9 @@ public class SyncProductsService {
             case VEND:
                 scriptService.syncMarketsByMasterVend();
                 break;
+            case HELCIM:
+                scriptService.syncMarketsByMasterHelcim();
+                break;
         }
         storeBean.setOrderListenerAllowed(true);
     }
@@ -530,8 +570,7 @@ public class SyncProductsService {
 
         setSyncStatusIntoPending();
         resetStore();
-
-        syncVendHQ();
+        syncHelcim();
         syncBigCommerce();
         syncBigCommerceFS();
         syncAmazonCA();

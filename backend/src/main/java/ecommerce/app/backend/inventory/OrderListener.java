@@ -102,7 +102,7 @@ public class OrderListener {
         if(orderListenerEnabled == true && storeBean.getOrderListenerAllowed() == true){
             log.debug("Order listener started to run.");
             listenBigCommerceOrders();
-            listenVendHQSales();
+        //    listenVendHQSales();
             listenBigCommerceFSOrders();
             listenAmazonCAOrders();
             listenHelcimOrders();
@@ -175,10 +175,10 @@ public class OrderListener {
                     }
 
                     // set quantity for other market places
-                    vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), product.getSku(), quantity, false);
+                //    vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), product.getSku(), quantity, false);
                     bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), product.getSku(), quantity, false);
                     amazonCaService.updateInventory(product.getSku(), quantity, false);
-                    squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), product.getSku(), quantity, false);
+                //    squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), product.getSku(), quantity, false);
                     helcimAPIService.updateProductQuantity(detailedProduct.getHelcimProduct(), product.getSku(), quantity, false);
                 }
             }
@@ -250,10 +250,10 @@ public class OrderListener {
                     }
 
                     // set quantity for other market places
-                    vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), product.getSku(), quantity, false);
+                //    vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), product.getSku(), quantity, false);
                     bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), product.getSku(), quantity, false);
                     amazonCaService.updateInventory(product.getSku(), quantity, false);
-                    squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), product.getSku(), quantity, false);
+                //    squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), product.getSku(), quantity, false);
                     helcimAPIService.updateProductQuantity(detailedProduct.getHelcimProduct(), product.getSku(), quantity, false);
                 }
             }
@@ -331,7 +331,7 @@ public class OrderListener {
                     bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), sku, quantity, false);
                     bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), sku, quantity, false);
                     amazonCaService.updateInventory(sku, quantity, false);
-                    squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), sku, quantity, false);
+                //    squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), sku, quantity, false);
                     helcimAPIService.updateProductQuantity(detailedProduct.getHelcimProduct(), sku, quantity, false);
                 }
             }
@@ -410,8 +410,8 @@ public class OrderListener {
                     // update quantity for other market places
                     bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), sku, quantity, false);
                     bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), sku, quantity, false);
-                    vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), sku, quantity, false);
-                    squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), sku, quantity, false);
+                //    vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), sku, quantity, false);
+                //    squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), sku, quantity, false);
                     helcimAPIService.updateProductQuantity(detailedProduct.getHelcimProduct(), sku, quantity, false);
                 }
             }
@@ -484,7 +484,7 @@ public class OrderListener {
                     }
 
                     // set quantity for other marketplaces
-                    vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), sku, quantity, false);
+                //    vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), sku, quantity, false);
                     bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), sku, quantity, false);
                     bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), sku, quantity, false);
                     amazonCaService.updateInventory(sku, quantity, false);
@@ -553,11 +553,11 @@ public class OrderListener {
                     }
 
                     // set quantity for other market places
-                    vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), orderItem.getSku(), quantity, false);
+                //    vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), orderItem.getSku(), quantity, false);
                     bigCommerceAPIService.updateProductQuantity(detailedProduct.getBigCommerceProduct(), orderItem.getSku(), quantity, false);
                     bigCommerceFSAPIService.updateProductQuantity(detailedProduct.getBigCommerceFSProduct(), orderItem.getSku(), quantity, false);
                     amazonCaService.updateInventory(orderItem.getSku(), quantity, false);
-                    squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), orderItem.getSku(), quantity, false);
+                //    squareAPIService.updateProductQuantity(detailedProduct.getSquareProduct(), orderItem.getSku(), quantity, false);
                 }
             }
         }catch (Exception e){

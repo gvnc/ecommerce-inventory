@@ -5,6 +5,7 @@ import ecommerce.app.backend.StoreBean;
 import ecommerce.app.backend.markets.amazon.AmazonCaService;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceAPIService;
 import ecommerce.app.backend.markets.bigcommerce.BigCommerceFSAPIService;
+import ecommerce.app.backend.markets.helcim.HelcimAPIService;
 import ecommerce.app.backend.markets.squareup.SquareAPIService;
 import ecommerce.app.backend.model.*;
 import ecommerce.app.backend.repository.model.AverageCostView;
@@ -43,6 +44,9 @@ public class BackendController {
 
     @Autowired
     private SquareAPIService squareAPIService;
+
+    @Autowired
+    private HelcimAPIService helcimAPIService;
 
     @Autowired
     private SyncProductsService syncProductsService;
@@ -144,13 +148,24 @@ public class BackendController {
                     commitPriceResult.setFinalResult(OperationConstants.FAIL);
                 }
 
+                // update helcim product inventory
+                if(helcimAPIService.updatePrice(productSku, newPrice) == true){
+                    commitPriceResult.setHelcimPriceChange(OperationConstants.SUCCESS);
+                } else {
+                    commitPriceResult.setHelcimPriceChange(OperationConstants.FAIL);
+                    commitPriceResult.setFinalResult(OperationConstants.FAIL);
+                }
+
                 // update vendhq product inventory
+                /*
                 if(vendHQAPIService.updatePrice(productSku, newCostPrice, newRetailPrice) == true){
                     commitPriceResult.setVendhqPriceChange(OperationConstants.SUCCESS);
                 } else {
                     commitPriceResult.setVendhqPriceChange(OperationConstants.FAIL);
                     commitPriceResult.setFinalResult(OperationConstants.FAIL);
                 }
+                 */
+
 
                 // update squareup product inventory
                 /* // remove comment out to enable square
@@ -209,7 +224,14 @@ public class BackendController {
             inventoryUpdateResult.setFinalResult(OperationConstants.FAIL);
         }
 
-
+        if(helcimAPIService.updateProductQuantity(detailedProduct.getHelcimProduct(), productSku, inventoryLevel, true)  == true){
+            inventoryUpdateResult.setHelcimInventoryUpdate(OperationConstants.SUCCESS);
+            detailedProduct.setInventoryLevel(inventoryLevel);
+        } else {
+            inventoryUpdateResult.setHelcimInventoryUpdate(OperationConstants.FAIL);
+            inventoryUpdateResult.setFinalResult(OperationConstants.FAIL);
+        }
+/*
         if(vendHQAPIService.updateProductQuantity(detailedProduct.getVendHQProduct(), productSku, inventoryLevel, true)  == true){
             inventoryUpdateResult.setVendhqInventoryUpdate(OperationConstants.SUCCESS);
             detailedProduct.setInventoryLevel(inventoryLevel);
@@ -217,6 +239,8 @@ public class BackendController {
             inventoryUpdateResult.setVendhqInventoryUpdate(OperationConstants.FAIL);
             inventoryUpdateResult.setFinalResult(OperationConstants.FAIL);
         }
+
+ */
 
         if(amazonCaService.updateInventory(productSku, inventoryLevel, true)  == true){
             inventoryUpdateResult.setAmazonCaInventoryUpdate(OperationConstants.SUCCESS);
